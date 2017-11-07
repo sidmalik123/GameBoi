@@ -1,9 +1,6 @@
 package mmu;
 
-import core.Address;
-import core.Instruction;
-
-public interface MMU<T, Y extends Address<?>> {
+public interface MMU<T, Y> {
 
     T readData(Y address);
 

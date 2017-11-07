@@ -1,9 +1,6 @@
 package cpu;
 
-import core.Address;
-import core.Instruction;
-
-public abstract class AbstractCPU<T extends Instruction<?>, Y extends Address<?>> implements CPU {
+public abstract class AbstractCPU<T, Y> implements CPU {
 
     protected abstract T readInstruction(Y address);
 

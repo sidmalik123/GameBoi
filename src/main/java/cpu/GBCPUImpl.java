@@ -1,9 +1,6 @@
 package cpu;
 
-import core.Address;
-import core.GBAddress;
-import core.GBInstruction;
-import core.Instruction;
+import core.Word;
 import mmu.GBMMU;
 
 public class GBCPUImpl extends GBCPU {
@@ -14,11 +11,11 @@ public class GBCPUImpl extends GBCPU {
 
     }
 
-    protected GBInstruction readInstruction(GBAddress address) {
-        return new GBInstruction(mmu.readData(address));
+    protected Byte readInstruction(Word address) {
+        return mmu.readData(address);
     }
 
-    protected void executeInstruction(GBInstruction instruction) {
+    protected void executeInstruction(Byte instruction) {
 
     }
 }

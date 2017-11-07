@@ -1,7 +1,6 @@
 package mmu;
 
-import core.GBAddress;
-import core.GBInstruction;
+import core.Word;
 
-public interface GBMMU extends MMU<Byte, GBAddress> {
+public interface GBMMU extends MMU<Byte, Word> {
 }

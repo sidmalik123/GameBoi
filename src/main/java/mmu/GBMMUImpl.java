@@ -1,15 +1,14 @@
 package mmu;
 
-import core.Address;
-import core.GBAddress;
+import core.Word;
 
 public class GBMMUImpl implements GBMMU {
 
-    public Byte readData(GBAddress address) {
+    public Byte readData(Word address) {
         return null;
     }
 
-    public void wrtieData(GBAddress address, Byte data) {
+    public void wrtieData(Word address, Byte data) {
 
     }
 }

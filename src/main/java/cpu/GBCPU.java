@@ -1,6 +1,5 @@
 package cpu;
 
-import core.GBAddress;
-import core.GBInstruction;
+import core.Word;
 
-public abstract class GBCPU extends AbstractCPU<GBInstruction, GBAddress> {}
+public abstract class GBCPU extends AbstractCPU<Byte, Word> {}
