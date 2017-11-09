@@ -1,10 +1,13 @@
 package cpu;
 
-import mmu.GBMMU;
+import mmu.MMU;
 
-public class GBCPUImpl extends AbstractCPU {
+public class GBCPU extends AbstractCPU {
 
-    private GBMMU mmu;
+    private MMU mmu;
+
+    // registers
+    GBRegisterManager registerManager;
 
     public void run() {
 
