@@ -1,9 +1,8 @@
 package cpu;
 
-import core.Word;
 import mmu.GBMMU;
 
-public class GBCPUImpl extends GBCPU {
+public class GBCPUImpl extends AbstractCPU {
 
     private GBMMU mmu;
 
@@ -11,11 +10,11 @@ public class GBCPUImpl extends GBCPU {
 
     }
 
-    protected Byte readInstruction(Word address) {
+    protected int readInstruction(int address) {
         return mmu.readData(address);
     }
 
-    protected void executeInstruction(Byte instruction) {
+    protected void executeInstruction(int instruction) {
 
     }
 }

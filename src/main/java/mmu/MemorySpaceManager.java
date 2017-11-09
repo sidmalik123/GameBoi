@@ -1,6 +1,6 @@
 package mmu;
 
-public interface MemorySpaceManager<T extends MemorySpace, Y> {
+public interface MemorySpaceManager {
 
-    T getMemorySpace(Y address);
+    MemorySpace getMemorySpace(int address);
 }

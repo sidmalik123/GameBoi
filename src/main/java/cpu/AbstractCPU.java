@@ -1,8 +1,8 @@
 package cpu;
 
-public abstract class AbstractCPU<T, Y> implements CPU {
+public abstract class AbstractCPU implements CPU {
 
-    protected abstract T readInstruction(Y address);
+    protected abstract int readInstruction(int address);
 
-    protected abstract void executeInstruction(T instruction);
+    protected abstract void executeInstruction(int instruction);
 }

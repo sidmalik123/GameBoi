@@ -1,9 +1,12 @@
 package mmu;
 
-public interface MMU<T, Y> {
+public interface MMU {
 
-    T readData(Y address);
+    int readData(int address);
 
-    void writeData(Y address, T data);
+    void writeData(int address, int data);
+
+    // Loads the program in memory and return the start address
+    int loadProgram();
 
 }

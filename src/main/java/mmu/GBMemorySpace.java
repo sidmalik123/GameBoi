@@ -1,20 +1,18 @@
 package mmu;
 
-import core.Word;
+public class GBMemorySpace implements MemorySpace {
 
-public abstract class GBMemorySpace implements MemorySpace<Byte, Word> {
-
-    private Byte[] memory;
+    private int[] memory;
 
     public GBMemorySpace(int memorySize) {
-        memory = new Byte[memorySize];
+        memory = new int[memorySize];
     }
 
-    public Byte read(Word address) {
-        return memory[address.getValue()];
+    public int read(int address) {
+        return memory[address];
     }
 
-    public void write(Word address, Byte data) {
-        memory[address.getValue()] = data;
+    public void write(int address, int data) {
+        memory[address] = data;
     }
 }

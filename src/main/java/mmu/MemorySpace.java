@@ -1,8 +1,8 @@
 package mmu;
 
-public interface MemorySpace<T, Y> {
+public interface MemorySpace {
 
-    T read(Y address);
+    int read(int address);
 
-    void write(Y address, T data);
+    void write(int address, int data);
 }
