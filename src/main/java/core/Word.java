@@ -1,9 +1,9 @@
 package core;
 
 public class Word {
-    short value;
+    private short value;
 
-    short getValue() {
+    public short getValue() {
         return value;
     }
 }

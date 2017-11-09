@@ -4,11 +4,15 @@ import core.Word;
 
 public class GBMMUImpl implements GBMMU {
 
+    private GBMemorySpaceManager memorySpaceManager;
+
     public Byte readData(Word address) {
-        return null;
+        GBMemorySpace memorySpace = memorySpaceManager.getMemorySpace(address);
+        return memorySpace.read(address);
     }
 
-    public void wrtieData(Word address, Byte data) {
-
+    public void writeData(Word address, Byte data) {
+        GBMemorySpace memorySpace = memorySpaceManager.getMemorySpace(address);
+        memorySpace.write(address, data);
     }
 }
