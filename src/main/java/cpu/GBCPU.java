@@ -6,10 +6,13 @@ public class GBCPU extends AbstractCPU {
 
     private MMU mmu;
 
-    // registers
-    GBRegisterManager registerManager;
+    private GBRegisterManager registerManager;
 
-    public void run() {
+    private int PC; // set by the mmu on program load
+
+    private int numCyclesPassed;
+
+    public void run(String programLocation) {
 
     }
 
@@ -20,4 +23,6 @@ public class GBCPU extends AbstractCPU {
     protected void executeInstruction(int instruction) {
 
     }
+
+    // private methods for each instruction type
 }

@@ -2,5 +2,5 @@ package cpu;
 
 
 public interface CPU {
-    void run();
+    void run(String programLocation);
 }
