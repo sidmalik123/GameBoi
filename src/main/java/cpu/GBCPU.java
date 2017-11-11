@@ -16,13 +16,38 @@ public class GBCPU extends AbstractCPU {
 
     }
 
-    protected int readInstruction(int address) {
-        return mmu.readData(address);
+    protected int readInstruction() {
+        return mmu.readData(PC);
     }
 
     protected void executeInstruction(int instruction) {
 
+        switch (instruction & 0xFF) {
+            // LDrns
+            case 0x06:
+                LDrn(RegisterType.B);
+            case 0x0E:
+                LDrn(RegisterType.C);
+            case 0x16:
+                LDrn(RegisterType.E);
+            case 0x1E:
+                LDrn(RegisterType.E);
+            case 0x26:
+                LDrn(RegisterType.H);
+            case 0x2E:
+                LDrn(RegisterType.L);
+
+            // LDrrs
+            case 0x7F:
+
+        }
+
     }
 
-    // private methods for each instruction type
+
+    private void LDrn(RegisterType registerType) {
+        registerManager.set(registerType, mmu.readData(++PC));
+        numCyclesPassed += 4;
+    }
+
 }
