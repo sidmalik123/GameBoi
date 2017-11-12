@@ -23,19 +23,19 @@ public class GBCPU extends AbstractCPU {
     protected void executeInstruction(int instruction) {
 
         switch (instruction & 0xFF) {
-            // LDrns
+            // Loads
             case 0x06:
-                LDrn(SingleRegister.B);
+                load(SingleRegister.B);
             case 0x0E:
-                LDrn(SingleRegister.C);
+                load(SingleRegister.C);
             case 0x16:
-                LDrn(SingleRegister.E);
+                load(SingleRegister.E);
             case 0x1E:
-                LDrn(SingleRegister.E);
+                load(SingleRegister.E);
             case 0x26:
-                LDrn(SingleRegister.H);
+                load(SingleRegister.H);
             case 0x2E:
-                LDrn(SingleRegister.L);
+                load(SingleRegister.L);
 
             // LDrrs
             case 0x7F:
@@ -45,14 +45,31 @@ public class GBCPU extends AbstractCPU {
     }
 
     // Load n(immediate value) into r
-    private void LDrn(SingleRegister singleRegister) {
+//    private void LDrn(SingleRegister singleRegister) {
+//        registerManager.set(singleRegister, mmu.readData(++PC));
+//        numCyclesPassed += 8;
+//    }
+//
+//    // r1 = r2
+//    private void LDr1r2(SingleRegister singleRegister1, SingleRegister singleRegister2) {
+//        registerManager.set(singleRegister1, registerManager.get(singleRegister2));
+//        numCyclesPassed += 4;
+//    }
+
+
+    // loads immediate value into register
+    private void load(SingleRegister singleRegister) {
         registerManager.set(singleRegister, mmu.readData(++PC));
         numCyclesPassed += 8;
     }
 
-    // r1 = r2
-    private void LDr1r2(SingleRegister singleRegister1, SingleRegister singleRegister2) {
-        registerManager.set(singleRegister1, registerManager.get(singleRegister2));
+    // r2 = r1
+    private void load(SingleRegister r1, SingleRegister r2) {
+        registerManager.set(r1, registerManager.get(r2));
         numCyclesPassed += 4;
+    }
+
+    private void load(SingleRegister r1, DoubleRegister r2) {
+
     }
 }

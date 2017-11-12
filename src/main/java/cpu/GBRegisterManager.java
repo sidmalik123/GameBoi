@@ -7,4 +7,7 @@ public interface GBRegisterManager {
 
     int get(DoubleRegister doubleRegister);
     void set(DoubleRegister doubleRegister, int data);
+
+    int getHigh(DoubleRegister doubleRegister);
+    int getLow(DoubleRegister doubleRegister);
 }
