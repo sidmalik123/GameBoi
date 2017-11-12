@@ -25,17 +25,17 @@ public class GBCPU extends AbstractCPU {
         switch (instruction & 0xFF) {
             // LDrns
             case 0x06:
-                LDrn(RegisterType.B);
+                LDrn(SingleRegister.B);
             case 0x0E:
-                LDrn(RegisterType.C);
+                LDrn(SingleRegister.C);
             case 0x16:
-                LDrn(RegisterType.E);
+                LDrn(SingleRegister.E);
             case 0x1E:
-                LDrn(RegisterType.E);
+                LDrn(SingleRegister.E);
             case 0x26:
-                LDrn(RegisterType.H);
+                LDrn(SingleRegister.H);
             case 0x2E:
-                LDrn(RegisterType.L);
+                LDrn(SingleRegister.L);
 
             // LDrrs
             case 0x7F:
@@ -44,10 +44,15 @@ public class GBCPU extends AbstractCPU {
 
     }
 
-
-    private void LDrn(RegisterType registerType) {
-        registerManager.set(registerType, mmu.readData(++PC));
-        numCyclesPassed += 4;
+    // Load n(immediate value) into r
+    private void LDrn(SingleRegister singleRegister) {
+        registerManager.set(singleRegister, mmu.readData(++PC));
+        numCyclesPassed += 8;
     }
 
+    // r1 = r2
+    private void LDr1r2(SingleRegister singleRegister1, SingleRegister singleRegister2) {
+        registerManager.set(singleRegister1, registerManager.get(singleRegister2));
+        numCyclesPassed += 4;
+    }
 }

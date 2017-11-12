@@ -2,6 +2,9 @@ package cpu;
 
 public interface GBRegisterManager {
 
-    int get(RegisterType registerType);
-    void set(RegisterType registerType, int data);
+    int get(SingleRegister singleRegister);
+    void set(SingleRegister singleRegister, int data);
+
+    int get(DoubleRegister doubleRegister);
+    void set(DoubleRegister doubleRegister, int data);
 }

@@ -14,8 +14,8 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
 
 
 
-    public int get(RegisterType registerType) {
-        switch (registerType) {
+    public int get(SingleRegister singleRegister) {
+        switch (singleRegister) {
             case A:
                 return regA.getData();
             case B:
@@ -30,20 +30,14 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
                 return regH.getData();
             case L:
                 return regL.getData();
-            case BC:
-                return regB.getData() << 8 | regC.getData();
-            case DE:
-                return regD.getData() << 8 | regE.getData();
-            case HL:
-                return regH.getData() << 8 | regL.getData();
             default:
-                throw new IllegalArgumentException("Register type " + registerType + " has not been implemented yet");
+                throw new IllegalArgumentException("Register type " + singleRegister + " has not been implemented yet");
 
         }
     }
 
-    public void set(RegisterType registerType, int data) {
-        switch (registerType) {
+    public void set(SingleRegister singleRegister, int data) {
+        switch (singleRegister) {
             case A:
                 regA.setData(data);
             case B:
@@ -58,6 +52,28 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
                 regH.setData(data);
             case L:
                 regL.setData(data);
+            default:
+                throw new IllegalArgumentException("Register type " + singleRegister + " has not been implemented yet");
+
+        }
+    }
+
+    public int get(DoubleRegister doubleRegister) {
+        switch (doubleRegister) {
+            case BC:
+                return regB.getData() << 8 | regC.getData();
+            case DE:
+                return regD.getData() << 8 | regE.getData();
+            case HL:
+                return regH.getData() << 8 | regL.getData();
+            default:
+                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
+
+        }
+    }
+
+    public void set(DoubleRegister doubleRegister, int data) {
+        switch (doubleRegister) {
             case BC:
                 regB.setData(data >> 8);
                 regC.setData(data & 0xFF);
@@ -68,7 +84,7 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
                 regH.setData(data >> 8);
                 regL.setData(data & 0xFF);
             default:
-                throw new IllegalArgumentException("Register type " + registerType + " has not been implemented yet");
+                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
 
         }
     }
