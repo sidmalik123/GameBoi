@@ -117,4 +117,32 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
 
         }
     }
+
+    public void setHigh(DoubleRegister doubleRegister, int data) {
+        switch (doubleRegister) {
+            case BC:
+                set(SingleRegister.B, data);
+            case DE:
+                set(SingleRegister.D, data);
+            case HL:
+                set(SingleRegister.H, data);
+            default:
+                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
+
+        }
+    }
+
+    public void setLow(DoubleRegister doubleRegister, int data) {
+        switch (doubleRegister) {
+            case BC:
+                set(SingleRegister.C, data);
+            case DE:
+                set(SingleRegister.E, data);
+            case HL:
+                set(SingleRegister.L, data);
+            default:
+                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
+
+        }
+    }
 }
