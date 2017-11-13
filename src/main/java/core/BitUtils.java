@@ -9,4 +9,8 @@ public class BitUtils {
     public static boolean isCarry(int val1, int val2) {
         return (((val1 & 0xFF) + (val2 & 0xFF)) & 0x100) == 0x100;
     }
+
+    public static boolean isZero(int val1, int val2) {
+        return ((val1 + val2) & 0xFF) == 0x00;
+    }
 }

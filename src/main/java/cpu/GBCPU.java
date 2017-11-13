@@ -176,6 +176,57 @@ public class GBCPU extends AbstractCPU {
         numCyclesPassed += 12;
     }
 
+
+    /*
+    *
+    * ALU METHODS
+    *
+    * */
+    private void add(SingleRegister r1, boolean addCarry) {
+        int r1Val = registerManager.get(r1);
+
+        doAdd(r1Val, addCarry);
+
+        numCyclesPassed += 4;
+    }
+
+    private void addImmediate(boolean addCarry) {
+        int immediateVal = getImmediateValue8();
+
+        doAdd(immediateVal, addCarry);
+
+        numCyclesPassed += 8;
+    }
+
+    private void add(DoubleRegister r1, boolean addCarry) {
+        int memoryVal = mmu.readData(registerManager.get(r1));
+
+        doAdd(memoryVal, addCarry);
+
+        numCyclesPassed += 8;
+    }
+
+    private void doAdd(int val, boolean addCarry) {
+        int regAVal = registerManager.get(SingleRegister.A);
+
+        setAddFlags(regAVal, val);
+
+        int finalVal = regAVal + val;
+        if (addCarry) finalVal += registerManager.getCarryFlag() ? 1 : 0;
+
+        registerManager.set(SingleRegister.A, finalVal);
+    }
+
+
+
+    // sets flags on doing an add op
+    private void setAddFlags(int regAVal, int otherVal) {
+        registerManager.setZeroFlag(BitUtils.isZero(regAVal, otherVal));
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarry(regAVal, otherVal));
+        registerManager.setCarryFlag(BitUtils.isCarry(regAVal, otherVal));
+    }
+
     private int getImmediateAddressValue() {
         int address = getImmediateValue16();
         return mmu.readData(address);
