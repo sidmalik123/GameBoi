@@ -1,5 +1,6 @@
 package cpu;
 
+import core.BitUtils;
 import mmu.MMU;
 
 public class GBCPU extends AbstractCPU {
@@ -142,8 +143,15 @@ public class GBCPU extends AbstractCPU {
         numCyclesPassed += 8;
     }
 
-    private void loadHLSPn() { // @todo - flags affected Pg 78
-        registerManager.set(DoubleRegister.HL, SP + getImmediateValue8());
+    private void loadHLSPn() {
+        int immediateValue8 = getImmediateValue8();
+        registerManager.setZeroFlag(false);
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarry(SP, immediateValue8));
+        registerManager.setCarryFlag(BitUtils.isCarry(SP, immediateValue8));
+
+        registerManager.set(DoubleRegister.HL, SP + immediateValue8);
+
         numCyclesPassed += 12;
     }
 

@@ -10,9 +10,10 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
     private Register regE;
     private Register regH;
     private Register regL;
-    //@todo - add the flags register
-    // @todo - refactor this to use a map of registers and double registers to have methods to access single registers
+    private GBFlagRegister flagRegister;
 
+
+    // @todo - refactor this to use a map of registers and double registers to have methods to access single registers
 
 
     public int get(SingleRegister singleRegister) {
@@ -144,5 +145,37 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
                 throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
 
         }
+    }
+
+    public void setZeroFlag(boolean bool) {
+        flagRegister.setZ(bool);
+    }
+
+    public boolean getZeroFlag() {
+        return flagRegister.isZ();
+    }
+
+    public void setOperationFlag(boolean bool) {
+        flagRegister.setN(bool);
+    }
+
+    public boolean getOperationFlag() {
+        return flagRegister.isZ();
+    }
+
+    public void setCarryFlag(boolean bool) {
+        flagRegister.setC(bool);
+    }
+
+    public boolean getCarryFlag() {
+        return flagRegister.isC();
+    }
+
+    public void setHalfCarryFlag(boolean bool) {
+        flagRegister.setH(bool);
+    }
+
+    public boolean getHalfCarryFlag() {
+        return flagRegister.isH();
     }
 }

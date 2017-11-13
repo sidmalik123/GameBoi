@@ -13,4 +13,16 @@ public interface GBRegisterManager {
 
     void setHigh(DoubleRegister doubleRegister, int data);
     void setLow(DoubleRegister doubleRegister, int data);
+
+    void setZeroFlag(boolean bool);
+    boolean getZeroFlag();
+
+    void setOperationFlag(boolean bool);
+    boolean getOperationFlag();
+
+    void setCarryFlag(boolean bool);
+    boolean getCarryFlag();
+
+    void setHalfCarryFlag(boolean bool);
+    boolean getHalfCarryFlag();
 }
