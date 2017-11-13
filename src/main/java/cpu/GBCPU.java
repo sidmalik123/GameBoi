@@ -289,9 +289,9 @@ public class GBCPU extends AbstractCPU {
     }
 
     private void and(DoubleRegister r1) {
-        int r1Val = registerManager.get(r1);
+        int memoryVal = mmu.readData(registerManager.get(r1));
 
-        doAnd(r1Val);
+        doAnd(memoryVal);
 
         numCyclesPassed += 4;
     }
@@ -308,7 +308,137 @@ public class GBCPU extends AbstractCPU {
         registerManager.set(SingleRegister.A, result);
     }
 
+    private void or(SingleRegister r1) {
+        int r1Val = registerManager.get(r1);
 
+        doOr(r1Val);
+
+        numCyclesPassed += 4;
+    }
+
+    private void or(DoubleRegister r1) {
+        int memoryVal = mmu.readData(registerManager.get(r1));
+
+        doOr(memoryVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void or() {
+        int immediateVal = getImmediateValue8();
+
+        doOr(immediateVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void doOr(int otherVal) {
+        int regAVal = registerManager.get(SingleRegister.A);
+        int result = (regAVal | otherVal) & 0xFF;
+
+        registerManager.setZeroFlag(result == 0);
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(false);
+        registerManager.setCarryFlag(false);
+
+        registerManager.set(SingleRegister.A, result);
+    }
+
+    private void xor(SingleRegister r1) {
+        int r1Val = registerManager.get(r1);
+
+        doXor(r1Val);
+
+        numCyclesPassed += 4;
+    }
+
+    private void xor(DoubleRegister r1) {
+        int memoryVal = mmu.readData(registerManager.get(r1));
+
+        doXor(memoryVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void xor() {
+        int immediateVal = getImmediateValue8();
+
+        doXor(immediateVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void doXor(int otherVal) {
+        int regAVal = registerManager.get(SingleRegister.A);
+        int result = (regAVal ^ otherVal) & 0xFF;
+
+        registerManager.setZeroFlag(result == 0);
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(false);
+        registerManager.setCarryFlag(false);
+
+        registerManager.set(SingleRegister.A, result);
+    }
+
+    private void cp(SingleRegister r1) {
+        int r1Val = registerManager.get(r1);
+
+        doCp(r1Val);
+
+        numCyclesPassed += 4;
+    }
+
+    private void cp(DoubleRegister r1) {
+        int memoryVal = mmu.readData(registerManager.get(r1));
+
+        doCp(memoryVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void cp() {
+        int immediateVal = getImmediateValue8();
+
+        doCp(immediateVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void doCp(int otherVal) {
+        int regAVal = registerManager.get(SingleRegister.A);
+        int result = (regAVal - otherVal) & 0xFF;
+
+        registerManager.setZeroFlag(result == 0);
+        registerManager.setOperationFlag(true);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarrySub(regAVal, otherVal));
+        registerManager.setCarryFlag(BitUtils.isCarrySub(regAVal, otherVal));
+    }
+
+    private void inc(SingleRegister r1) {
+        int r1Val = registerManager.get(r1);
+        int result = (r1Val + 1) & 0xFF;
+
+        registerManager.setZeroFlag(result == 0);
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd(r1Val, 1));
+
+        registerManager.set(r1, result);
+
+        numCyclesPassed += 4;
+    }
+
+    private void dec(SingleRegister r1) {
+        int r1Val = registerManager.get(r1);
+        int result = (r1Val - 1) & 0xFF;
+
+        registerManager.setZeroFlag(result == 0);
+        registerManager.setOperationFlag(true);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarrySub(r1Val, 1));
+
+        registerManager.set(r1, result);
+
+        numCyclesPassed += 4;
+    }
 
     private int getImmediateAddressValue() {
         int address = getImmediateValue16();
