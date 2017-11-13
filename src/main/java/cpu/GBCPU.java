@@ -11,6 +11,7 @@ public class GBCPU extends AbstractCPU {
     private GBRegisterManager registerManager;
 
     private int PC; // set by the mmu on program load
+    private int SP;
 
     private int numCyclesPassed;
 
@@ -40,7 +41,7 @@ public class GBCPU extends AbstractCPU {
 
     // loads immediate/address value into register
     private void loadRegisterFromImmediate(SingleRegister r1) {
-        registerManager.set(r1, getImmediateValue());
+        registerManager.set(r1, getImmediateValue8());
         numCyclesPassed += 8;
     }
 
@@ -74,9 +75,13 @@ public class GBCPU extends AbstractCPU {
     }
 
     // r1.high = immediate value
-    private void loadRegisterFromImmedaite(DoubleRegister r1) {
+    private void loadRegisterFromImmediate8(DoubleRegister r1) {
         registerManager.setHigh(r1, mmu.readData(++PC));
         numCyclesPassed += 12;
+    }
+
+    private void loadRegisterFromImmediate16(DoubleRegister r1) {
+        registerManager.set(r1, getImmediateValue16());
     }
 
     // special loads
@@ -121,24 +126,60 @@ public class GBCPU extends AbstractCPU {
     }
 
     private void loadnA() {
-        mmu.writeData(LOAD_SPECIAL_ADDRESS + getImmediateValue(),
+        mmu.writeData(LOAD_SPECIAL_ADDRESS + getImmediateValue8(),
                 registerManager.get(SingleRegister.A));
         numCyclesPassed += 12;
     }
 
     private void loadAn() {
         registerManager.set(SingleRegister.A,
-                mmu.readData(LOAD_SPECIAL_ADDRESS + getImmediateValue()));
+                mmu.readData(LOAD_SPECIAL_ADDRESS + getImmediateValue8()));
+        numCyclesPassed += 12;
+    }
+
+    private void loadSPHL() {
+        SP = registerManager.get(DoubleRegister.HL);
+        numCyclesPassed += 8;
+    }
+
+    private void loadHLSPn() { // @todo - flags affected Pg 78
+        registerManager.set(DoubleRegister.HL, SP + getImmediateValue8());
+        numCyclesPassed += 12;
+    }
+
+    private void loadnnSP() {
+        mmu.writeData(getImmediateAddressValue(), SP);
+        numCyclesPassed += 20;
+    }
+
+    private void push(DoubleRegister r1) {
+        --SP;
+        mmu.writeData(SP, registerManager.getHigh(r1));
+        --SP;
+        mmu.writeData(SP, registerManager.getLow(r1));
+        numCyclesPassed += 16;
+    }
+
+    private void pop(DoubleRegister r1) {
+        registerManager.setHigh(r1, mmu.readData(SP));
+        ++SP;
+        registerManager.setLow(r1, mmu.readData(SP));
+        ++SP;
         numCyclesPassed += 12;
     }
 
     private int getImmediateAddressValue() {
-        int add1 = mmu.readData(++PC);
-        int add2 = mmu.readData(++PC);
-        return add2 << 8 | add1;
+        int address = getImmediateValue16();
+        return mmu.readData(address);
     }
 
-    private int getImmediateValue() {
+    private int getImmediateValue8() {
         return mmu.readData(++PC);
+    }
+
+    private int getImmediateValue16() {
+        int val1 = mmu.readData(++PC);
+        int val2 = mmu.readData(++PC);
+        return val2 << 8 | val1;
     }
 }
