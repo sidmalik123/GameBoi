@@ -147,10 +147,10 @@ public class GBCPU extends AbstractCPU {
         int immediateValue8 = getImmediateValue8();
         registerManager.setZeroFlag(false);
         registerManager.setOperationFlag(false);
-        registerManager.setHalfCarryFlag(BitUtils.isHalfCarry(SP, immediateValue8));
-        registerManager.setCarryFlag(BitUtils.isCarry(SP, immediateValue8));
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd(SP, immediateValue8));
+        registerManager.setCarryFlag(BitUtils.isCarryAdd(SP, immediateValue8));
 
-        registerManager.set(DoubleRegister.HL, SP + immediateValue8);
+        registerManager.set(DoubleRegister.HL, (SP + immediateValue8) & 0xFFFF);
 
         numCyclesPassed += 12;
     }
@@ -214,18 +214,101 @@ public class GBCPU extends AbstractCPU {
         int finalVal = regAVal + val;
         if (addCarry) finalVal += registerManager.getCarryFlag() ? 1 : 0;
 
-        registerManager.set(SingleRegister.A, finalVal);
+        registerManager.set(SingleRegister.A, finalVal & 0xFF);
+    }
+
+    private void sub(SingleRegister r1, boolean subCarry) {
+        int r1Val = registerManager.get(r1);
+
+        doSub(r1Val, subCarry);
+
+        numCyclesPassed += 4;
+    }
+
+    private void subImmediate(boolean subCarry) {
+        int immediateVal = getImmediateValue8()
+
+        doSub(immediateVal, subCarry);
+
+        numCyclesPassed += 8;
+    }
+
+    private void sub(DoubleRegister r1, boolean subCarry) {
+        int memoryVal = mmu.readData(registerManager.get(r1));
+
+        doSub(memoryVal, subCarry);
+
+        numCyclesPassed += 8;
+    }
+
+    private void doSub(int val, boolean subCarry) {
+        int regAVal = registerManager.get(SingleRegister.A);
+
+        setSubFlags(regAVal, val);
+
+        int finalVal = regAVal - val;
+        if (subCarry) finalVal -= registerManager.getCarryFlag() ? 1 : 0;
+
+        registerManager.set(SingleRegister.A, finalVal & 0xFF);
+    }
+
+
+    // set flags on doing sub op
+    private void setSubFlags(int regAVal, int otherVal) {
+        registerManager.setZeroFlag(BitUtils.isZeroSub(regAVal, otherVal));
+        registerManager.setOperationFlag(true);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarrySub(regAVal, otherVal));
+        registerManager.setCarryFlag(BitUtils.isCarrySub(regAVal, otherVal));
     }
 
 
 
     // sets flags on doing an add op
     private void setAddFlags(int regAVal, int otherVal) {
-        registerManager.setZeroFlag(BitUtils.isZero(regAVal, otherVal));
+        registerManager.setZeroFlag(BitUtils.isZeroAdd(regAVal, otherVal));
         registerManager.setOperationFlag(false);
-        registerManager.setHalfCarryFlag(BitUtils.isHalfCarry(regAVal, otherVal));
-        registerManager.setCarryFlag(BitUtils.isCarry(regAVal, otherVal));
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd(regAVal, otherVal));
+        registerManager.setCarryFlag(BitUtils.isCarryAdd(regAVal, otherVal));
     }
+
+
+    private void and(SingleRegister r1) {
+        int r1Val = registerManager.get(r1);
+
+        doAnd(r1Val);
+
+        numCyclesPassed += 4;
+    }
+
+    private void and() {
+        int immediateVal = getImmediateValue8();
+
+        doAnd(immediateVal);
+
+        numCyclesPassed += 8;
+    }
+
+    private void and(DoubleRegister r1) {
+        int r1Val = registerManager.get(r1);
+
+        doAnd(r1Val);
+
+        numCyclesPassed += 4;
+    }
+
+    private void doAnd(int otherVal) {
+        int regAVal = registerManager.get(SingleRegister.A);
+        int result = (regAVal & otherVal) & 0xFF;
+
+        registerManager.setZeroFlag(result == 0);
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(true);
+        registerManager.setCarryFlag(false);
+
+        registerManager.set(SingleRegister.A, result);
+    }
+
+
 
     private int getImmediateAddressValue() {
         int address = getImmediateValue16();
