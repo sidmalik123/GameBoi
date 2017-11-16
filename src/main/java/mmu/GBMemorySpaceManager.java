@@ -53,7 +53,7 @@ public class GBMemorySpaceManager implements MemorySpaceManager {
         zeroPageRam = new GBMemorySpace(ZERO_PAGE_START_ADDRESS, ZERO_PAGE_END_ADDRESS);
     }
 
-    public MemorySpace getMemorySpace(int address) {
+    private MemorySpace getMemorySpace(int address) {
         // based on address return the right GbMemorySpace
         switch (address & 0xF000) {
             case 0x0000:
@@ -87,5 +87,15 @@ public class GBMemorySpaceManager implements MemorySpaceManager {
             default:
                 throw new IllegalArgumentException("Illegal address " + address + " passed");
         }
+    }
+
+    public int read(int address) {
+        MemorySpace memorySpace = getMemorySpace(address);
+        return memorySpace.read(address - memorySpace.getStartAddress());
+    }
+
+    public void write(int address, int data) {
+        MemorySpace memorySpace = getMemorySpace(address);
+        memorySpace.write(address - memorySpace.getStartAddress(), data);
     }
 }
