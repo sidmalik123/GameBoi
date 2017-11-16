@@ -4,8 +4,8 @@ public class GBMemorySpace implements MemorySpace {
 
     private int[] memory;
 
-    public GBMemorySpace(int memorySize) {
-        memory = new int[memorySize];
+    public GBMemorySpace(int startAddress, int endAddress) {
+        memory = new int[endAddress - startAddress + 1];
     }
 
     public int read(int address) {
