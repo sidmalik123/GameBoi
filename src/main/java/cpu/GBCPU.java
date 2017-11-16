@@ -226,7 +226,7 @@ public class GBCPU extends AbstractCPU {
     }
 
     private void subImmediate(boolean subCarry) {
-        int immediateVal = getImmediateValue8()
+        int immediateVal = getImmediateValue8();
 
         doSub(immediateVal, subCarry);
 
