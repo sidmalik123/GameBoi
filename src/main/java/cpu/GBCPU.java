@@ -1,9 +1,11 @@
 package cpu;
 
+import core.AbstractTimingSubject;
 import core.BitUtils;
+import core.TimingObserver;
 import mmu.MMU;
 
-public class GBCPU extends AbstractCPU {
+public class GBCPU extends AbstractTimingSubject {
 
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
 
@@ -453,5 +455,11 @@ public class GBCPU extends AbstractCPU {
         int val1 = mmu.readData(++PC);
         int val2 = mmu.readData(++PC);
         return val2 << 8 | val1;
+    }
+
+    public void notifyTimingObservers(int numCycles) {
+        for (TimingObserver observer : observers) {
+            observer.notifyNumCycles(numCycles);
+        }
     }
 }

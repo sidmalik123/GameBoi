@@ -25,8 +25,4 @@ public class GBMemorySpace implements MemorySpace {
     public int getEndAddress() {
         return memoryType.getEndAddress();
     }
-
-    public MemoryType getMemoryType() {
-        return memoryType;
-    }
 }
