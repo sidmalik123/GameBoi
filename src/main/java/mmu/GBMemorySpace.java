@@ -4,14 +4,10 @@ public class GBMemorySpace implements MemorySpace {
 
     private int[] memory;
 
-    private final int START_ADDRESS;
+    MemoryType memoryType;
 
-    private final int END_ADDRESS;
-
-    public GBMemorySpace(int startAddress, int endAddress) {
-        this.START_ADDRESS = startAddress;
-        this.END_ADDRESS = endAddress;
-        memory = new int[endAddress - startAddress + 1];
+    public GBMemorySpace(MemoryType memoryType) {
+        memory = new int[memoryType.getEndAddress() - memoryType.getStartAddress() + 1];
     }
 
     public int read(int address) {
@@ -23,10 +19,14 @@ public class GBMemorySpace implements MemorySpace {
     }
 
     public int getStartAddress() {
-        return this.START_ADDRESS;
+        return memoryType.getStartAddress();
     }
 
     public int getEndAddress() {
-        return this.END_ADDRESS;
+        return memoryType.getEndAddress();
+    }
+
+    public MemoryType getMemoryType() {
+        return memoryType;
     }
 }

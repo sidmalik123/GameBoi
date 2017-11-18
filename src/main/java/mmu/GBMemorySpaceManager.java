@@ -5,49 +5,20 @@ import java.util.Map;
 
 public class GBMemorySpaceManager implements MemorySpaceManager {
 
-    private enum MemoryType {ROM0, ROM1, VRAM, EXTERNAL_RAM, WORKING_RAM, WORKING_RAM_SHADOW, SPRITE_MEMORY, IO_MEMORY, ZERO_PAGE_RAM};
-
     private Map<MemoryType, MemorySpace> memorySpaceMap;
 
-    // start and end addresses for memory spaces
-    private static final int ROM0_START_ADDRESS = 0x0000;
-    private static final int ROM0_END_ADDRESS = 0x3FFF;
-
-    private static final int ROM1_START_ADDRESS = 0x4000;
-    private static final int ROM1_END_ADDRESS = 0x7FFF;
-
-    private static final int VRAM_START_ADDRESS = 0x4000;
-    private static final int VRAM_END_ADDRESS = 0x7FFF;
-
-    private static final int EXTERNAL_RAM_START_ADDRESS = 0x4000;
-    private static final int EXTERNAL_RAM_END_ADDRESS = 0x7FFF;
-
-    private static final int WORKING_RAM_START_ADDRESS = 0x4000;
-    private static final int WORKING_RAM_END_ADDRESS = 0x7FFF;
-
-    private static final int WORKING_RAM_SHADOW_START_ADDRESS = 0x4000;
-    private static final int WORKING_RAM_SHADOW_END_ADDRESS = 0x7FFF;
-
-    private static final int SPRITE_START_ADDRESS = 0x4000;
-    private static final int SPRITE_END_ADDRESS = 0x7FFF;
-
-    private static final int IO_MEMORY_START_ADDRESS = 0x4000;
-    private static final int IO_MEMORY_END_ADDRESS = 0x7FFF;
-
-    private static final int ZERO_PAGE_START_ADDRESS = 0x4000;
-    private static final int ZERO_PAGE_END_ADDRESS = 0x7FFF;
 
     public GBMemorySpaceManager() {
         memorySpaceMap = new HashMap<MemoryType, MemorySpace>();
-        memorySpaceMap.put(MemoryType.ROM0, new GBMemorySpace(ROM0_START_ADDRESS, ROM0_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.ROM1, new GBMemorySpace(ROM1_START_ADDRESS, ROM1_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.VRAM, new GBMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.EXTERNAL_RAM, new GBMemorySpace(EXTERNAL_RAM_START_ADDRESS, EXTERNAL_RAM_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.WORKING_RAM, new GBMemorySpace(WORKING_RAM_START_ADDRESS, WORKING_RAM_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.WORKING_RAM_SHADOW, new GBMemorySpace(WORKING_RAM_SHADOW_START_ADDRESS, WORKING_RAM_SHADOW_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.SPRITE_MEMORY, new GBMemorySpace(SPRITE_START_ADDRESS, SPRITE_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.IO_MEMORY, new GBMemorySpace(IO_MEMORY_START_ADDRESS, IO_MEMORY_END_ADDRESS));
-        memorySpaceMap.put(MemoryType.ZERO_PAGE_RAM, new GBMemorySpace(ZERO_PAGE_START_ADDRESS, ZERO_PAGE_END_ADDRESS));
+        memorySpaceMap.put(MemoryType.ROM0, new GBMemorySpace(MemoryType.ROM0));
+        memorySpaceMap.put(MemoryType.ROM1, new GBMemorySpace(MemoryType.ROM1));
+        memorySpaceMap.put(MemoryType.VRAM, new GBMemorySpace(MemoryType.VRAM));
+        memorySpaceMap.put(MemoryType.EXTERNAL_RAM, new GBMemorySpace(MemoryType.EXTERNAL_RAM));
+        memorySpaceMap.put(MemoryType.WORKING_RAM, new GBMemorySpace(MemoryType.WORKING_RAM));
+        memorySpaceMap.put(MemoryType.WORKING_RAM_SHADOW, new GBMemorySpace(MemoryType.WORKING_RAM_SHADOW));
+        memorySpaceMap.put(MemoryType.SPRITE_MEMORY, new GBMemorySpace(MemoryType.SPRITE_MEMORY));
+        memorySpaceMap.put(MemoryType.IO_MEMORY, new GBMemorySpace(MemoryType.IO_MEMORY));
+        memorySpaceMap.put(MemoryType.ZERO_PAGE_RAM, new GBMemorySpace(MemoryType.ZERO_PAGE_RAM));
     }
 
     private MemorySpace getMemorySpace(int address) {
@@ -68,7 +39,7 @@ public class GBMemorySpaceManager implements MemorySpaceManager {
         memorySpace.write(address - memorySpace.getStartAddress(), data);
     }
 
-    private boolean isBetween(int x, int start, int end) {
+    private boolean isBetween(int x, int start, int end) { // [start, end]
         return start <= x && x <= end;
     }
 }
