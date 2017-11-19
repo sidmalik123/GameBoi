@@ -6,8 +6,6 @@ public class GBGPU implements GPU, TimingObserver {
 
     private int modeCycleCount; // cycles spent in a mode
 
-    private int totalCycleCount; // total cycle count since start
-
     private int currLineNum;
 
     private int numLinesInVblank;
@@ -17,7 +15,6 @@ public class GBGPU implements GPU, TimingObserver {
     public GBGPU() {
         modeCycleCount = 0;
         numLinesInVblank = 0;
-        totalCycleCount = 0;
         currMode = GPUMode.ACCESSING_OAM; // start mode
     }
 
@@ -26,7 +23,6 @@ public class GBGPU implements GPU, TimingObserver {
     * set count back to 0, after exiting a mode
     * */
     public void notifyNumCycles(int numCycles) {
-        totalCycleCount += numCycles;
         modeCycleCount += numCycles;
 
         switch (currMode) {
