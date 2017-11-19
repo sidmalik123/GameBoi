@@ -10,26 +10,26 @@ public enum MemoryType {
     private static final int ROM1_START_ADDRESS = 0x4000;
     private static final int ROM1_END_ADDRESS = 0x7FFF;
 
-    private static final int VRAM_START_ADDRESS = 0x4000;
-    private static final int VRAM_END_ADDRESS = 0x7FFF;
+    private static final int VRAM_START_ADDRESS = 0x8000;
+    private static final int VRAM_END_ADDRESS = 0x9FFF;
 
-    private static final int EXTERNAL_RAM_START_ADDRESS = 0x4000;
-    private static final int EXTERNAL_RAM_END_ADDRESS = 0x7FFF;
+    private static final int EXTERNAL_RAM_START_ADDRESS = 0xA000;
+    private static final int EXTERNAL_RAM_END_ADDRESS = 0xBFFF;
 
-    private static final int WORKING_RAM_START_ADDRESS = 0x4000;
-    private static final int WORKING_RAM_END_ADDRESS = 0x7FFF;
+    private static final int WORKING_RAM_START_ADDRESS = 0xC000;
+    private static final int WORKING_RAM_END_ADDRESS = 0xDFFF;
 
-    private static final int WORKING_RAM_SHADOW_START_ADDRESS = 0x4000;
-    private static final int WORKING_RAM_SHADOW_END_ADDRESS = 0x7FFF;
+    private static final int WORKING_RAM_SHADOW_START_ADDRESS = 0xE000;
+    private static final int WORKING_RAM_SHADOW_END_ADDRESS = 0xFDFF;
 
-    private static final int SPRITE_START_ADDRESS = 0x4000;
-    private static final int SPRITE_END_ADDRESS = 0x7FFF;
+    private static final int SPRITE_START_ADDRESS = 0xFE00;
+    private static final int SPRITE_END_ADDRESS = 0xFE9F;
 
-    private static final int IO_MEMORY_START_ADDRESS = 0x4000;
-    private static final int IO_MEMORY_END_ADDRESS = 0x7FFF;
+    private static final int IO_MEMORY_START_ADDRESS = 0xFF00;
+    private static final int IO_MEMORY_END_ADDRESS = 0xFF7F;
 
-    private static final int ZERO_PAGE_START_ADDRESS = 0x4000;
-    private static final int ZERO_PAGE_END_ADDRESS = 0x7FFF;
+    private static final int ZERO_PAGE_START_ADDRESS = 0xFF80;
+    private static final int ZERO_PAGE_END_ADDRESS = 0xFFFF;
 
     public int getStartAddress() {
         switch (this) {
