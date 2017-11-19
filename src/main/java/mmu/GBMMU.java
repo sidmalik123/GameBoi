@@ -12,6 +12,10 @@ public class GBMMU implements MMU, TimingObserver {
 
     private Timer timer;
 
+    private DividerRegister dividerRegister;
+
+    private final int CPU_FREQUENCY;
+
     private static final int RESTRCITED_AREA_START_ADDRESS = 0xFEA0;
     private static final int RESTRICTED_AREA_END_ADDRESS = 0xFEFF;
 
@@ -21,12 +25,15 @@ public class GBMMU implements MMU, TimingObserver {
     private static final int TIMER_FREQUENCY_ADDRESS = 0xFF07;
     private static final int TIMER_OVERFLOW_VALUE = 255;
 
-    private boolean timerSpeedChanged;
+    private static final int INTERRUPT_ENABLE_ADDRESS = 0xFFFF;
+    private static final int INTERRUPT_REQUEST_ADDRESS = 0xFF0F;
 
     private ROMBankMode romBankMode; // set on game load -> read from 0x147
 
 
-    public GBMMU() {
+    public GBMMU(int CPU_FREQUENCY) {
+        this.CPU_FREQUENCY = CPU_FREQUENCY;
+
         memorySpaceMap = new HashMap<MemoryType, MemorySpace>();
         memorySpaceMap.put(MemoryType.ROM0, new GBMemorySpace(MemoryType.ROM0));
         memorySpaceMap.put(MemoryType.ROM1, new GBMemorySpace(MemoryType.ROM1));
@@ -37,6 +44,10 @@ public class GBMMU implements MMU, TimingObserver {
         memorySpaceMap.put(MemoryType.SPRITE_MEMORY, new GBMemorySpace(MemoryType.SPRITE_MEMORY));
         memorySpaceMap.put(MemoryType.IO_MEMORY, new GBMemorySpace(MemoryType.IO_MEMORY));
         memorySpaceMap.put(MemoryType.ZERO_PAGE_RAM, new GBMemorySpace(MemoryType.ZERO_PAGE_RAM));
+
+        timer = new Timer(this); // Todo - set timerspeed on game load
+        dividerRegister = new DividerRegister(this);
+
     }
 
     private MemorySpace getMemorySpace(int address) {
@@ -78,7 +89,7 @@ public class GBMMU implements MMU, TimingObserver {
 
     public void notifyNumCycles(int numCycles) {
         // update the divider register
-
+        dividerRegister.notifyNumCycles(numCycles);
 
         // update the timer
         timer.notifyNumCycles(numCycles);
@@ -152,15 +163,11 @@ public class GBMMU implements MMU, TimingObserver {
 
         private TimerSpeed timerSpeed;
 
-        private final int CPU_FREQUENCY;
-
         private boolean isEnabled;
 
         private GBMMU mmu;
 
-        public Timer(int cycleCounter, int CPU_FREQUENCY, GBMMU mmu) {
-            this.cycleCounter = cycleCounter;
-            this.CPU_FREQUENCY = CPU_FREQUENCY;
+        public Timer(GBMMU mmu) {
             this.mmu = mmu;
         }
 
@@ -198,8 +205,6 @@ public class GBMMU implements MMU, TimingObserver {
 
     private class DividerRegister implements TimingObserver {
 
-        private final int CPU_FREQUENCY;
-
         private final int SELF_FREQUENCY = 16382;
 
         private final int CYCLES_TO_COUNT_TO;
@@ -208,8 +213,7 @@ public class GBMMU implements MMU, TimingObserver {
 
         private int cycleCount;
 
-        public DividerRegister(int CPU_FREQUENCY, GBMMU mmu) {
-            this.CPU_FREQUENCY = CPU_FREQUENCY;
+        public DividerRegister(GBMMU mmu) {
             CYCLES_TO_COUNT_TO = CPU_FREQUENCY/SELF_FREQUENCY;
             cycleCount = 0;
             this.mmu = mmu;
@@ -222,5 +226,13 @@ public class GBMMU implements MMU, TimingObserver {
                 mmu.notifyDividerUpdate();
             }
         }
+    }
+
+    public int getInterruptRequestAddress() {
+        return INTERRUPT_REQUEST_ADDRESS;
+    }
+
+    public int getInterruptEnableAddress() {
+        return INTERRUPT_ENABLE_ADDRESS;
     }
 }
