@@ -1,4 +1,4 @@
-Initial values
+### Initial values
 m_ProgramCounter=0x100 ;
 m_RegisterAF=0x01B0;
 m_RegisterBC=0x0013;
@@ -36,3 +36,14 @@ m_Rom[0xFF49] = 0xFF ;
 m_Rom[0xFF4A] = 0x00 ;
 m_Rom[0xFF4B] = 0x00 ;
 m_Rom[0xFFFF] = 0x00 ;
+
+
+### Interrupts:
+    4 types of interrupts:
+        1. VBlank interrupt
+        2. LCD
+        3. Timer
+        4. Joypad
+
+    0xFFF -> Interupt Enabled Register:
+        used in enabling/disabling interrupts
