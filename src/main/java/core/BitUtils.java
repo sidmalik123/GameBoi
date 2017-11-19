@@ -25,5 +25,10 @@ public class BitUtils {
     public static boolean isZeroSub(int val1, int val2) {
         return ((val1 - val2) & 0xFF) == 0x00;
     }
+
+    public static boolean isBitSet(int data, int bitPos) {
+        int bitVal = (data >> bitPos) & 1;
+        return bitVal == 1;
+    }
 }
 

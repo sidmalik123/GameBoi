@@ -29,4 +29,8 @@ public class GBMemorySpace implements MemorySpace {
     public boolean isReadOnly() {
         return memoryType.isReadOnly();
     }
+
+    public MemoryType getMemoryType() {
+        return memoryType;
+    }
 }

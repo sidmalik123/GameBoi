@@ -5,9 +5,10 @@ import core.BitUtils;
 import core.TimingObserver;
 import mmu.MMU;
 
-public class GBCPU extends AbstractTimingSubject {
+public class GBCPU extends AbstractTimingSubject implements CPU {
 
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
+    private static final int CPU_FREQUENCY = 4194304;
 
     private MMU mmu;
 
@@ -20,6 +21,10 @@ public class GBCPU extends AbstractTimingSubject {
 
     public void run(String programLocation) {
 
+    }
+
+    public int getFrequency() {
+        return CPU_FREQUENCY;
     }
 
     protected int readInstruction() {
