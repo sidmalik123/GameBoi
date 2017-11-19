@@ -9,4 +9,6 @@ public interface MemorySpace {
     int getStartAddress();
 
     int getEndAddress();
+
+    boolean isReadOnly();
 }

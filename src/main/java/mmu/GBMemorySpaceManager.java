@@ -7,6 +7,9 @@ public class GBMemorySpaceManager implements MemorySpaceManager {
 
     private Map<MemoryType, MemorySpace> memorySpaceMap;
 
+    private static final int RESTRCITED_AREA_START_ADDRESS = 0xFEA0;
+    private static final int RESTRICTED_AREA_END_ADDRESS = 0xFEFF;
+
 
     public GBMemorySpaceManager() {
         memorySpaceMap = new HashMap<MemoryType, MemorySpace>();
@@ -36,6 +39,16 @@ public class GBMemorySpaceManager implements MemorySpaceManager {
 
     public void write(int address, int data) {
         MemorySpace memorySpace = getMemorySpace(address);
+        if (memorySpace.isReadOnly())
+            throw new IllegalArgumentException("Cannot write to read only memory address " + address);
+
+        if (isBetween(address, RESTRCITED_AREA_START_ADDRESS, RESTRICTED_AREA_END_ADDRESS))
+            throw new IllegalArgumentException("Cannot write to restricted area [" +
+                    RESTRCITED_AREA_START_ADDRESS + ", " + RESTRICTED_AREA_END_ADDRESS + "]");
+
+
+        // @Todo write to shadow ram here if working ram is being written to
+
         memorySpace.write(address - memorySpace.getStartAddress(), data);
     }
 

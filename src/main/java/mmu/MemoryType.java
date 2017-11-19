@@ -78,4 +78,15 @@ public enum MemoryType {
         }
         throw new IllegalArgumentException("Unknown MemoryType " + this);
     }
+
+    public boolean isReadOnly() {
+        switch (this) {
+            case ROM0:
+                return true;
+            case ROM1:
+                return true;
+            default:
+                return false;
+        }
+    }
 }
