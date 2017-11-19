@@ -26,9 +26,20 @@ public class BitUtils {
         return ((val1 - val2) & 0xFF) == 0x00;
     }
 
+    /*
+    * checks if a particular bit is set or not
+    * */
     public static boolean isBitSet(int data, int bitPos) {
         int bitVal = (data >> bitPos) & 1;
         return bitVal == 1;
+    }
+
+
+    /*
+    * Sets a particular bit
+    * */
+    public static int setBit(int data, int bitPos) {
+        return data | 1 << bitPos;
     }
 }
 

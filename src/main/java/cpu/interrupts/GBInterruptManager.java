@@ -11,7 +11,7 @@ public class GBInterruptManager implements InterruptManager {
 
     public void requestInterrupt(InterruptType interruptType) {
         int requestAddressVal = mmu.getInterruptRequestAddress();
-        requestAddressVal = BitUtils.setBit(interruptType.getRequestBit());
+        requestAddressVal = BitUtils.setBit(requestAddressVal, interruptType.getRequestBit());
         mmu.writeData(mmu.getInterruptRequestAddress(), requestAddressVal);
     }
 
