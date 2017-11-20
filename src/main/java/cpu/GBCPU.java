@@ -20,7 +20,7 @@ public class GBCPU extends AbstractTimingSubject implements CPU {
     private int numCyclesPassed;
 
     public void run(String programLocation) {
-
+        // Todo - process interrupts after every instruction
     }
 
     public int getFrequency() {

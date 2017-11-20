@@ -19,7 +19,7 @@ public enum InterruptType {
             case JOYPAD:
                 return 4;
             default:
-                throw new IllegalArgumentException("Illegal InterrupType " + this);
+                throw new IllegalArgumentException("Illegal InterruptType " + this);
         }
     }
 
@@ -36,7 +36,7 @@ public enum InterruptType {
             case JOYPAD:
                 return 0;
             default:
-                throw new IllegalArgumentException("Illegal InterrupType " + this);
+                throw new IllegalArgumentException("Illegal InterruptType " + this);
         }
     }
 
@@ -48,5 +48,22 @@ public enum InterruptType {
         list.add(SERIAL);
         list.add(JOYPAD);
         return list;
+    }
+
+    public int getServiceAddress() {
+        switch (this) {
+            case VBLANK:
+                return 0x40;
+            case LCD:
+                return 0x48;
+            case TIMER:
+                return 0x50;
+            case SERIAL:
+                return 0x58;
+            case JOYPAD:
+                return 0x60;
+            default:
+                throw new IllegalArgumentException("Illegal InterruptType " + this);
+        }
     }
 }

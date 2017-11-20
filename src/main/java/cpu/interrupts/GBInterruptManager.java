@@ -23,11 +23,19 @@ public class GBInterruptManager implements InterruptManager {
         if (!isInterruptsEnabled()) return null;
 
         for (InterruptType interruptType : InterruptType.getListByPriority()) {
-            if (isRequested(interruptType) && isEnabled(interruptType))
+            if (isRequested(interruptType) && isEnabled(interruptType)) {
+                requestInterrupt(interruptType);
                 return interruptType;
+            }
         }
 
         return null;
+    }
+
+    private void resetInterruptRequest(InterruptType interruptType) {
+        int requestAddressVal = mmu.getInterruptRequestAddress();
+        requestAddressVal = BitUtils.resetBit(requestAddressVal, interruptType.getRequestBit());
+        mmu.writeData(mmu.getInterruptRequestAddress(), requestAddressVal);
     }
 
     private boolean isRequested(InterruptType interruptType) {

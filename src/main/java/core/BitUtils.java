@@ -41,5 +41,13 @@ public class BitUtils {
     public static int setBit(int data, int bitPos) {
         return data | 1 << bitPos;
     }
+
+    /*
+    * resets a particular bit
+    * https://stackoverflow.com/questions/1073318/in-java-is-it-possible-to-clear-a-bit
+    * */
+    public static int resetBit(int data, int bitPos) {
+        return data & ~(1 << bitPos);
+    }
 }
 
