@@ -1,5 +1,8 @@
 package cpu;
 
+/**
+ * Class to represent the flags register in GameBoy
+ * */
 public class GBFlagRegister {
 
     private boolean z; // set if the result is zero

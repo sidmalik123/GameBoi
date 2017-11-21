@@ -1,12 +1,12 @@
 package mmu;
 
-public class GBMemorySpace implements MemorySpace {
+public class GBMemorySpaceImpl implements MemorySpace {
 
     private int[] memory;
 
     MemoryType memoryType;
 
-    public GBMemorySpace(MemoryType memoryType) {
+    public GBMemorySpaceImpl(MemoryType memoryType) {
         memory = new int[memoryType.getEndAddress() - memoryType.getStartAddress() + 1];
     }
 

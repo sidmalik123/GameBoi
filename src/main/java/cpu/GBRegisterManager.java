@@ -1,5 +1,8 @@
 package cpu;
 
+/**
+ * Interface to manage register values
+ * */
 public interface GBRegisterManager {
 
     int get(SingleRegister singleRegister);

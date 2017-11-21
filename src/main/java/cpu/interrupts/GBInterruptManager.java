@@ -1,54 +1,30 @@
 package cpu.interrupts;
 
-import core.BitUtils;
-import mmu.GBMMU;
 
-public class GBInterruptManager implements InterruptManager {
+import java.util.List;
 
-    private boolean interruptsEnabled; /* set/reset by cpu ops */
+/**
+ * Interface to manage GameBoy interrupts
+ * */
+public interface GBInterruptManager {
 
-    private GBMMU mmu;
+    /**
+     * Requests an interrupt of type interruptType
+     * */
+    void requestInterrupt(InterruptType interruptType);
 
-    public void requestInterrupt(InterruptType interruptType) {
-        int requestAddressVal = mmu.getInterruptRequestAddress();
-        requestAddressVal = BitUtils.setBit(requestAddressVal, interruptType.getRequestBit());
-        mmu.writeData(mmu.getInterruptRequestAddress(), requestAddressVal);
-    }
+    /**
+     * sets global setting to enable/disable interrupts
+     * */
+    void setEnabled(boolean isEnabled);
 
-    private boolean isInterruptsEnabled() {
-        return interruptsEnabled;
-    }
+    /**
+     * Returns the current active interrupt
+     * */
+    GBInterrupt getCurrentInterrupt();
 
-    public InterruptType getCurrentInterrupt() {
-        if (!isInterruptsEnabled()) return null;
-
-        for (InterruptType interruptType : InterruptType.getListByPriority()) {
-            if (isRequested(interruptType) && isEnabled(interruptType)) {
-                requestInterrupt(interruptType);
-                return interruptType;
-            }
-        }
-
-        return null;
-    }
-
-    private void resetInterruptRequest(InterruptType interruptType) {
-        int requestAddressVal = mmu.getInterruptRequestAddress();
-        requestAddressVal = BitUtils.resetBit(requestAddressVal, interruptType.getRequestBit());
-        mmu.writeData(mmu.getInterruptRequestAddress(), requestAddressVal);
-    }
-
-    private boolean isRequested(InterruptType interruptType) {
-        int requestAddressVal = mmu.getInterruptRequestAddress();
-        return BitUtils.isBitSet(requestAddressVal, interruptType.getRequestBit());
-    }
-
-    private boolean isEnabled(InterruptType interruptType) {
-        int interruptEnableAddressVal = mmu.getInterruptEnableAddress();
-        return BitUtils.isBitSet(interruptEnableAddressVal, interruptType.getRequestBit());
-    }
-
-    public void setInterruptsEnabled(boolean interruptsEnabled) {
-        this.interruptsEnabled = interruptsEnabled;
-    }
+    /**
+     * Enables all interupts present in enabledInterrupts
+     * */
+    void enableInterrupts(List<InterruptType> enabledInterrupts);
 }

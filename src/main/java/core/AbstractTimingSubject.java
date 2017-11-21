@@ -16,6 +16,12 @@ public abstract class AbstractTimingSubject implements TimingSubject {
             observers.add(observer);
     }
 
+    public void notifyTimingObservers(int numCycles) {
+        for (TimingObserver observer : observers) {
+            observer.notifyNumCycles(numCycles);
+        }
+    }
+
     public void detachTimingObserver(TimingObserver observer) {
         observers.remove(observer);
     }

@@ -2,17 +2,19 @@ package cpu;
 
 import core.AbstractTimingSubject;
 import core.BitUtils;
-import core.TimingObserver;
-import mmu.MMU;
+import cpu.interrupts.GBInterruptManager;
+import mmu.GBMMU;
 
-public class GBCPU extends AbstractTimingSubject implements CPU {
+public class GBCPUImpl extends AbstractTimingSubject implements CPU {
 
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
     private static final int CPU_FREQUENCY = 4194304;
 
-    private MMU mmu;
+    private GBMMU mmu;
 
     private GBRegisterManager registerManager;
+
+    private GBInterruptManager interruptManager;
 
     private int PC; // set by the mmu on program load
     private int SP;
@@ -460,11 +462,5 @@ public class GBCPU extends AbstractTimingSubject implements CPU {
         int val1 = mmu.readData(++PC);
         int val2 = mmu.readData(++PC);
         return val2 << 8 | val1;
-    }
-
-    public void notifyTimingObservers(int numCycles) {
-        for (TimingObserver observer : observers) {
-            observer.notifyNumCycles(numCycles);
-        }
     }
 }
