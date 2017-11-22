@@ -5,7 +5,7 @@ import core.BitUtils;
 import cpu.interrupts.GBInterruptManager;
 import mmu.GBMMU;
 
-public class GBCPUImpl extends AbstractTimingSubject implements CPU {
+public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
 
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
     private static final int CPU_FREQUENCY = 4194304;
