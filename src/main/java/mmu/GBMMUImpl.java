@@ -4,6 +4,8 @@ import core.AbstractTimingSubject;
 import core.BitUtils;
 import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
+import gpu.GBGPU;
+import gpu.GPUModeType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +17,8 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private Map<MemoryType, MemorySpace> memorySpaceMap;
 
     private GBTimer timer;
+
+    private GBGPU gpu;
 
     private GBTimer dividerRegister;
 
@@ -29,6 +33,10 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private static final int TIMER_FREQUENCY_ADDRESS = 0xFF07;
 
     private static final int INTERRUPT_ENABLE_ADDRESS = 0xFFFF;
+
+    private static final int LCD_STATUS_REGISTER_ADDRESS = 0xFF41;
+    private static final int COINCIDENCE_LINE_ADDRESS = 0xFF45;
+    private static final int LCD_CONTROL_REGISTER_ADDRESS = 0XFF40;
 
     private ROMBankMode romBankMode; // set on game load -> read from 0x147
 
@@ -112,6 +120,21 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         if (address == INTERRUPT_ENABLE_ADDRESS) {
             interruptManager.enableInterrupts(getListOfEnabledInterrupts());
         }
+
+        if (address == LCD_STATUS_REGISTER_ADDRESS) {
+            gpu.setLCDInterrupt(GPUModeType.HBLANK, isHBlankLCDInterruptEnabled());
+            gpu.setLCDInterrupt(GPUModeType.VBLANK, isVBlankLCDInterruptEnabled());
+            gpu.setLCDInterrupt(GPUModeType.ACCESSING_OAM, isOAMLCDInterruptEnabled());
+            gpu.setCoincidenceLCDInterruptEnabled(isLCDCoincidenceInterruptEnabled());
+        }
+
+        if (address == COINCIDENCE_LINE_ADDRESS) {
+            gpu.setCoincidenceLineNum(readData(COINCIDENCE_LINE_ADDRESS));
+        }
+
+        if (address == LCD_CONTROL_REGISTER_ADDRESS) {
+            gpu.setLCDEnabled(isLCDEnabled());
+        }
     }
 
     public int loadProgram(String programLocation) {
@@ -185,5 +208,40 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
             enabledInterrupts.add(InterruptType.JOYPAD);
 
         return enabledInterrupts;
+    }
+
+    /**
+     * Checks if bit 6 of LCD Status Register is set or not
+     * */
+    private boolean isLCDCoincidenceInterruptEnabled() {
+        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 6);
+    }
+
+    /**
+     * Checks if bit 3 of LCD status register is set or not
+     * */
+    private boolean isHBlankLCDInterruptEnabled() {
+        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 3);
+    }
+
+    /**
+     * Checks if bit 4 of LCD status register is set or not
+     * */
+    private boolean isVBlankLCDInterruptEnabled() {
+        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 4);
+    }
+
+    /**
+     * Checks if bit 5 of LCD status register is set or not
+     * */
+    private boolean isOAMLCDInterruptEnabled() {
+        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 5);
+    }
+
+    /**
+     * Checks if bit 7 of LCD Control Register is set or not
+     * */
+    private boolean isLCDEnabled() {
+        return BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 7);
     }
 }

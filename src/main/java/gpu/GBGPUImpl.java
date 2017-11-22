@@ -4,7 +4,6 @@ package gpu;
 import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
 
-import java.util.List;
 import java.util.Map;
 
 public class GBGPUImpl implements GBGPU {
@@ -120,9 +119,8 @@ public class GBGPUImpl implements GBGPU {
         return currMode;
     }
 
-    public void enableLCDInterrupts(List<GPUModeType> modeTypes) {
-        for (GPUModeType modeType : modeTypes)
-            modesMap.get(modeType).setLCDInterruptEnabled(true);
+    public void setLCDInterrupt(GPUModeType modeType, boolean isEnabled) {
+        modesMap.get(modeType).setLCDInterruptEnabled(isEnabled);
     }
 
     public void setCoincidenceLineNum(int coincidenceLineNum) {

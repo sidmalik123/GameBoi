@@ -2,8 +2,6 @@ package gpu;
 
 import core.TimingObserver;
 
-import java.util.List;
-
 
 /**
  * Interface for a GameBoy GPU unit
@@ -24,7 +22,7 @@ public interface GBGPU extends TimingObserver {
     /**
      *  Enables LCD Interrupt for all GPUModeTypes in modeTypes
      * */
-    void enableLCDInterrupts(List<GPUModeType> modeTypes);
+    void setLCDInterrupt(GPUModeType modeType, boolean isEnabled);
 
     /**
      *  Sets the coincidence line num for the GPU,
