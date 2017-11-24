@@ -30,6 +30,10 @@ public class GBMemorySpaceImpl implements MemorySpace {
         return memoryType.isReadOnly();
     }
 
+    public int getMemorySize() {
+        return memoryType.getEndAddress() - memoryType.getStartAddress() + 1;
+    }
+
     public MemoryType getMemoryType() {
         return memoryType;
     }

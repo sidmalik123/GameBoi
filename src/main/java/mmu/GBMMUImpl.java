@@ -37,6 +37,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private static final int LCD_STATUS_REGISTER_ADDRESS = 0xFF41;
     private static final int COINCIDENCE_LINE_ADDRESS = 0xFF45;
     private static final int LCD_CONTROL_REGISTER_ADDRESS = 0XFF40;
+    private static final int DMA_ADDRESS = 0xFF46;
 
     private ROMBankMode romBankMode; // set on game load -> read from 0x147
 
@@ -88,8 +89,14 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
 
-    // Todo - handle ROM and RAM banking
-    public void writeData(int address, int data) {
+    /**
+     * Writes the data passed in to the address passed in
+     * Note: This method is split into 3 parts:
+     *  1. Pre-write: Handle special cases before write
+     *  2. Write: writes data to the address
+     *  3. Post-write: allow write to happen, but do extra processing for some address
+     * */
+    public void writeData(int address, int data) { // Todo - handle ROM and RAM banking
         /*
         * PRE WRITE processing
         * */
@@ -97,8 +104,10 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         if (memorySpace.isReadOnly())
             throw new IllegalArgumentException("Cannot write to read only memory address " + address);
 
-        if (isBetween(address, RESTRCITED_AREA_START_ADDRESS, RESTRICTED_AREA_END_ADDRESS))
+        if (isBetween(address, RESTRCITED_AREA_START_ADDRESS, RESTRICTED_AREA_END_ADDRESS)) {
             memorySpace.write(address, 0); // in the restricted area all writes default to 0
+            return;
+        }
 
         /*
         * WRITE - Todo write to shadow ram too on working ram write
@@ -134,6 +143,10 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
 
         if (address == LCD_CONTROL_REGISTER_ADDRESS) {
             gpu.setLCDEnabled(isLCDEnabled());
+        }
+
+        if (address == DMA_ADDRESS) {
+            copyDataToSpriteMemory(data * 100);
         }
     }
 
@@ -243,5 +256,15 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
      * */
     private boolean isLCDEnabled() {
         return BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 7);
+    }
+
+    /**
+     * Copies block of data from startAddress to Sprite Memory
+     * */
+    private void copyDataToSpriteMemory(final int startAddress) {
+        MemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);
+        for (int i = 0; i < spriteMemory.getMemorySize(); ++i) {
+            spriteMemory.write(spriteMemory.getStartAddress() + i, readData(startAddress + i));
+        }
     }
 }

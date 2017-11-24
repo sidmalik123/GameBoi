@@ -1,5 +1,8 @@
 package mmu;
 
+/**
+ * Enum to represent the different Memory regions
+ * */
 public enum MemoryType {
     ROM0, ROM1, VRAM, EXTERNAL_RAM, WORKING_RAM, WORKING_RAM_SHADOW, SPRITE_MEMORY, IO_MEMORY, ZERO_PAGE_RAM;
 
@@ -31,6 +34,9 @@ public enum MemoryType {
     private static final int ZERO_PAGE_START_ADDRESS = 0xFF80;
     private static final int ZERO_PAGE_END_ADDRESS = 0xFFFF;
 
+    /**
+     * Returns start address of the region in the RAM
+     * */
     public int getStartAddress() {
         switch (this) {
             case ROM0:
@@ -55,6 +61,9 @@ public enum MemoryType {
         throw new IllegalArgumentException("Unknown MemoryType " + this);
     }
 
+    /**
+     * Returns end address of the region in the RAM
+     * */
     public int getEndAddress() {
         switch (this) {
             case ROM0:
@@ -79,6 +88,9 @@ public enum MemoryType {
         throw new IllegalArgumentException("Unknown MemoryType " + this);
     }
 
+    /**
+     * Checks if the memory region is read only
+     * */
     public boolean isReadOnly() {
         switch (this) {
             case ROM0:

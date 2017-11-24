@@ -11,4 +11,6 @@ public interface MemorySpace {
     int getEndAddress();
 
     boolean isReadOnly();
+
+    int getMemorySize();
 }
