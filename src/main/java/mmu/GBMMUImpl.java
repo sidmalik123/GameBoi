@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
 
-    private Map<MemoryType, MemorySpace> memorySpaceMap;
+    private Map<MemoryType, GBMemorySpace> memorySpaceMap;
 
     private GBTimer timer;
 
@@ -47,7 +47,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     public GBMMUImpl(int CPU_FREQUENCY, GBTimer timer, GBTimer dividerRegister) {
         this.CPU_FREQUENCY = CPU_FREQUENCY;
 
-        memorySpaceMap = new HashMap<MemoryType, MemorySpace>();
+        memorySpaceMap = new HashMap<MemoryType, GBMemorySpace>();
         memorySpaceMap.put(MemoryType.ROM0, new GBMemorySpaceImpl(MemoryType.ROM0));
         memorySpaceMap.put(MemoryType.ROM1, new GBMemorySpaceImpl(MemoryType.ROM1));
         memorySpaceMap.put(MemoryType.VRAM, new GBMemorySpaceImpl(MemoryType.VRAM));
@@ -67,8 +67,8 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     /**
      * Returns a MemorySpace that manages address
      * */
-    private MemorySpace getMemorySpace(int address) {
-        for (MemorySpace memorySpace : memorySpaceMap.values()) {
+    private GBMemorySpace getMemorySpace(int address) {
+        for (GBMemorySpace memorySpace : memorySpaceMap.values()) {
             if (isBetween(address, memorySpace.getStartAddress(), memorySpace.getEndAddress()))
                 return memorySpace;
         }
@@ -84,7 +84,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
             return dividerRegister.getTimerValue();
         }
 
-        MemorySpace memorySpace = getMemorySpace(address);
+        GBMemorySpace memorySpace = getMemorySpace(address);
         return memorySpace.read(address - memorySpace.getStartAddress());
     }
 
@@ -100,7 +100,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         /*
         * PRE WRITE processing
         * */
-        MemorySpace memorySpace = getMemorySpace(address);
+        GBMemorySpace memorySpace = getMemorySpace(address);
         if (memorySpace.isReadOnly())
             throw new IllegalArgumentException("Cannot write to read only memory address " + address);
 
@@ -262,7 +262,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
      * Copies block of data from startAddress to Sprite Memory
      * */
     private void copyDataToSpriteMemory(final int startAddress) {
-        MemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);
+        GBMemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);
         for (int i = 0; i < spriteMemory.getMemorySize(); ++i) {
             spriteMemory.write(spriteMemory.getStartAddress() + i, readData(startAddress + i));
         }
