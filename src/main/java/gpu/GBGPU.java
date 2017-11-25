@@ -34,4 +34,34 @@ public interface GBGPU extends TimingObserver {
      * Enables/Disables LCD interrupt when a line coincidence occurs
      * */
     void setCoincidenceLCDInterruptEnabled(boolean isCoincidenceLCDInterruptEnabled);
+
+    /**
+     *  Checks if background is enabled or not
+     * */
+    boolean isBackgroundEnabled();
+
+    /**
+     * Checks if sprites are enabled or not
+     * */
+    boolean isSpritesEnabled();
+
+    /**
+     * Checks if window is enabled or not
+     * */
+    boolean isWindowEnabled();
+
+    /**
+     *  Checks if background is enabled or not
+     * */
+    void setBackgroundEnabled(boolean isEnabled);
+
+    /**
+     * Checks if sprites are enabled or not
+     * */
+    void setSpritesEnabled(boolean isEnabled);
+
+    /**
+     * Checks if window is enabled or not
+     * */
+    void setWindowEnabled(boolean isEnabled);
 }

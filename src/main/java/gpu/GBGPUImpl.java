@@ -28,6 +28,12 @@ public class GBGPUImpl implements GBGPU {
 
     private Map<GPUModeType, GBGPUMode> modesMap;
 
+    private boolean isBackgroundEnabled;
+
+    private boolean isSpritesEnabled;
+
+    private boolean isWindowEnabled;
+
     public GBGPUImpl(GBInterruptManager interruptManager) {
         currLineNum = 1;
         modeCycleCount = 0;
@@ -44,7 +50,7 @@ public class GBGPUImpl implements GBGPU {
 
         if (!isLCDEnabled()) return;
 
-        if (isCoincidence())
+        if (isCoincidence() && isCoincidenceLCDInterruptEnabled())
             interruptManager.requestInterrupt(InterruptType.LCD);
 
         modeCycleCount += numCycles;
@@ -104,7 +110,15 @@ public class GBGPUImpl implements GBGPU {
         return true;
     }
 
+    /**
+     * If value passed in is not the value set,
+     * sets the currLineNum to 0
+     * if we enable a disabled screen we set the mode to ACCESSING_OAM
+     * if we disable an enabled screen we set the mode to VBLANK
+     * */
     public void setLCDEnabled(boolean isEnabled) {
+        if (this.isLCDEnabled == isEnabled) return;
+
         this.isLCDEnabled = isEnabled;
         currLineNum = 0;
 
@@ -131,7 +145,35 @@ public class GBGPUImpl implements GBGPU {
         this.isCoincidenceLCDInterruptEnabled = isCoincidenceLCDInterruptEnabled;
     }
 
+    public boolean isBackgroundEnabled() {
+        return isBackgroundEnabled;
+    }
+
+    public boolean isSpritesEnabled() {
+        return isSpritesEnabled;
+    }
+
+    public boolean isWindowEnabled() {
+        return isWindowEnabled;
+    }
+
+    public void setBackgroundEnabled(boolean isEnabled) {
+        isBackgroundEnabled = isEnabled;
+    }
+
+    public void setSpritesEnabled(boolean isEnabled) {
+        isSpritesEnabled = isEnabled;
+    }
+
+    public void setWindowEnabled(boolean isEnabled) {
+        isWindowEnabled = isEnabled;
+    }
+
     private boolean isCoincidence(){
         return currLineNum == coincidenceLineNum;
+    }
+
+    private boolean isCoincidenceLCDInterruptEnabled() {
+        return isCoincidenceLCDInterruptEnabled;
     }
 }

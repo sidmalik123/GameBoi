@@ -4,7 +4,7 @@ package mmu;
  * GBMemorySpace implementation class
  * */
 public class GBMemorySpaceImpl implements GBMemorySpace {
-    
+
     private int[] memory;
 
     MemoryType memoryType;
