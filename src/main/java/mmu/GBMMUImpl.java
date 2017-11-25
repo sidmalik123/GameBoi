@@ -261,4 +261,43 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         gpu.setLCDInterrupt(GPUModeType.ACCESSING_OAM, BitUtils.isBitSet(lcdStatusData, 5));
         gpu.setCoincidenceLCDInterruptEnabled(BitUtils.isBitSet(lcdStatusData, 6));
     }
+
+    public int[] getBackgroundTiteIdentificationData() {
+        return getTileIdentificationData(getBackgroundTileIdentificationStartAddress());
+    }
+
+    public int[] getWindowTilaIdentificationData() {
+        return getTileIdentificationData(getWindowTileIdentificationStartAddress());
+    }
+
+    /**
+     * Copies 1024 bytes of data from startAddress
+     * and returns it in an array
+     * */
+    private int[] getTileIdentificationData(int startAddress) {
+        final int ARR_SIZE = 1024;
+        int[] titleIdentificationData = new int[ARR_SIZE];
+        for (int i = 0; i < ARR_SIZE; ++i) {
+            titleIdentificationData[i] = readData(startAddress + i);
+        }
+        return titleIdentificationData;
+    }
+
+    /**
+     * Checks bit 3 LCD_CONTROL_REGISTER
+     * if set returns 0x9800, else 0x9C00
+     * */
+    private int getBackgroundTileIdentificationStartAddress() {
+        boolean isBit3Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 3);
+        return isBit3Set ? 0x9800 : 0x9C00;
+    }
+
+    /**
+     * Checks bit 6 LCD_CONTROL_REGISTER
+     * if set returns 0x9800, else 0x9C00
+     * */
+    private int getWindowTileIdentificationStartAddress() {
+        boolean isBit3Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 6);
+        return isBit3Set ? 0x9800 : 0x9C00;
+    }
 }

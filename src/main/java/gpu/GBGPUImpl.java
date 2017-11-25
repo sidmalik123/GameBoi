@@ -3,6 +3,7 @@ package gpu;
 
 import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
+import mmu.GBMMU;
 
 import java.util.Map;
 
@@ -42,12 +43,15 @@ public class GBGPUImpl implements GBGPU {
 
     private int windowScrollY;
 
-    public GBGPUImpl(GBInterruptManager interruptManager) {
+    private GBMMU mmu;
+
+    public GBGPUImpl(GBInterruptManager interruptManager, GBMMU mmu) {
         currLineNum = 1;
         modeCycleCount = 0;
         numLinesInVblank = 0;
         currMode = GPUModeType.ACCESSING_OAM; // start mode
         this.interruptManager = interruptManager;
+        this.mmu = mmu;
     }
 
     /**

@@ -1,5 +1,7 @@
 package cpu;
 
 
-public interface GBCPU extends CPU {
+import core.TimingSubject;
+
+public interface GBCPU extends CPU, TimingSubject {
 }
