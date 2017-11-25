@@ -131,10 +131,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         }
 
         if (address == LCD_STATUS_REGISTER_ADDRESS) {
-            gpu.setLCDInterrupt(GPUModeType.HBLANK, isHBlankLCDInterruptEnabled());
-            gpu.setLCDInterrupt(GPUModeType.VBLANK, isVBlankLCDInterruptEnabled());
-            gpu.setLCDInterrupt(GPUModeType.ACCESSING_OAM, isOAMLCDInterruptEnabled());
-            gpu.setCoincidenceLCDInterruptEnabled(isLCDCoincidenceInterruptEnabled());
+            setGPUInterruptBits();
         }
 
         if (address == COINCIDENCE_LINE_ADDRESS) {
@@ -224,34 +221,6 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
     /**
-     * Checks if bit 6 of LCD Status Register is set or not
-     * */
-    private boolean isLCDCoincidenceInterruptEnabled() {
-        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 6);
-    }
-
-    /**
-     * Checks if bit 3 of LCD status register is set or not
-     * */
-    private boolean isHBlankLCDInterruptEnabled() {
-        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 3);
-    }
-
-    /**
-     * Checks if bit 4 of LCD status register is set or not
-     * */
-    private boolean isVBlankLCDInterruptEnabled() {
-        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 4);
-    }
-
-    /**
-     * Checks if bit 5 of LCD status register is set or not
-     * */
-    private boolean isOAMLCDInterruptEnabled() {
-        return BitUtils.isBitSet(readData(LCD_STATUS_REGISTER_ADDRESS), 5);
-    }
-
-    /**
      * Copies block of data from startAddress to Sprite Memory
      * */
     private void copyDataToSpriteMemory(final int startAddress) {
@@ -274,5 +243,20 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         gpu.setBackgroundEnabled(BitUtils.isBitSet(lcdControlData, 0));
         gpu.setSpritesEnabled(BitUtils.isBitSet(lcdControlData, 1));
         gpu.setWindowEnabled(BitUtils.isBitSet(lcdControlData, 5));
+    }
+
+    /**
+     * Sets GPU Interrupt bits by reading the value at LCD_STATUS_REGISTER_ADDRESS
+     * 3 -> HBLANK LCD Interrupt
+     * 4 -> VBLANK LCD Interrupt
+     * 5 -> ACCESSING_OAM LCD Interrupt
+     * 6 -> Coincidence LCD Interrupt
+     * */
+    private void setGPUInterruptBits() {
+        int lcdStatusData = readData(LCD_STATUS_REGISTER_ADDRESS)
+        gpu.setLCDInterrupt(GPUModeType.HBLANK, BitUtils.isBitSet(lcdStatusData, 3));
+        gpu.setLCDInterrupt(GPUModeType.VBLANK, BitUtils.isBitSet(lcdStatusData, 4));
+        gpu.setLCDInterrupt(GPUModeType.ACCESSING_OAM, BitUtils.isBitSet(lcdStatusData, 5));
+        gpu.setCoincidenceLCDInterruptEnabled(BitUtils.isBitSet(lcdStatusData, 6));
     }
 }
