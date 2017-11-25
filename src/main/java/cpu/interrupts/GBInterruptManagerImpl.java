@@ -25,7 +25,7 @@ public class GBInterruptManagerImpl implements GBInterruptManager {
 
     /**
      * Returns the highest priority requested and enabled interrupt
-     * resets it
+     * resets it, TODO - return a copy here
      * */
     public GBInterrupt getCurrentInterrupt() {
         if (!isEnabled()) return null;

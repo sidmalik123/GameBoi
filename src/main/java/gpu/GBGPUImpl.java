@@ -34,6 +34,14 @@ public class GBGPUImpl implements GBGPU {
 
     private boolean isWindowEnabled;
 
+    private int backgroundScrollX;
+
+    private int backgroundScrollY;
+
+    private int windowScrollX;
+
+    private int windowScrollY;
+
     public GBGPUImpl(GBInterruptManager interruptManager) {
         currLineNum = 1;
         modeCycleCount = 0;
@@ -167,6 +175,22 @@ public class GBGPUImpl implements GBGPU {
 
     public void setWindowEnabled(boolean isEnabled) {
         isWindowEnabled = isEnabled;
+    }
+
+    public void setBackgroundScrollX(int scrollX) {
+        this.backgroundScrollX = scrollX;
+    }
+
+    public void setBackgroundScrollY(int scrollY) {
+        this.backgroundScrollY = scrollY;
+    }
+
+    public void setWindowScrollX(int scrollX) {
+        this.windowScrollX = scrollX;
+    }
+
+    public void setWindowScrollY(int scrollY) {
+        this.windowScrollY = scrollY;
     }
 
     private boolean isCoincidence(){

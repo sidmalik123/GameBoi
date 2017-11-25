@@ -39,6 +39,11 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private static final int LCD_CONTROL_REGISTER_ADDRESS = 0XFF40;
     private static final int DMA_ADDRESS = 0xFF46;
 
+    private static final int BACKGROUND_SCROLL_X_ADDRESS = 0xFF42;
+    private static final int BACKGROUND_SCROLL_Y_ADDRESS = 0xFF43;
+    private static final int WINDOW_SCROLL_X_ADDRESS = 0xFF4A;
+    private static final int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
+
     private ROMBankMode romBankMode; // set on game load -> read from 0x147
 
     private GBInterruptManager interruptManager;
@@ -117,33 +122,30 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         /*
         * POST WRITE processing
         * */
-        if (address == TIMER_FREQUENCY_ADDRESS) {
-            timer.setEnabled(isTimerEnabled());
-            timer.setClockSpeed(getTimerSpeed());
-        }
-
-        if (address == TIMER_RESET_VALUE_ADDRESS) {
-            timer.setResetValue(data);
-        }
-
-        if (address == INTERRUPT_ENABLE_ADDRESS) {
-            interruptManager.enableInterrupts(getListOfEnabledInterrupts());
-        }
-
-        if (address == LCD_STATUS_REGISTER_ADDRESS) {
-            setGPUInterruptBits();
-        }
-
-        if (address == COINCIDENCE_LINE_ADDRESS) {
-            gpu.setCoincidenceLineNum(readData(COINCIDENCE_LINE_ADDRESS));
-        }
-
-        if (address == LCD_CONTROL_REGISTER_ADDRESS) {
-            setGPUDisplayBits();
-        }
-
-        if (address == DMA_ADDRESS) {
-            copyDataToSpriteMemory(data * 100);
+        switch (address) {
+            case TIMER_FREQUENCY_ADDRESS:
+                timer.setEnabled(isTimerEnabled());
+                timer.setClockSpeed(getTimerSpeed());
+            case TIMER_RESET_VALUE_ADDRESS:
+                timer.setResetValue(data);
+            case INTERRUPT_ENABLE_ADDRESS:
+                interruptManager.enableInterrupts(getListOfEnabledInterrupts());
+            case LCD_STATUS_REGISTER_ADDRESS:
+                setGPUInterruptBits();
+            case COINCIDENCE_LINE_ADDRESS:
+                gpu.setCoincidenceLineNum(readData(COINCIDENCE_LINE_ADDRESS));
+            case LCD_CONTROL_REGISTER_ADDRESS:
+                setGPUDisplayBits();
+            case DMA_ADDRESS:
+                copyDataToSpriteMemory(data * 100);
+            case BACKGROUND_SCROLL_X_ADDRESS:
+                gpu.setBackgroundScrollX(data);
+            case BACKGROUND_SCROLL_Y_ADDRESS:
+                gpu.setBackgroundScrollY(data);
+            case WINDOW_SCROLL_X_ADDRESS:
+                gpu.setWindowScrollX(data);
+            case WINDOW_SCROLL_Y_ADDRESS:
+                gpu.setWindowScrollY(data);
         }
     }
 
@@ -194,7 +196,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
     /**
-     * Analyses INTERRUPT_ENABLE_ADDRESS value to checks which
+     * Analyses INTERRUPT_ENABLE_ADDRESS value to check which
      * interrupts are enabled, returns a list of the enabled ones
      * */
     private List<InterruptType> getListOfEnabledInterrupts() {
@@ -253,7 +255,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
      * 6 -> Coincidence LCD Interrupt
      * */
     private void setGPUInterruptBits() {
-        int lcdStatusData = readData(LCD_STATUS_REGISTER_ADDRESS)
+        int lcdStatusData = readData(LCD_STATUS_REGISTER_ADDRESS);
         gpu.setLCDInterrupt(GPUModeType.HBLANK, BitUtils.isBitSet(lcdStatusData, 3));
         gpu.setLCDInterrupt(GPUModeType.VBLANK, BitUtils.isBitSet(lcdStatusData, 4));
         gpu.setLCDInterrupt(GPUModeType.ACCESSING_OAM, BitUtils.isBitSet(lcdStatusData, 5));

@@ -64,4 +64,24 @@ public interface GBGPU extends TimingObserver {
      * Checks if window is enabled or not
      * */
     void setWindowEnabled(boolean isEnabled);
+
+    /**
+     * Sets the top left x coordinate of the background
+     * */
+    void setBackgroundScrollX(int scrollX);
+
+    /**
+     * Sets the top left y coordinate of the background
+     * */
+    void setBackgroundScrollY(int scrollY);
+
+    /**
+     * Sets the top left x coordinate of the window
+     * */
+    void setWindowScrollX(int scrollX);
+
+    /**
+     * Sets the top left y coordinate of the window
+     * */
+    void setWindowScrollY(int scrollY);
 }
