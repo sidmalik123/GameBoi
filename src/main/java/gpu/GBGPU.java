@@ -38,21 +38,6 @@ public interface GBGPU extends TimingObserver {
     /**
      *  Checks if background is enabled or not
      * */
-    boolean isBackgroundEnabled();
-
-    /**
-     * Checks if sprites are enabled or not
-     * */
-    boolean isSpritesEnabled();
-
-    /**
-     * Checks if window is enabled or not
-     * */
-    boolean isWindowEnabled();
-
-    /**
-     *  Checks if background is enabled or not
-     * */
     void setBackgroundEnabled(boolean isEnabled);
 
     /**
@@ -84,4 +69,9 @@ public interface GBGPU extends TimingObserver {
      * Sets the top left y coordinate of the window
      * */
     void setWindowScrollY(int scrollY);
+
+    /**
+     * Sets where the tile numbers are signed or not
+     * */
+    void setIsTileNumbersSigned(boolean isSigned);
 }

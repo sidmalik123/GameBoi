@@ -43,6 +43,8 @@ public class GBGPUImpl implements GBGPU {
 
     private int windowScrollY;
 
+    private boolean isTileNumbersSigned;
+
     private GBMMU mmu;
 
     public GBGPUImpl(GBInterruptManager interruptManager, GBMMU mmu) {
@@ -157,15 +159,16 @@ public class GBGPUImpl implements GBGPU {
         this.isCoincidenceLCDInterruptEnabled = isCoincidenceLCDInterruptEnabled;
     }
 
-    public boolean isBackgroundEnabled() {
+    private boolean isBackgroundEnabled() {
         return isBackgroundEnabled;
     }
 
-    public boolean isSpritesEnabled() {
+    private boolean isSpritesEnabled() {
         return isSpritesEnabled;
     }
 
-    public boolean isWindowEnabled() {
+
+    private boolean isWindowEnabled() {
         return isWindowEnabled;
     }
 
@@ -195,6 +198,10 @@ public class GBGPUImpl implements GBGPU {
 
     public void setWindowScrollY(int scrollY) {
         this.windowScrollY = scrollY;
+    }
+
+    public void setIsTileNumbersSigned(boolean isSigned) {
+        this.isTileNumbersSigned = isSigned;
     }
 
     private boolean isCoincidence(){

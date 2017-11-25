@@ -263,21 +263,24 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
     public int[] getBackgroundTiteIdentificationData() {
-        return getTileIdentificationData(getBackgroundTileIdentificationStartAddress());
+        return getDataInArray(getBackgroundTileIdentificationStartAddress(), 1024);
     }
 
     public int[] getWindowTilaIdentificationData() {
-        return getTileIdentificationData(getWindowTileIdentificationStartAddress());
+        return getDataInArray(getWindowTileIdentificationStartAddress(), 1024);
+    }
+
+    public int[] getTileData() {
+        return getDataInArray(getTileDataStartAddress(), 256);
     }
 
     /**
-     * Copies 1024 bytes of data from startAddress
+     * Copies arrSize bytes of data from startAddress
      * and returns it in an array
      * */
-    private int[] getTileIdentificationData(int startAddress) {
-        final int ARR_SIZE = 1024;
-        int[] titleIdentificationData = new int[ARR_SIZE];
-        for (int i = 0; i < ARR_SIZE; ++i) {
+    private int[] getDataInArray(int startAddress, int arrSize) {
+        int[] titleIdentificationData = new int[arrSize];
+        for (int i = 0; i < arrSize; ++i) {
             titleIdentificationData[i] = readData(startAddress + i);
         }
         return titleIdentificationData;
@@ -285,19 +288,28 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
 
     /**
      * Checks bit 3 LCD_CONTROL_REGISTER
-     * if set returns 0x9800, else 0x9C00
+     * if set returns 0x9C00, else 0x9800
      * */
     private int getBackgroundTileIdentificationStartAddress() {
         boolean isBit3Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 3);
-        return isBit3Set ? 0x9800 : 0x9C00;
+        return isBit3Set ? 0x9C00 : 0x9800;
     }
 
     /**
      * Checks bit 6 LCD_CONTROL_REGISTER
-     * if set returns 0x9800, else 0x9C00
+     * if set returns 0x9C00, else 0x9800
      * */
     private int getWindowTileIdentificationStartAddress() {
-        boolean isBit3Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 6);
-        return isBit3Set ? 0x9800 : 0x9C00;
+        boolean isBit6Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 6);
+        return isBit6Set ? 0x9C00 : 0x9800;
+    }
+
+    /**
+     * Checks bit 4 LCD_CONTROL_REGISTER
+     * if set returns 0x8000, else 0x8800
+     * */
+    private int getTileDataStartAddress() {
+        boolean isBit4Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 4);
+        return isBit4Set ? 0x8000 : 0x8800;
     }
 }

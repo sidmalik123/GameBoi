@@ -14,5 +14,9 @@ public interface GBMMU extends MMU, TimingObserver {
      * */
     int[] getWindowTilaIdentificationData();
 
-
+    /**
+     * Returns tile rendering data,
+     * used for both background and window
+     * */
+    int[] getTileData();
 }
