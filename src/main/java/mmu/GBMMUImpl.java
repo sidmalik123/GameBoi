@@ -142,7 +142,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         }
 
         if (address == LCD_CONTROL_REGISTER_ADDRESS) {
-            gpu.setLCDEnabled(isLCDEnabled());
+            setGPUDisplayBits();
         }
 
         if (address == DMA_ADDRESS) {
@@ -252,13 +252,6 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
     /**
-     * Checks if bit 7 of LCD Control Register is set or not
-     * */
-    private boolean isLCDEnabled() {
-        return BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 7);
-    }
-
-    /**
      * Copies block of data from startAddress to Sprite Memory
      * */
     private void copyDataToSpriteMemory(final int startAddress) {
@@ -266,5 +259,20 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         for (int i = 0; i < spriteMemory.getMemorySize(); ++i) {
             spriteMemory.write(spriteMemory.getStartAddress() + i, readData(startAddress + i));
         }
+    }
+
+    /**
+     * Sets GPU Display bits by reading the value at LCD_CONTROL_REGISTER_ADDRESS
+     * 7 -> LCD enabled/disabled
+     * 0 -> Background enabled/disabled
+     * 1 -> Sprites enabled/disabled
+     * 5 -> Window enabled/disabled
+     * */
+    private void setGPUDisplayBits() {
+        int lcdControlData = readData(LCD_CONTROL_REGISTER_ADDRESS);
+        gpu.setLCDEnabled(BitUtils.isBitSet(lcdControlData, 7));
+        gpu.setBackgroundEnabled(BitUtils.isBitSet(lcdControlData, 0));
+        gpu.setSpritesEnabled(BitUtils.isBitSet(lcdControlData, 1));
+        gpu.setWindowEnabled(BitUtils.isBitSet(lcdControlData, 5));
     }
 }
