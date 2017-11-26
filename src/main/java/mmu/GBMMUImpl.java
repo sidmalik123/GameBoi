@@ -7,6 +7,10 @@ import cpu.interrupts.InterruptType;
 import gpu.GBGPU;
 import gpu.GPUModeType;
 import gpu.palette.GBPalette;
+import mmu.tiles.GBTile;
+import mmu.tiles.GBTileImpl;
+import mmu.tiles.GBTileLine;
+import mmu.tiles.GBTileLineImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -272,18 +276,31 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         gpu.setCoincidenceLCDInterruptEnabled(BitUtils.isBitSet(lcdStatusData, 6));
     }
 
+    /**
+     * Returns array of 1024(32x32) tileId nums for the background
+     * */
     private int[] getBackgroundTileIdentificationData() {
         return getDataInArray(getBackgroundTileIdentificationStartAddress(), 1024);
     }
 
+    /**
+     * Returns array of 1024(32x32) tileId nums for the window
+     * */
     private int[] getWindowTileIdentificationData() {
         return getDataInArray(getWindowTileIdentificationStartAddress(), 1024);
     }
 
+    /**
+     * Returns the background tile map
+     * */
     public Map<Integer, GBTile> getBackgroundTileMap() {
         return getTileDataMap(getBackgroundTileIdentificationData());
     }
 
+    /**
+     * Returns a map of length tileIdNums.length,
+     * an entry is a mapping from the tileNum to the Tile it points to
+     * */
     private Map<Integer, GBTile> getTileDataMap(int[] tileIdNums) {
         Map<Integer, GBTile> result = new HashMap<Integer, GBTile>();
         List<GBTile> tiles = getTiles();
@@ -300,20 +317,57 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         return result;
     }
 
+    /**
+     * Returns the window tile map
+     * */
     public Map<Integer, GBTile> getWindowTileMap() {
         return getTileDataMap(getWindowTileIdentificationData());
     }
 
+    /**
+     * Returns 256 initialized tiles
+     * */
     private List<GBTile> getTiles() {
         int startAddress = getTileDataStartAddress();
         List<GBTile> results = new ArrayList<GBTile>(256);
         for (int i = 0; i < results.size(); ++i) {
-            results.add(new GBTileImpl(getDataInArray(startAddress, 16)));
+            results.add(createTile(getDataInArray(startAddress, 16)));
             startAddress += 16;
         }
         return results;
     }
 
+    /**
+     * Creates a tile initializing all its lines
+     * */
+    private GBTile createTile(int[] tileData) {
+        GBTile tile = new GBTileImpl();
+        int j = 0;
+        for (int i = 0; i < 8; ++i) {
+            tile.setLine(i, createLine(tileData[j], tileData[j+1]));
+            j += 2;
+        }
+        return tile;
+    }
+
+    /**
+     * Creates a tile line using the an upper and a lower byte
+     * corresponding bits of each tell us the color of a pixel
+     * */
+    private GBTileLine createLine(int upperByte, int lowerByte) {
+        GBTileLine line = new GBTileLineImpl();
+        int numPixelsInALine = 8;
+        for (int i = 0; i < numPixelsInALine; ++i) {
+            line.setPixelColorNum(i,
+                    getColorNum(BitUtils.isBitSet(upperByte, 7-i), BitUtils.isBitSet(lowerByte, 7-i)));
+        }
+        return line;
+    }
+
+    /**
+     * if Tile data starts at 0x8800,
+     * then we must treat till ids as signed values ranging from -128 to 127
+     * */
     private boolean isTileNumbersSigned() {
         return getTileDataStartAddress() == 0x8800;
     }
@@ -378,18 +432,36 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
 
     /**
      * Returns the color the 2 bits passed in map to
-     * 00 -> white
-     * 01 -> light grey
-     * 10 -> dark grey
-     * 11 -> black
+     * 1 -> white
+     * 2 -> light grey
+     * 3 -> dark grey
+     * 4 -> black
      * */
     private GBPalette.Color getColor(boolean isBit2Set, boolean isBit1Set) {
-        if (isBit2Set && isBit1Set) return GBPalette.Color.BLACK;
+        int colorNum = getColorNum(isBit2Set, isBit1Set);
+        if (colorNum == 4) return GBPalette.Color.BLACK;
 
-        if (isBit2Set && !isBit1Set) return GBPalette.Color.DARK_GREY;
+        if (colorNum == 3) return GBPalette.Color.DARK_GREY;
 
-        if (!isBit2Set && isBit1Set) return GBPalette.Color.LIGHT_GREY;
+        if (colorNum == 2) return GBPalette.Color.LIGHT_GREY;
 
         return GBPalette.Color.WHITE;
+    }
+
+    /**
+     * Returns the colorNum for the 2 bits passed in
+     * 00 -> 0
+     * 01 -> 1
+     * 10 -> 3
+     * 11 -> 4
+     * */
+    private int getColorNum(boolean isBit2Set, boolean isBit1Set) {
+        if (isBit2Set && isBit1Set) return 4;
+
+        if (isBit2Set && !isBit1Set) return 3;
+
+        if (!isBit2Set && isBit1Set) return 2;
+
+        return 1;
     }
 }
