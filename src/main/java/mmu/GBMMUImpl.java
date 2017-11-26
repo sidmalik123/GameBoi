@@ -6,6 +6,7 @@ import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
 import gpu.GBGPU;
 import gpu.GPUModeType;
+import gpu.palette.GBPalette;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,6 +44,8 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private static final int BACKGROUND_SCROLL_Y_ADDRESS = 0xFF43;
     private static final int WINDOW_SCROLL_X_ADDRESS = 0xFF4A;
     private static final int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
+
+    private static final int BACKGROUND_PALETTE_ADDRESS = 0xFF47;
 
     private ROMBankMode romBankMode; // set on game load -> read from 0x147
 
@@ -146,6 +149,8 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
                 gpu.setWindowScrollX(data);
             case WINDOW_SCROLL_Y_ADDRESS:
                 gpu.setWindowScrollY(data);
+            case BACKGROUND_PALETTE_ADDRESS:
+                setBackgroundPalette();
         }
     }
 
@@ -311,5 +316,41 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private int getTileDataStartAddress() {
         boolean isBit4Set = BitUtils.isBitSet(readData(LCD_CONTROL_REGISTER_ADDRESS), 4);
         return isBit4Set ? 0x8000 : 0x8800;
+    }
+
+    /**
+     * Sets the background palette for the GPU,
+     * bit 1,0 -> color 1
+     * bit 3,2 -> color 2
+     * bit 5,4 -> color 3
+     * bit 7,6 -> color 4
+     * */
+    private void setBackgroundPalette() {
+        int paletteData = readData(BACKGROUND_PALETTE_ADDRESS);
+        gpu.setBackgroundPaletteColor(1,
+                getColor(BitUtils.isBitSet(paletteData, 1), BitUtils.isBitSet(paletteData, 0)));
+        gpu.setBackgroundPaletteColor(2,
+                getColor(BitUtils.isBitSet(paletteData, 3), BitUtils.isBitSet(paletteData, 2)));
+        gpu.setBackgroundPaletteColor(3,
+                getColor(BitUtils.isBitSet(paletteData, 5), BitUtils.isBitSet(paletteData, 4)));
+        gpu.setBackgroundPaletteColor(4,
+                getColor(BitUtils.isBitSet(paletteData, 7), BitUtils.isBitSet(paletteData, 6)));
+    }
+
+    /**
+     * Returns the color the 2 bits passed in map to
+     * 00 -> white
+     * 01 -> light grey
+     * 10 -> dark grey
+     * 11 -> black
+     * */
+    private GBPalette.Color getColor(boolean isBit2Set, boolean isBit1Set) {
+        if (isBit2Set && isBit1Set) return GBPalette.Color.BLACK;
+
+        if (isBit2Set && !isBit1Set) return GBPalette.Color.DARK_GREY;
+
+        if (!isBit2Set && isBit1Set) return GBPalette.Color.LIGHT_GREY;
+
+        return GBPalette.Color.WHITE;
     }
 }

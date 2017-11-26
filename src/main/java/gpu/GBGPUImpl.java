@@ -3,6 +3,7 @@ package gpu;
 
 import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
+import gpu.palette.GBPalette;
 import mmu.GBMMU;
 
 import java.util.Map;
@@ -46,6 +47,8 @@ public class GBGPUImpl implements GBGPU {
     private boolean isTileNumbersSigned;
 
     private GBMMU mmu;
+
+    private GBPalette backgroundPalette;
 
     public GBGPUImpl(GBInterruptManager interruptManager, GBMMU mmu) {
         currLineNum = 1;
@@ -202,6 +205,10 @@ public class GBGPUImpl implements GBGPU {
 
     public void setIsTileNumbersSigned(boolean isSigned) {
         this.isTileNumbersSigned = isSigned;
+    }
+
+    public void setBackgroundPaletteColor(int colorNum, GBPalette.Color color) {
+        backgroundPalette.setColor(colorNum, color);
     }
 
     private boolean isCoincidence(){

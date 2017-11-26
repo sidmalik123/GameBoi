@@ -1,6 +1,7 @@
 package gpu;
 
 import core.TimingObserver;
+import gpu.palette.GBPalette;
 
 
 /**
@@ -74,4 +75,9 @@ public interface GBGPU extends TimingObserver {
      * Sets where the tile numbers are signed or not
      * */
     void setIsTileNumbersSigned(boolean isSigned);
+
+    /***
+     * Sets background palette's color mapping
+     */
+    void setBackgroundPaletteColor(int colorNum, GBPalette.Color color);
 }
