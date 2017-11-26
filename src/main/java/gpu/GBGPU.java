@@ -71,13 +71,13 @@ public interface GBGPU extends TimingObserver {
      * */
     void setWindowScrollY(int scrollY);
 
-    /**
-     * Sets where the tile numbers are signed or not
-     * */
-    void setIsTileNumbersSigned(boolean isSigned);
-
     /***
      * Sets background palette's color mapping
      */
     void setBackgroundPaletteColor(int colorNum, GBPalette.Color color);
+
+    /**
+     * Returns the current line number the GPU is rendering
+     * */
+    int getCurrLineNum();
 }

@@ -47,6 +47,8 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
 
     private static final int BACKGROUND_PALETTE_ADDRESS = 0xFF47;
 
+    private static final int GPU_CURR_LINE_NUM_ADDRESS = 0xFF44;
+
     private ROMBankMode romBankMode; // set on game load -> read from 0x147
 
     private GBInterruptManager interruptManager;
@@ -91,6 +93,9 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         if (address == DIVIDER_REGISTER_ADDRESS) {
             return dividerRegister.getTimerValue();
         }
+
+        if (address == GPU_CURR_LINE_NUM_ADDRESS)
+            return gpu.getCurrLineNum();
 
         GBMemorySpace memorySpace = getMemorySpace(address);
         return memorySpace.read(address - memorySpace.getStartAddress());
@@ -267,16 +272,50 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         gpu.setCoincidenceLCDInterruptEnabled(BitUtils.isBitSet(lcdStatusData, 6));
     }
 
-    public int[] getBackgroundTiteIdentificationData() {
+    private int[] getBackgroundTileIdentificationData() {
         return getDataInArray(getBackgroundTileIdentificationStartAddress(), 1024);
     }
 
-    public int[] getWindowTilaIdentificationData() {
+    private int[] getWindowTileIdentificationData() {
         return getDataInArray(getWindowTileIdentificationStartAddress(), 1024);
     }
 
-    public int[] getTileData() {
-        return getDataInArray(getTileDataStartAddress(), 256);
+    public Map<Integer, GBTile> getBackgroundTileMap() {
+        return getTileDataMap(getBackgroundTileIdentificationData());
+    }
+
+    private Map<Integer, GBTile> getTileDataMap(int[] tileIdNums) {
+        Map<Integer, GBTile> result = new HashMap<Integer, GBTile>();
+        List<GBTile> tiles = getTiles();
+        for (int i = 1; i <= tileIdNums.length; ++i) {
+            int tileNum;
+            if (isTileNumbersSigned()) {
+                byte signedTileNum = (byte) tileIdNums[i-1];
+                tileNum = signedTileNum + 128;
+            } else {
+                tileNum = tileIdNums[i-1];
+            }
+            result.put(tileNum, tiles.get(tileNum));
+        }
+        return result;
+    }
+
+    public Map<Integer, GBTile> getWindowTileMap() {
+        return getTileDataMap(getWindowTileIdentificationData());
+    }
+
+    private List<GBTile> getTiles() {
+        int startAddress = getTileDataStartAddress();
+        List<GBTile> results = new ArrayList<GBTile>(256);
+        for (int i = 0; i < results.size(); ++i) {
+            results.add(new GBTileImpl(getDataInArray(startAddress, 16)));
+            startAddress += 16;
+        }
+        return results;
+    }
+
+    private boolean isTileNumbersSigned() {
+        return getTileDataStartAddress() == 0x8800;
     }
 
     /**

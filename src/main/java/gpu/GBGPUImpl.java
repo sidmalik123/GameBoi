@@ -44,8 +44,6 @@ public class GBGPUImpl implements GBGPU {
 
     private int windowScrollY;
 
-    private boolean isTileNumbersSigned;
-
     private GBMMU mmu;
 
     private GBPalette backgroundPalette;
@@ -95,7 +93,7 @@ public class GBGPUImpl implements GBGPU {
                     modeCycleCount = 0;
                     ++currLineNum; // move to the next line after hblank
 
-                    if (currLineNum == 144) { // @Todo - have a Screen object read this value from it
+                    if (currLineNum == 144) { // @Todo - have a Screen object read this value from it, render screen
                         currMode = GPUModeType.VBLANK;
                         interruptManager.requestInterrupt(InterruptType.VBLANK);
 
@@ -203,12 +201,12 @@ public class GBGPUImpl implements GBGPU {
         this.windowScrollY = scrollY;
     }
 
-    public void setIsTileNumbersSigned(boolean isSigned) {
-        this.isTileNumbersSigned = isSigned;
-    }
-
     public void setBackgroundPaletteColor(int colorNum, GBPalette.Color color) {
         backgroundPalette.setColor(colorNum, color);
+    }
+
+    public int getCurrLineNum() {
+        return currLineNum;
     }
 
     private boolean isCoincidence(){
