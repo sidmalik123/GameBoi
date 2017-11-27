@@ -321,6 +321,9 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         return getTileDataMap(getWindowTileIdentificationData());
     }
 
+    /**
+     * Returns a list of all 40 sprites
+     * */
     public List<GBSprite> getSprites() {
         GBMemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);
         List<GBSprite> sprites = new ArrayList<GBSprite>(40);
@@ -339,6 +342,13 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         return sprites;
     }
 
+    /**
+     * Initializes a sprite attribute object based on the data passed in
+     * if Bit6 -> enable X flip
+     * if Bit5 -> enable Y flip
+     * if Bit4 -> paletteNum is 2, else 1
+     * if Bit7 -> Sprite is prioritzed over background and window
+     * */
     private GBSpriteAttributes getSpriteAttributes(int data) {
         GBSpriteAttributes attributes = new GBSpritesAttributesImpl();
         attributes.setXFlip(BitUtils.isBitSet(data, 6));
