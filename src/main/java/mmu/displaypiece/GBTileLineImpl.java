@@ -1,4 +1,4 @@
-package mmu.tiles;
+package mmu.displaypiece;
 
 /**
  * GBTileLine implementing class, stores pixels in an array

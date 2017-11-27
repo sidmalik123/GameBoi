@@ -1,9 +1,11 @@
-package mmu.tiles;
+package mmu.displaypiece;
 
 /**
  * Interface to represent a GameBoy display Tile
  * */
 public interface GBTile {
+
+    int NUM_LINES = 8;
 
     /**
      * Sets a GBTile line

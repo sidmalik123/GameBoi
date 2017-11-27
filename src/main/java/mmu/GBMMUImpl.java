@@ -7,10 +7,7 @@ import cpu.interrupts.InterruptType;
 import gpu.GBGPU;
 import gpu.GPUModeType;
 import gpu.palette.GBPalette;
-import mmu.tiles.GBTile;
-import mmu.tiles.GBTileImpl;
-import mmu.tiles.GBTileLine;
-import mmu.tiles.GBTileLineImpl;
+import mmu.displaypiece.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -324,8 +321,28 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         return getTileDataMap(getWindowTileIdentificationData());
     }
 
+    public List<GBSprite> getSprites() {
+        GBMemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);
+        List<GBSprite> sprites = new ArrayList<GBSprite>();
+        List<GBTile> tiles = getTiles();
+        int address = spriteMemory.getStartAddress();
+        for (int i = 0; i < 40; ++i) {
+            GBSprite sprite = new GBSpriteImpl();
+            sprite.setYPos(spriteMemory.read(address++));
+            sprite.setXPos(spriteMemory.read(address++));
+            int tileNum = spriteMemory.read(address++);
+            sprite.setTile(tiles.get(tileNum));
+            sprite.se
+
+        }
+    }
+
+    private GBSpriteAttributes getSpriteAttributes(int data) {
+
+    }
+
     /**
-     * Returns 256 initialized tiles
+     * Returns 256 initialized Tiles
      * */
     private List<GBTile> getTiles() {
         int startAddress = getTileDataStartAddress();
@@ -343,7 +360,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private GBTile createTile(int[] tileData) {
         GBTile tile = new GBTileImpl();
         int j = 0;
-        for (int i = 0; i < 8; ++i) {
+        for (int i = 0; i < GBTile.NUM_LINES; ++i) {
             tile.setLine(i, createLine(tileData[j], tileData[j+1]));
             j += 2;
         }
@@ -356,8 +373,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
      * */
     private GBTileLine createLine(int upperByte, int lowerByte) {
         GBTileLine line = new GBTileLineImpl();
-        int numPixelsInALine = 8;
-        for (int i = 0; i < numPixelsInALine; ++i) {
+        for (int i = 0; i < GBTileLine.NUM_PIXELS; ++i) {
             line.setPixelColorNum(i,
                     getColorNum(BitUtils.isBitSet(upperByte, 7-i), BitUtils.isBitSet(lowerByte, 7-i)));
         }

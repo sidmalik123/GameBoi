@@ -83,6 +83,7 @@ public class GBGPUImpl implements GBGPU {
                     modeCycleCount = 0;
 
                     // @Todo - write a line to screen
+                    renderLine();
 
                     if (modesMap.get(currMode).isLCDInterruptEnabled())
                         interruptManager.requestInterrupt(InterruptType.LCD);
@@ -215,5 +216,9 @@ public class GBGPUImpl implements GBGPU {
 
     private boolean isCoincidenceLCDInterruptEnabled() {
         return isCoincidenceLCDInterruptEnabled;
+    }
+
+    private void renderLine() {
+
     }
 }

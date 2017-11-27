@@ -1,4 +1,4 @@
-package mmu.tiles;
+package mmu.displaypiece;
 
 
 public class GBTileImpl implements GBTile {

@@ -1,10 +1,12 @@
-package mmu.tiles;
+package mmu.displaypiece;
 
 /**
  * Interface to represent a GameBoy Tile line,
  * has 8 pixels
  * */
 public interface GBTileLine {
+
+    int NUM_PIXELS = 8;
 
     /**
      * Sets pixel pixelNum to have color colorNum
