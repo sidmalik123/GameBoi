@@ -43,5 +43,5 @@ public interface GBSprite {
     /**
      * Sets this sprite's aatributes
      * */
-    void serAttributes(GBSpriteAttributes attributes);
+    void setAttributes(GBSpriteAttributes attributes);
 }

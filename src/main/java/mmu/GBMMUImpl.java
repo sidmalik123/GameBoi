@@ -323,7 +323,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
 
     public List<GBSprite> getSprites() {
         GBMemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);
-        List<GBSprite> sprites = new ArrayList<GBSprite>();
+        List<GBSprite> sprites = new ArrayList<GBSprite>(40);
         List<GBTile> tiles = getTiles();
         int address = spriteMemory.getStartAddress();
         for (int i = 0; i < 40; ++i) {
@@ -332,13 +332,21 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
             sprite.setXPos(spriteMemory.read(address++));
             int tileNum = spriteMemory.read(address++);
             sprite.setTile(tiles.get(tileNum));
-            sprite.se
-
+            sprite.setAttributes(getSpriteAttributes(spriteMemory.read(address++)));
+            sprites.add(sprite);
         }
+
+        return sprites;
     }
 
     private GBSpriteAttributes getSpriteAttributes(int data) {
-
+        GBSpriteAttributes attributes = new GBSpritesAttributesImpl();
+        attributes.setXFlip(BitUtils.isBitSet(data, 6));
+        attributes.setYFlip(BitUtils.isBitSet(data, 5));
+        int paletteNum = BitUtils.isBitSet(data,4) ? 2 : 1;
+        attributes.setPaletteNum(paletteNum);
+        attributes.isSpritePrioritized(!BitUtils.isBitSet(data, 7));
+        return attributes;
     }
 
     /**
