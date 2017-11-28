@@ -301,13 +301,13 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private Map<Integer, GBTile> getTileDataMap(int[] tileIdNums) {
         Map<Integer, GBTile> result = new HashMap<Integer, GBTile>();
         List<GBTile> tiles = getTiles();
-        for (int i = 1; i <= tileIdNums.length; ++i) {
+        for (int i = 0; i < tileIdNums.length; ++i) {
             int tileNum;
             if (isTileNumbersSigned()) {
-                byte signedTileNum = (byte) tileIdNums[i-1];
+                byte signedTileNum = (byte) tileIdNums[i];
                 tileNum = signedTileNum + 128;
             } else {
-                tileNum = tileIdNums[i-1];
+                tileNum = tileIdNums[i];
             }
             result.put(tileNum, tiles.get(tileNum));
         }
@@ -322,7 +322,12 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
     /**
-     * Returns a list of all 40 sprites
+     * Returns a list of all 40 sprites,
+     * each Sprite takes 4 bytes to represent,
+     * byte1 -> yPos
+     * byte2 -> xPos
+     * byte3 -> tileNum
+     * byte4 -> attributes info
      * */
     public List<GBSprite> getSprites() {
         GBMemorySpace spriteMemory = memorySpaceMap.get(MemoryType.SPRITE_MEMORY);

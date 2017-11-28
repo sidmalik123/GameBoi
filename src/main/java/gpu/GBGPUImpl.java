@@ -5,6 +5,7 @@ import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
 import gpu.palette.GBPalette;
 import mmu.GBMMU;
+import mmu.displaypiece.GBTile;
 
 import java.util.Map;
 
@@ -48,8 +49,10 @@ public class GBGPUImpl implements GBGPU {
 
     private GBPalette backgroundPalette;
 
+    private GBScreen screen;
+
     public GBGPUImpl(GBInterruptManager interruptManager, GBMMU mmu) {
-        currLineNum = 1;
+        currLineNum = 0;
         modeCycleCount = 0;
         numLinesInVblank = 0;
         currMode = GPUModeType.ACCESSING_OAM; // start mode
@@ -82,7 +85,6 @@ public class GBGPUImpl implements GBGPU {
                     currMode = GPUModeType.HBLANK;
                     modeCycleCount = 0;
 
-                    // @Todo - write a line to screen
                     renderLine();
 
                     if (modesMap.get(currMode).isLCDInterruptEnabled())
@@ -94,7 +96,7 @@ public class GBGPUImpl implements GBGPU {
                     modeCycleCount = 0;
                     ++currLineNum; // move to the next line after hblank
 
-                    if (currLineNum == 144) { // @Todo - have a Screen object read this value from it, render screen
+                    if (currLineNum == 144) { // @Todo - have a GBScreen object read this value from it, render screen
                         currMode = GPUModeType.VBLANK;
                         interruptManager.requestInterrupt(InterruptType.VBLANK);
 
@@ -218,7 +220,43 @@ public class GBGPUImpl implements GBGPU {
         return isCoincidenceLCDInterruptEnabled;
     }
 
+    /**
+     * Renders the background, the window, and the sprites in that order,
+     * write the line to screen
+     * */
     private void renderLine() {
 
+        if (isBackgroundEnabled()) {
+            Map<Integer, GBTile> backgroundTileMap = mmu.getBackgroundTileMap();
+            int tileLine = backgroundScrollX/8; // out of the 32 tile lines which one is this
+            int currTileNum = (tileLine * 32) + backgroundScrollX/8; // topLeft tile is 0, next one to the right is 1, and so on
+            int lineInTile = (backgroundScrollY + currLineNum) % 8; // the line in tiles we are rendering
+            /* for the first tile line we render,
+               this is the first pixel we need to start to rendering from */
+            int startPixelNum = backgroundScrollX % 8;
+
+            int currPixelNum = 0; // currPixel out of 160
+
+            outerloop:
+            while (true) {
+                GBTile tile = backgroundTileMap.get(currTileNum);
+                for (int j = 0; j < 8 - startPixelNum; ++j, ++currPixelNum) {
+                    if (currPixelNum == 160) break outerloop; // break once we have rendered all 160 pixels
+                    GBPalette.Color color  = backgroundPalette.getColor(tile.getLine(lineInTile).getPixelColorNum(j));
+                    screen.setPixel(currPixelNum, currLineNum, color);
+                }
+                startPixelNum = 0;
+                ++currTileNum;
+            }
+
+        }
+
+        if (isWindowEnabled()) {
+
+        }
+
+        if (isSpritesEnabled()) {
+
+        }
     }
 }
