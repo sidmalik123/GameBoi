@@ -74,10 +74,20 @@ public interface GBGPU extends TimingObserver {
     /***
      * Sets background palette's color mapping
      */
-    void setBackgroundPaletteColor(int colorNum, GBPalette.Color color);
+    void setBackgroundPalette(GBPalette palette);
 
     /**
      * Returns the current line number the GPU is rendering
      * */
     int getCurrLineNum();
+
+    /**
+     * Sets the first palette for Sprites
+     * */
+    void setSpritesPalette1(GBPalette palette);
+
+    /**
+     * Sets the second palette for Sprites
+     * */
+    void setSpritesPalette2(GBPalette palette);
 }

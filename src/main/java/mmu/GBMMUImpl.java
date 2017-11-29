@@ -7,6 +7,7 @@ import cpu.interrupts.InterruptType;
 import gpu.GBGPU;
 import gpu.GPUModeType;
 import gpu.palette.GBPalette;
+import gpu.palette.GBPaletteImpl;
 import mmu.displaypiece.*;
 
 import java.util.ArrayList;
@@ -47,6 +48,8 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     private static final int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
 
     private static final int BACKGROUND_PALETTE_ADDRESS = 0xFF47;
+    private static final int SPRITE_PALETTE1_ADDRESS = 0xFF48;
+    private static final int SPRITE_PALETTE2_ADDRESS = 0xFF49;
 
     private static final int GPU_CURR_LINE_NUM_ADDRESS = 0xFF44;
 
@@ -152,11 +155,15 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
             case BACKGROUND_SCROLL_Y_ADDRESS:
                 gpu.setBackgroundScrollY(data);
             case WINDOW_SCROLL_X_ADDRESS:
-                gpu.setWindowScrollX(data);
+                gpu.setWindowScrollX(data - 7);
             case WINDOW_SCROLL_Y_ADDRESS:
                 gpu.setWindowScrollY(data);
             case BACKGROUND_PALETTE_ADDRESS:
-                setBackgroundPalette();
+                gpu.setBackgroundPalette(createPalette(data));
+            case SPRITE_PALETTE1_ADDRESS:
+                gpu.setSpritesPalette1(createPalette(data));
+            case SPRITE_PALETTE2_ADDRESS:
+                gpu.setSpritesPalette2(createPalette(data));
         }
     }
 
@@ -451,25 +458,6 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
     }
 
     /**
-     * Sets the background palette for the GPU,
-     * bit 1,0 -> color 1
-     * bit 3,2 -> color 2
-     * bit 5,4 -> color 3
-     * bit 7,6 -> color 4
-     * */
-    private void setBackgroundPalette() {
-        int paletteData = readData(BACKGROUND_PALETTE_ADDRESS);
-        gpu.setBackgroundPaletteColor(1,
-                getColor(BitUtils.isBitSet(paletteData, 1), BitUtils.isBitSet(paletteData, 0)));
-        gpu.setBackgroundPaletteColor(2,
-                getColor(BitUtils.isBitSet(paletteData, 3), BitUtils.isBitSet(paletteData, 2)));
-        gpu.setBackgroundPaletteColor(3,
-                getColor(BitUtils.isBitSet(paletteData, 5), BitUtils.isBitSet(paletteData, 4)));
-        gpu.setBackgroundPaletteColor(4,
-                getColor(BitUtils.isBitSet(paletteData, 7), BitUtils.isBitSet(paletteData, 6)));
-    }
-
-    /**
      * Returns the color the 2 bits passed in map to
      * 1 -> white
      * 2 -> light grey
@@ -502,5 +490,25 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         if (!isBit2Set && isBit1Set) return 2;
 
         return 1;
+    }
+
+    /**
+     * Returns a palette generated from paletteData,
+     * bit 1,0 -> color 1
+     * bit 3,2 -> color 2
+     * bit 5,4 -> color 3
+     * bit 7,6 -> color 4
+     * */
+    private GBPalette createPalette(int paletteData) {
+        GBPalette palette = new GBPaletteImpl();
+        palette.setColor(1, getColor(BitUtils.isBitSet(paletteData, 1), BitUtils.isBitSet(paletteData, 0)));
+        palette.setColor(2,
+                getColor(BitUtils.isBitSet(paletteData, 3), BitUtils.isBitSet(paletteData, 2)));
+        palette.setColor(3,
+                getColor(BitUtils.isBitSet(paletteData, 5), BitUtils.isBitSet(paletteData, 4)));
+        palette.setColor(4,
+                getColor(BitUtils.isBitSet(paletteData, 7), BitUtils.isBitSet(paletteData, 6)));
+
+        return palette;
     }
 }

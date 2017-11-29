@@ -196,11 +196,8 @@ public class GBGPUImpl implements GBGPU {
         this.backgroundScrollY = scrollY;
     }
 
-    /**
-     * Note: Sets windowScrollX to scollX - 7
-     * */
     public void setWindowScrollX(int scrollX) {
-        this.windowScrollX = scrollX - 7;
+        this.windowScrollX = scrollX;
     }
 
     public void setWindowScrollY(int scrollY) {
@@ -235,7 +232,7 @@ public class GBGPUImpl implements GBGPU {
         if (isBackgroundEnabled()) {
             Map<Integer, GBTile> backgroundTileMap = mmu.getBackgroundTileMap();
             /* for the first tile line we render,
-               this is the first pixel we need to start to rendering from */
+               this is the first pixel we need to start rendering from */
             int startPixelNum = backgroundScrollX % 8;
 
             int currPixelNum = 0; // currPixel out of 160
