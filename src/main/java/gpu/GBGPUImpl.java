@@ -286,7 +286,7 @@ public class GBGPUImpl implements GBGPU {
             }
         }
 
-        if (isSpritesEnabled()) {
+        if (isSpritesEnabled()) { // Todo - implement flipX
             List<GBSprite> sprites = mmu.getSprites();
             for (GBSprite sprite : sprites) {
                 if (!isSpritePresentOnLine(sprite, currLineNum)) continue;

@@ -3,7 +3,7 @@ package gpu;
 import gpu.palette.GBPalette;
 
 /**
- * Interface to manage a GBScreen object
+ * Interface to manage a Game Boy screen
  * */
 public interface GBScreen {
 
