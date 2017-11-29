@@ -90,4 +90,9 @@ public interface GBGPU extends TimingObserver {
      * Sets the second palette for Sprites
      * */
     void setSpritesPalette2(GBPalette palette);
+
+    /**
+     * Sets the global sprite size to 8x16, default is 8x8
+     * */
+    void setSpriteSize8by16(boolean isSpriteSize8by16);
 }

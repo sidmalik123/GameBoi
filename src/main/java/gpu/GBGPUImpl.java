@@ -5,8 +5,10 @@ import cpu.interrupts.GBInterruptManager;
 import cpu.interrupts.InterruptType;
 import gpu.palette.GBPalette;
 import mmu.GBMMU;
+import mmu.displaypiece.GBSprite;
 import mmu.displaypiece.GBTile;
 
+import java.util.List;
 import java.util.Map;
 
 public class GBGPUImpl implements GBGPU {
@@ -45,9 +47,15 @@ public class GBGPUImpl implements GBGPU {
 
     private int windowScrollY;
 
+    private boolean isSprites8by16;
+
     private GBMMU mmu;
 
     private GBPalette backgroundPalette;
+
+    private GBPalette spritePalette1;
+
+    private GBPalette spritePalette2;
 
     private GBScreen screen;
 
@@ -204,12 +212,24 @@ public class GBGPUImpl implements GBGPU {
         this.windowScrollY = scrollY;
     }
 
-    public void setBackgroundPaletteColor(int colorNum, GBPalette.Color color) {
-        backgroundPalette.setColor(colorNum, color);
+    public void setBackgroundPalette(GBPalette palette) {
+        this.backgroundPalette = palette;
     }
 
     public int getCurrLineNum() {
         return currLineNum;
+    }
+
+    public void setSpritesPalette1(GBPalette palette) {
+        this.spritePalette1 = palette;
+    }
+
+    public void setSpritesPalette2(GBPalette palette) {
+        this.spritePalette2 = palette;
+    }
+
+    public void setSpriteSize8by16(boolean isSpriteSize8by16) {
+        this.isSprites8by16 = isSpriteSize8by16;
     }
 
     private boolean isCoincidence(){
@@ -264,8 +284,14 @@ public class GBGPUImpl implements GBGPU {
             }
         }
 
+        /*
+        * Todo - implement 8x16 tiles, flipX, flipY
+        * */
         if (isSpritesEnabled()) {
+            List<GBSprite> sprites = mmu.getSprites();
+            for (GBSprite sprite : sprites) {
 
+            }
         }
     }
 

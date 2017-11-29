@@ -256,6 +256,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
      * 0 -> Background enabled/disabled
      * 1 -> Sprites enabled/disabled
      * 5 -> Window enabled/disabled
+     * 2 -> if sprite size is 8x16
      * */
     private void setGPUDisplayBits() {
         int lcdControlData = readData(LCD_CONTROL_REGISTER_ADDRESS);
@@ -263,6 +264,7 @@ public class GBMMUImpl extends AbstractTimingSubject implements GBMMU {
         gpu.setBackgroundEnabled(BitUtils.isBitSet(lcdControlData, 0));
         gpu.setSpritesEnabled(BitUtils.isBitSet(lcdControlData, 1));
         gpu.setWindowEnabled(BitUtils.isBitSet(lcdControlData, 5));
+        gpu.setSpriteSize8by16(BitUtils.isBitSet(lcdControlData, 2));
     }
 
     /**
