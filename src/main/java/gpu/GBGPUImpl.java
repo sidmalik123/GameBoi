@@ -196,8 +196,11 @@ public class GBGPUImpl implements GBGPU {
         this.backgroundScrollY = scrollY;
     }
 
+    /**
+     * Note: Sets windowScrollX to scollX - 7
+     * */
     public void setWindowScrollX(int scrollX) {
-        this.windowScrollX = scrollX;
+        this.windowScrollX = scrollX - 7;
     }
 
     public void setWindowScrollY(int scrollY) {
@@ -225,12 +228,12 @@ public class GBGPUImpl implements GBGPU {
      * write the line to screen
      * */
     private void renderLine() {
+        final int tileLine = (backgroundScrollY + currLineNum)/8; // out of the 32 tile lines which one is this
+        final int firstTileNum = (tileLine * 32) + backgroundScrollX/8; // topLeft tile is 0, next one to the right is 1, and so on
+        final int lineInTile = (backgroundScrollY + currLineNum) % 8; // the line in tiles we are rendering
 
         if (isBackgroundEnabled()) {
             Map<Integer, GBTile> backgroundTileMap = mmu.getBackgroundTileMap();
-            int tileLine = backgroundScrollX/8; // out of the 32 tile lines which one is this
-            int currTileNum = (tileLine * 32) + backgroundScrollX/8; // topLeft tile is 0, next one to the right is 1, and so on
-            int lineInTile = (backgroundScrollY + currLineNum) % 8; // the line in tiles we are rendering
             /* for the first tile line we render,
                this is the first pixel we need to start to rendering from */
             int startPixelNum = backgroundScrollX % 8;
@@ -238,25 +241,41 @@ public class GBGPUImpl implements GBGPU {
             int currPixelNum = 0; // currPixel out of 160
 
             outerloop:
-            while (true) {
-                GBTile tile = backgroundTileMap.get(currTileNum);
-                for (int j = 0; j < 8 - startPixelNum; ++j, ++currPixelNum) {
+            for (int i = firstTileNum; ; ++i){
+                GBTile tile = backgroundTileMap.get(i);
+                for (int j = startPixelNum; j < 8; ++j, ++currPixelNum) {
                     if (currPixelNum == 160) break outerloop; // break once we have rendered all 160 pixels
                     GBPalette.Color color  = backgroundPalette.getColor(tile.getLine(lineInTile).getPixelColorNum(j));
                     screen.setPixel(currPixelNum, currLineNum, color);
                 }
                 startPixelNum = 0;
-                ++currTileNum;
             }
-
         }
 
         if (isWindowEnabled()) {
+            if (isWindowPresentOnLine(currLineNum)) { // only draw if window is present on the current line
+                Map<Integer, GBTile> windowTileMap = mmu.getWindowTileMap();
+                int currTileNum = firstTileNum + (windowScrollX / 8);
+                for (int i = windowScrollX; i < 160; ++i) { // start drawing from the window start pos to end of screen
+                    if (i % 8 == 0) ++currTileNum; // if all pixels of this tile have been drawn move to the next tile
+                    GBTile tile = windowTileMap.get(currTileNum);
+                    GBPalette.Color color  = backgroundPalette. // map the color
+                            getColor(tile.getLine(lineInTile).getPixelColorNum(i%8));
+                    screen.setPixel(i, currLineNum, color);
+                }
 
+            }
         }
 
         if (isSpritesEnabled()) {
 
         }
+    }
+
+    /**
+     * Checks if any part of the window is present on line lineNum
+     * */
+    private boolean isWindowPresentOnLine(int lineNum) {
+        return (windowScrollY <= lineNum) && windowScrollX >=0 && windowScrollX < 160;
     }
 }
