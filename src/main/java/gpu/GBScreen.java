@@ -15,6 +15,11 @@ public interface GBScreen {
     void setPixel(int xPos, int yPos, GBPalette.Color color);
 
     /**
+     * Returns the color of pixel at (xPos, yPos)
+     * */
+    GBPalette.Color getPixelColor(int xPos, int yPos);
+
+    /**
      * Renders the screen
      * */
     void render();

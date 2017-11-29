@@ -7,7 +7,9 @@ import gpu.palette.GBPalette;
 import mmu.GBMMU;
 import mmu.displaypiece.GBSprite;
 import mmu.displaypiece.GBTile;
+import mmu.displaypiece.GBTileLine;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -284,13 +286,31 @@ public class GBGPUImpl implements GBGPU {
             }
         }
 
-        /*
-        * Todo - implement 8x16 tiles, flipX, flipY
-        * */
         if (isSpritesEnabled()) {
             List<GBSprite> sprites = mmu.getSprites();
             for (GBSprite sprite : sprites) {
+                if (!isSpritePresentOnLine(sprite, currLineNum)) continue;
 
+                // if sprite is present on the currLine
+                int startPixel = sprite.getXPos() - 8;
+                GBPalette palette = sprite.getAttributes().getPaletteNum() == 2 ? spritePalette2 : spritePalette1;
+                boolean flipY = sprite.getAttributes().isYFlip();
+                boolean isSpritePrioritized = sprite.getAttributes().isSpritePrioritized();
+                GBTile tile = sprite.getTile();
+                Map<Integer, Integer> pixelNumToColorNumMap = new HashMap<Integer, Integer>();
+                GBTileLine line = tile.getLine(lineInTile);
+                for (int i = 0; i < 8; ++i) {
+                    pixelNumToColorNumMap.put(i,
+                            flipY ? line.getPixelColorNum(7-i) : line.getPixelColorNum(i));
+                }
+                for (int i = 0; i < 8; ++i) {
+                    if (isSpritePrioritized) {
+                        screen.setPixel(startPixel + i, currLineNum, palette.getColor(pixelNumToColorNumMap.get(i)));
+                    } else {
+                        if (screen.getPixelColor(startPixel + i, currLineNum) == GBPalette.Color.WHITE)
+                            screen.setPixel(startPixel + i, currLineNum, palette.getColor(pixelNumToColorNumMap.get(i)));
+                    }
+                }
             }
         }
     }
@@ -300,5 +320,16 @@ public class GBGPUImpl implements GBGPU {
      * */
     private boolean isWindowPresentOnLine(int lineNum) {
         return (windowScrollY <= lineNum) && windowScrollX >=0 && windowScrollX < 160;
+    }
+
+    /**
+     * Checks if sprite is present on line lineNum
+     * */
+    private boolean isSpritePresentOnLine(GBSprite sprite, int lineNum) {
+        int startPos = sprite.getYPos() - 16;
+
+        int endPos = startPos + (isSprites8by16 ? 16 : 8) - 1;
+
+        return  (lineNum >= startPos && lineNum <= endPos);
     }
 }
