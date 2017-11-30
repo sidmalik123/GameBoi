@@ -36,7 +36,9 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * */
     private int executeInstruction(int instruction) { // Note - update programCounter at the end
 
-        switch (instruction & 0xFF) {
+        int opCode = instruction & 0xFF;
+
+        switch (opCode) {
             case 0x06: return loadImmediateByteIntoRegister(SingleRegister.B);
             case 0x0E: return loadImmediateByteIntoRegister(SingleRegister.C);
             case 0x16: return loadImmediateByteIntoRegister(SingleRegister.D);
@@ -133,19 +135,13 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
             case 0xD5: return pushRegisterToStack(DoubleRegister.DE);
             case 0xE5: return pushRegisterToStack(DoubleRegister.HL);
 
+            case 0xF1: return popStackIntoRegister(DoubleRegister.AF);
+            case 0xC1: return popStackIntoRegister(DoubleRegister.BC);
+            case 0xD1: return popStackIntoRegister(DoubleRegister.DE);
+            case 0xE1: return popStackIntoRegister(DoubleRegister.HL);
 
-
-
-
-
-
-
-
-
-
-
-
-
+            default:
+                throw new IllegalArgumentException("Unknow opcode: " + opCode);
         }
 
     }
