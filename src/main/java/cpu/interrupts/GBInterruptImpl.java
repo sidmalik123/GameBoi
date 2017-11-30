@@ -28,21 +28,4 @@ public class GBInterruptImpl implements GBInterrupt {
     public InterruptType getInterruptType() {
         return interruptType;
     }
-
-    //    public int getServiceAddress() { Todo - move this to cpu
-//        switch (this.interruptType) {
-//            case VBLANK:
-//                return 0x40;
-//            case LCD:
-//                return 0x48;
-//            case TIMER:
-//                return 0x50;
-//            case SERIAL:
-//                return 0x58;
-//            case JOYPAD:
-//                return 0x60;
-//            default:
-//                throw new IllegalArgumentException("Illegal InterruptType " + this.interruptType);
-//        }
-//    }
 }
