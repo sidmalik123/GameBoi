@@ -11,6 +11,7 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
     private Register regH;
     private Register regL;
     private GBFlagRegister flagRegister;
+    private int stackPointer;
 
 
     // @todo - refactor this to use a map of registers and double registers to have methods to access single registers
@@ -68,6 +69,8 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
                 return regD.getData() << 8 | regE.getData();
             case HL:
                 return regH.getData() << 8 | regL.getData();
+            case SP:
+                return stackPointer;
             default:
                 throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
 
@@ -85,6 +88,8 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
             case HL:
                 regH.setData(data >> 8);
                 regL.setData(data & 0xFF);
+            case SP:
+                stackPointer = data;
             default:
                 throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
 

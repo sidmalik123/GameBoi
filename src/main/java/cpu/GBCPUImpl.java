@@ -17,7 +17,6 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     private GBInterruptManager interruptManager;
 
     private int PC; // set by the mmu on program load
-    private int SP;
 
     private int numCyclesPassed;
 
@@ -34,8 +33,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     /**
-     * Executes the next intsruction, updates the program counter
-     * by however many bytes make up the executed instruction
+     * Execute instruction
      *
      * @return num of clock cycles taken to execute the instruction
      * */
@@ -121,6 +119,19 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
             case 0x1A: return writeMemoryToRegister(SingleRegister.A, DoubleRegister.DE);
             case 0xF2: return writeMemoryToRegister(SingleRegister.A, SingleRegister.C);
 
+            case 0x3A: return (writeMemoryToRegister(SingleRegister.A, DoubleRegister.HL) + decrementRegister(DoubleRegister.HL));
+            case 0x2A: return (writeMemoryToRegister(SingleRegister.A, DoubleRegister.HL) + incrementRegister(DoubleRegister.HL));
+
+            case 0x32: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.A) + decrementRegister(DoubleRegister.HL);
+            case 0x22: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.A) + incrementRegister(DoubleRegister.HL);
+
+            case 0x01: return loadImmediateWordIntoRegister(DoubleRegister.BC);
+            case 0x11: return loadImmediateWordIntoRegister(DoubleRegister.DE);
+            case 0x21: return loadImmediateWordIntoRegister(DoubleRegister.HL);
+            case 0x31: return loadImmediateWordIntoRegister(DoubleRegister.SP);
+            case 0xF9: return loadRegisterFromRegister(DoubleRegister.SP, DoubleRegister.HL);
+
+
 
 
 
@@ -155,6 +166,16 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     private int loadRegisterFromRegister(SingleRegister r1, SingleRegister r2) {
         registerManager.set(r1, registerManager.get(r2));
         return 4;
+    }
+
+    /**
+     * Sets the value of d1 to be the same as the value of d2
+     *
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int loadRegisterFromRegister(DoubleRegister d1, DoubleRegister d2) {
+        registerManager.set(d1, registerManager.get(d2));
+        return 8;
     }
 
     /**
@@ -197,6 +218,36 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
         return 8;
     }
 
+    /**
+     * Decrements the value of d by 1
+     *
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int decrementRegister(DoubleRegister d) {
+        registerManager.set(d, registerManager.get(d) - 1);
+        return 0;
+    }
+
+    /**
+     * Increments the value of d by 1
+     *
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int incrementRegister(DoubleRegister d) {
+        registerManager.set(d, registerManager.get(d) + 1);
+        return 0;
+    }
+
+    /**
+     * Loads the immediate word into d
+     *
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int loadImmediateWordIntoRegister(DoubleRegister d) {
+        registerManager.set(d, getImmediateWord());
+        return 12;
+    }
+
     private void loadRegisterFromAddress(SingleRegister r1) {
         registerManager.set(r1, getImmediateAddressValue());
         numCyclesPassed += 16;
@@ -227,7 +278,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     private void loadRegisterFromImmediate16(DoubleRegister r1) {
-        registerManager.set(r1, getImmediateValue16());
+        registerManager.set(r1, getImmediateWord());
     }
 
     // special loads
@@ -586,18 +637,21 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     private int getImmediateAddressValue() {
-        int address = getImmediateValue16();
+        int address = getImmediateWord();
         return mmu.readData(address);
     }
 
     /**
-     * Reads and returns the next 8 immediate bytes from memory
+     * Reads and returns the next 8 immediate bits from memory
      * */
     private int getImmediateByte() {
         return mmu.readData(++PC);
     }
 
-    private int getImmediateValue16() {
+    /**
+     * Reads and returns the next 16 immediate bits from memory
+     * */
+    private int getImmediateWord() {
         int val1 = mmu.readData(++PC);
         int val2 = mmu.readData(++PC);
         return val2 << 8 | val1;
