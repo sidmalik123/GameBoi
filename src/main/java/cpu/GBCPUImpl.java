@@ -1,6 +1,7 @@
 package cpu;
 
 import core.AbstractTimingSubject;
+import core.BitUtils;
 import cpu.interrupts.GBInterruptManager;
 import mmu.GBMMU;
 
@@ -140,6 +141,46 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
             case 0xD1: return popStackIntoRegister(DoubleRegister.DE);
             case 0xE1: return popStackIntoRegister(DoubleRegister.HL);
 
+            case 0x87: return addRegisterToRegister(SingleRegister.A, SingleRegister.A, false);
+            case 0x80: return addRegisterToRegister(SingleRegister.A, SingleRegister.B, false);
+            case 0x81: return addRegisterToRegister(SingleRegister.A, SingleRegister.C, false);
+            case 0x82: return addRegisterToRegister(SingleRegister.A, SingleRegister.D, false);
+            case 0x83: return addRegisterToRegister(SingleRegister.A, SingleRegister.E, false);
+            case 0x84: return addRegisterToRegister(SingleRegister.A, SingleRegister.H, false);
+            case 0x85: return addRegisterToRegister(SingleRegister.A, SingleRegister.L, false);
+            case 0x86: return addMemoryToRegister(SingleRegister.A, DoubleRegister.HL, false);
+            case 0xC6: return addImmediateByteToRegister(SingleRegister.A, false);
+
+            case 0x8F: return addRegisterToRegister(SingleRegister.A, SingleRegister.A, true);
+            case 0x88: return addRegisterToRegister(SingleRegister.A, SingleRegister.B, true);
+            case 0x89: return addRegisterToRegister(SingleRegister.A, SingleRegister.C, true);
+            case 0x8A: return addRegisterToRegister(SingleRegister.A, SingleRegister.D, true);
+            case 0x8B: return addRegisterToRegister(SingleRegister.A, SingleRegister.E, true);
+            case 0x8C: return addRegisterToRegister(SingleRegister.A, SingleRegister.H, true);
+            case 0x8D: return addRegisterToRegister(SingleRegister.A, SingleRegister.L, true);
+            case 0x8E: return addMemoryToRegister(SingleRegister.A, DoubleRegister.HL, true);
+            case 0xCE: return addImmediateByteToRegister(SingleRegister.A, true);
+
+            case 0x97: return subRegisterFromRegister(SingleRegister.A, SingleRegister.A, false);
+            case 0x90: return subRegisterFromRegister(SingleRegister.A, SingleRegister.B, false);
+            case 0x91: return subRegisterFromRegister(SingleRegister.A, SingleRegister.C, false);
+            case 0x92: return subRegisterFromRegister(SingleRegister.A, SingleRegister.D, false);
+            case 0x93: return subRegisterFromRegister(SingleRegister.A, SingleRegister.E, false);
+            case 0x94: return subRegisterFromRegister(SingleRegister.A, SingleRegister.H, false);
+            case 0x95: return subRegisterFromRegister(SingleRegister.A, SingleRegister.L, false);
+            case 0x96: return subMemoryFromRegister(SingleRegister.A, DoubleRegister.HL, false);
+            case 0xD6: return subImmediateByteFromRegister(SingleRegister.A, false);
+
+            case 0x9F: return subRegisterFromRegister(SingleRegister.A, SingleRegister.A, true);
+            case 0x98: return subRegisterFromRegister(SingleRegister.A, SingleRegister.B, true);
+            case 0x99: return subRegisterFromRegister(SingleRegister.A, SingleRegister.C, true);
+            case 0x9A: return subRegisterFromRegister(SingleRegister.A, SingleRegister.D, true);
+            case 0x9B: return subRegisterFromRegister(SingleRegister.A, SingleRegister.E, true);
+            case 0x9C: return subRegisterFromRegister(SingleRegister.A, SingleRegister.H, true);
+            case 0x9D: return subRegisterFromRegister(SingleRegister.A, SingleRegister.L, true);
+            case 0x9E: return subMemoryFromRegister(SingleRegister.A, DoubleRegister.HL, true);
+            case 0xDE: return subImmediateByteFromRegister(SingleRegister.A, true);
+
             default:
                 throw new IllegalArgumentException("Unknow opcode: " + opCode);
         }
@@ -273,6 +314,85 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     /**
+     * Adds r1 and r2, puts the value in r1
+     * Sets the flags carry, half-carry and zero
+     *
+     * @param addCarry if carry flag is set add result is incremented by 1
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int addRegisterToRegister(SingleRegister r1, SingleRegister r2, boolean addCarry) {
+        registerManager.set(r1,
+                performAdd(registerManager.get(r1), registerManager.get(r2), addCarry));
+        return 4;
+    }
+
+    /**
+     * Adds r and value at memory address d, puts the value in r
+     * Sets the flags carry, half-carry and zero
+     *
+     * @param addCarry if carry flag is set add result is incremented by 1
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int addMemoryToRegister(SingleRegister r, DoubleRegister d, boolean addCarry) {
+        registerManager.set(r,
+                performAdd(registerManager.get(r), mmu.readData(registerManager.get(d)), addCarry));
+        return 8;
+    }
+
+    /**
+     * Adds r and the immediate byte, puts the result in r
+     * Sets the flags carry, half-carry and zero
+     *
+     * @param addCarry if carry flag is set add result is incremented by 1
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int addImmediateByteToRegister(SingleRegister r, boolean addCarry) {
+        registerManager.set(r,
+                performAdd(registerManager.get(r), getImmediateByte(), addCarry));
+        return 8;
+    }
+
+    /**
+     * Subtracts r1 and r2, puts the result in r1
+     * Sets the flags carry, half-carry, zero and operation flag
+     *
+     * @param subCarry if carry flag is set add result is decremented by 1
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int subRegisterFromRegister(SingleRegister r1, SingleRegister r2, boolean subCarry) {
+        registerManager.set(r1,
+                performSub(registerManager.get(r1), registerManager.get(r2), subCarry));
+
+        return 4;
+    }
+
+    /**
+     * Subs value at memory address d from r, puts the value in r
+     * Sets the flags carry, half-carry, zero and operation flag
+     *
+     * @param addCarry if carry flag is set add result is incremented by 1
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int subMemoryFromRegister(SingleRegister r, DoubleRegister d, boolean addCarry) {
+        registerManager.set(r,
+                performSub(registerManager.get(r), mmu.readData(registerManager.get(d)), addCarry));
+        return 8;
+    }
+
+    /**
+     * Subs immediate byte from r, puts the result in r
+     * Sets the flags carry, half-carry, zero and operation flag
+     *
+     * @param addCarry if carry flag is set add result is incremented by 1
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int subImmediateByteFromRegister(SingleRegister r, boolean addCarry) {
+        registerManager.set(r,
+                performSub(registerManager.get(r), getImmediateByte(), addCarry));
+        return 8;
+    }
+
+    /**
      * Reads and returns the next 8 immediate bits from memory
      * */
     private int getImmediateByte() {
@@ -295,6 +415,47 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
         int stackPointer = registerManager.get(DoubleRegister.SP);
         mmu.writeData(stackPointer - 1, data);
         registerManager.set(DoubleRegister.SP, stackPointer - 1);
+    }
+
+    /**
+     * Performs addition on of val1 and val2,
+     * if addCarry is true and the carry flag is set, result is incremented by 1
+     *
+     * Sets the carry, half-carry and zero flag
+     * Note: This is used in ALU CPU methods as a helper
+     * */
+    private int performAdd(int val1, int val2, boolean addCarry) {
+        int result;
+        int toAdd = val2;
+        if (addCarry && registerManager.getCarryFlag()) ++toAdd;
+        result = val1 + toAdd;
+
+        registerManager.setZeroFlag((result & 0xFF) == 0);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd(val1,toAdd));
+        registerManager.setCarryFlag(BitUtils.isCarryAdd(val1, toAdd));
+
+        return result;
+    }
+
+    /**
+     * Performs subtraction on of val1 and val2,
+     * if addCarry is true and the carry flag is set, result is decremented by 1
+     *
+     * Sets the carry, half-carry and zero flag and operation flag
+     * Note: This is used in ALU CPU methods as a helper
+     * */
+    private int performSub(int val1, int val2, boolean subCarry) {
+        int result;
+        int toSub = val2;
+        if (subCarry && registerManager.getCarryFlag()) ++toSub;
+        result = val1 - toSub;
+
+        registerManager.setZeroFlag((result & 0xFF) == 0);
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarrySub(val1, toSub));
+        registerManager.setCarryFlag(BitUtils.isCarrySub(val1, toSub));
+        registerManager.setOperationFlag(true);
+
+        return result;
     }
 
     /**
