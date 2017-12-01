@@ -191,6 +191,15 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
             case 0xA6: return and(SingleRegister.A, DoubleRegister.HL);
             case 0xE6: return and(SingleRegister.A);
 
+            case 0xB7: return or(SingleRegister.A, SingleRegister.A);
+            case 0xB0: return or(SingleRegister.A, SingleRegister.B);
+            case 0xB1: return or(SingleRegister.A, SingleRegister.C);
+            case 0xB2: return or(SingleRegister.A, SingleRegister.D);
+            case 0xB3: return or(SingleRegister.A, SingleRegister.E);
+            case 0xB4: return or(SingleRegister.A, SingleRegister.H);
+            case 0xB5: return or(SingleRegister.A, SingleRegister.L);
+            case 0xB6: return or(SingleRegister.A, DoubleRegister.HL);
+            case 0xF6: return or(SingleRegister.A);
 
             default:
                 throw new IllegalArgumentException("Unknow opcode: " + opCode);
@@ -435,6 +444,39 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     /**
+     * ORs r1 with r2 stores result in r1,
+     * Sets zero flag if result is zero
+     * resets carry, operation flag, half-carry flag
+     *
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int or(SingleRegister r1, SingleRegister r2) {
+        registerManager.set(r1,
+                performOr(registerManager.get(r1), registerManager.get(r2)));
+        return 4;
+    }
+
+    /**
+     * Sames as or(SingleRegister r1, SingleRegister r2)
+     * but uses value at address as second arg
+     * */
+    private int or(SingleRegister r, DoubleRegister d) {
+        registerManager.set(r,
+                performOr(registerManager.get(r), mmu.readData(registerManager.get(d))));
+        return 8;
+    }
+
+    /**
+     * Sames as or(SingleRegister r1, SingleRegister r2)
+     * but uses immediate byte as second arg
+     * */
+    private int or(SingleRegister r) {
+        registerManager.set(r,
+                performOr(registerManager.get(r), getImmediateByte()));
+        return 8;
+    }
+
+    /**
      * Reads and returns the next 8 immediate bits from memory
      * */
     private int getImmediateByte() {
@@ -512,6 +554,24 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
 
         registerManager.setZeroFlag((result & 0xFF) == 0);
         registerManager.setHalfCarryFlag(true);
+        registerManager.setCarryFlag(false);
+        registerManager.setOperationFlag(false);
+
+        return result;
+    }
+
+    /**
+     * Performs bitwise OR on val1 and val2,
+     * Sets zero flag if result is zero
+     * resets carry, operation flag and half-carry flag
+     *
+     * @return result of the AND
+     * */
+    private int performOr(int val1, int val2) {
+        int result = val1 | val2;
+
+        registerManager.setZeroFlag((result & 0xFF) == 0);
+        registerManager.setHalfCarryFlag(false);
         registerManager.setCarryFlag(false);
         registerManager.setOperationFlag(false);
 
