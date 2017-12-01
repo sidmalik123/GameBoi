@@ -35,7 +35,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      *
      * @return num of clock cycles taken to execute the instruction
      * */
-    private int executeInstruction(int instruction) { // Note - update programCounter at the end
+    private int executeInstruction(int instruction) { // todo - update programCounter at the end
 
         int opCode = instruction & 0xFF;
 
@@ -141,45 +141,56 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
             case 0xD1: return popStackIntoRegister(DoubleRegister.DE);
             case 0xE1: return popStackIntoRegister(DoubleRegister.HL);
 
-            case 0x87: return addRegisterToRegister(SingleRegister.A, SingleRegister.A, false);
-            case 0x80: return addRegisterToRegister(SingleRegister.A, SingleRegister.B, false);
-            case 0x81: return addRegisterToRegister(SingleRegister.A, SingleRegister.C, false);
-            case 0x82: return addRegisterToRegister(SingleRegister.A, SingleRegister.D, false);
-            case 0x83: return addRegisterToRegister(SingleRegister.A, SingleRegister.E, false);
-            case 0x84: return addRegisterToRegister(SingleRegister.A, SingleRegister.H, false);
-            case 0x85: return addRegisterToRegister(SingleRegister.A, SingleRegister.L, false);
-            case 0x86: return addMemoryToRegister(SingleRegister.A, DoubleRegister.HL, false);
-            case 0xC6: return addImmediateByteToRegister(SingleRegister.A, false);
+            case 0x87: return add(SingleRegister.A, SingleRegister.A, false);
+            case 0x80: return add(SingleRegister.A, SingleRegister.B, false);
+            case 0x81: return add(SingleRegister.A, SingleRegister.C, false);
+            case 0x82: return add(SingleRegister.A, SingleRegister.D, false);
+            case 0x83: return add(SingleRegister.A, SingleRegister.E, false);
+            case 0x84: return add(SingleRegister.A, SingleRegister.H, false);
+            case 0x85: return add(SingleRegister.A, SingleRegister.L, false);
+            case 0x86: return add(SingleRegister.A, DoubleRegister.HL, false);
+            case 0xC6: return add(SingleRegister.A, false);
 
-            case 0x8F: return addRegisterToRegister(SingleRegister.A, SingleRegister.A, true);
-            case 0x88: return addRegisterToRegister(SingleRegister.A, SingleRegister.B, true);
-            case 0x89: return addRegisterToRegister(SingleRegister.A, SingleRegister.C, true);
-            case 0x8A: return addRegisterToRegister(SingleRegister.A, SingleRegister.D, true);
-            case 0x8B: return addRegisterToRegister(SingleRegister.A, SingleRegister.E, true);
-            case 0x8C: return addRegisterToRegister(SingleRegister.A, SingleRegister.H, true);
-            case 0x8D: return addRegisterToRegister(SingleRegister.A, SingleRegister.L, true);
-            case 0x8E: return addMemoryToRegister(SingleRegister.A, DoubleRegister.HL, true);
-            case 0xCE: return addImmediateByteToRegister(SingleRegister.A, true);
+            case 0x8F: return add(SingleRegister.A, SingleRegister.A, true);
+            case 0x88: return add(SingleRegister.A, SingleRegister.B, true);
+            case 0x89: return add(SingleRegister.A, SingleRegister.C, true);
+            case 0x8A: return add(SingleRegister.A, SingleRegister.D, true);
+            case 0x8B: return add(SingleRegister.A, SingleRegister.E, true);
+            case 0x8C: return add(SingleRegister.A, SingleRegister.H, true);
+            case 0x8D: return add(SingleRegister.A, SingleRegister.L, true);
+            case 0x8E: return add(SingleRegister.A, DoubleRegister.HL, true);
+            case 0xCE: return add(SingleRegister.A, true);
 
-            case 0x97: return subRegisterFromRegister(SingleRegister.A, SingleRegister.A, false);
-            case 0x90: return subRegisterFromRegister(SingleRegister.A, SingleRegister.B, false);
-            case 0x91: return subRegisterFromRegister(SingleRegister.A, SingleRegister.C, false);
-            case 0x92: return subRegisterFromRegister(SingleRegister.A, SingleRegister.D, false);
-            case 0x93: return subRegisterFromRegister(SingleRegister.A, SingleRegister.E, false);
-            case 0x94: return subRegisterFromRegister(SingleRegister.A, SingleRegister.H, false);
-            case 0x95: return subRegisterFromRegister(SingleRegister.A, SingleRegister.L, false);
-            case 0x96: return subMemoryFromRegister(SingleRegister.A, DoubleRegister.HL, false);
-            case 0xD6: return subImmediateByteFromRegister(SingleRegister.A, false);
+            case 0x97: return sub(SingleRegister.A, SingleRegister.A, false);
+            case 0x90: return sub(SingleRegister.A, SingleRegister.B, false);
+            case 0x91: return sub(SingleRegister.A, SingleRegister.C, false);
+            case 0x92: return sub(SingleRegister.A, SingleRegister.D, false);
+            case 0x93: return sub(SingleRegister.A, SingleRegister.E, false);
+            case 0x94: return sub(SingleRegister.A, SingleRegister.H, false);
+            case 0x95: return sub(SingleRegister.A, SingleRegister.L, false);
+            case 0x96: return sub(SingleRegister.A, DoubleRegister.HL, false);
+            case 0xD6: return sub(SingleRegister.A, false);
 
-            case 0x9F: return subRegisterFromRegister(SingleRegister.A, SingleRegister.A, true);
-            case 0x98: return subRegisterFromRegister(SingleRegister.A, SingleRegister.B, true);
-            case 0x99: return subRegisterFromRegister(SingleRegister.A, SingleRegister.C, true);
-            case 0x9A: return subRegisterFromRegister(SingleRegister.A, SingleRegister.D, true);
-            case 0x9B: return subRegisterFromRegister(SingleRegister.A, SingleRegister.E, true);
-            case 0x9C: return subRegisterFromRegister(SingleRegister.A, SingleRegister.H, true);
-            case 0x9D: return subRegisterFromRegister(SingleRegister.A, SingleRegister.L, true);
-            case 0x9E: return subMemoryFromRegister(SingleRegister.A, DoubleRegister.HL, true);
-            case 0xDE: return subImmediateByteFromRegister(SingleRegister.A, true);
+            case 0x9F: return sub(SingleRegister.A, SingleRegister.A, true);
+            case 0x98: return sub(SingleRegister.A, SingleRegister.B, true);
+            case 0x99: return sub(SingleRegister.A, SingleRegister.C, true);
+            case 0x9A: return sub(SingleRegister.A, SingleRegister.D, true);
+            case 0x9B: return sub(SingleRegister.A, SingleRegister.E, true);
+            case 0x9C: return sub(SingleRegister.A, SingleRegister.H, true);
+            case 0x9D: return sub(SingleRegister.A, SingleRegister.L, true);
+            case 0x9E: return sub(SingleRegister.A, DoubleRegister.HL, true);
+            case 0xDE: return sub(SingleRegister.A, true);
+
+            case 0xA7: return and(SingleRegister.A, SingleRegister.A);
+            case 0xA0: return and(SingleRegister.A, SingleRegister.B);
+            case 0xA1: return and(SingleRegister.A, SingleRegister.C);
+            case 0xA2: return and(SingleRegister.A, SingleRegister.D);
+            case 0xA3: return and(SingleRegister.A, SingleRegister.E);
+            case 0xA4: return and(SingleRegister.A, SingleRegister.H);
+            case 0xA5: return and(SingleRegister.A, SingleRegister.L);
+            case 0xA6: return and(SingleRegister.A, DoubleRegister.HL);
+            case 0xE6: return and(SingleRegister.A);
+
 
             default:
                 throw new IllegalArgumentException("Unknow opcode: " + opCode);
@@ -320,7 +331,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * @param addCarry if carry flag is set add result is incremented by 1
      * @return num of cpu cycles taken to perform op
      * */
-    private int addRegisterToRegister(SingleRegister r1, SingleRegister r2, boolean addCarry) {
+    private int add(SingleRegister r1, SingleRegister r2, boolean addCarry) {
         registerManager.set(r1,
                 performAdd(registerManager.get(r1), registerManager.get(r2), addCarry));
         return 4;
@@ -333,7 +344,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * @param addCarry if carry flag is set add result is incremented by 1
      * @return num of cpu cycles taken to perform op
      * */
-    private int addMemoryToRegister(SingleRegister r, DoubleRegister d, boolean addCarry) {
+    private int add(SingleRegister r, DoubleRegister d, boolean addCarry) {
         registerManager.set(r,
                 performAdd(registerManager.get(r), mmu.readData(registerManager.get(d)), addCarry));
         return 8;
@@ -346,7 +357,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * @param addCarry if carry flag is set add result is incremented by 1
      * @return num of cpu cycles taken to perform op
      * */
-    private int addImmediateByteToRegister(SingleRegister r, boolean addCarry) {
+    private int add(SingleRegister r, boolean addCarry) {
         registerManager.set(r,
                 performAdd(registerManager.get(r), getImmediateByte(), addCarry));
         return 8;
@@ -359,7 +370,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * @param subCarry if carry flag is set add result is decremented by 1
      * @return num of cpu cycles taken to perform op
      * */
-    private int subRegisterFromRegister(SingleRegister r1, SingleRegister r2, boolean subCarry) {
+    private int sub(SingleRegister r1, SingleRegister r2, boolean subCarry) {
         registerManager.set(r1,
                 performSub(registerManager.get(r1), registerManager.get(r2), subCarry));
 
@@ -373,7 +384,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * @param addCarry if carry flag is set add result is incremented by 1
      * @return num of cpu cycles taken to perform op
      * */
-    private int subMemoryFromRegister(SingleRegister r, DoubleRegister d, boolean addCarry) {
+    private int sub(SingleRegister r, DoubleRegister d, boolean addCarry) {
         registerManager.set(r,
                 performSub(registerManager.get(r), mmu.readData(registerManager.get(d)), addCarry));
         return 8;
@@ -386,9 +397,40 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * @param addCarry if carry flag is set add result is incremented by 1
      * @return num of cpu cycles taken to perform op
      * */
-    private int subImmediateByteFromRegister(SingleRegister r, boolean addCarry) {
+    private int sub(SingleRegister r, boolean addCarry) {
         registerManager.set(r,
                 performSub(registerManager.get(r), getImmediateByte(), addCarry));
+        return 8;
+    }
+
+    /**
+     * Ands r1 with r2 stores result in r2,
+     * Sets zero flag if result is zero, sets half-carry flag,
+     * resets carry and operation flag
+     *
+     * @return num of cpu cycles taken to perform op
+     * */
+    private int and(SingleRegister r1, SingleRegister r2) {
+        registerManager.set(r1,
+                performAnd(registerManager.get(r1), registerManager.get(r2)));
+        return 4;
+    }
+
+    /**
+     * Sames as and but uses the value at memory address d as second arg
+     * */
+    private int and(SingleRegister r, DoubleRegister d) {
+        registerManager.set(r,
+                performAnd(registerManager.get(r), mmu.readData(registerManager.get(d))));
+        return 8;
+    }
+
+    /**
+     * Sames as and but uses the immediate byte as second arg
+     * */
+    private int and(SingleRegister r) {
+        registerManager.set(r,
+                performAnd(registerManager.get(r), getImmediateByte()));
         return 8;
     }
 
@@ -459,7 +501,25 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     /**
-     * Pops an element of the stack, increments the stack pointer
+     * Performs bitwise AND on val1 and val2,
+     * Sets zero flag if result is zero, sets half-carry flag,
+     * resets carry and operation flag
+     *
+     * @return result of the AND
+     * */
+    private int performAnd(int val1, int val2) {
+        int result = val1 & val2;
+
+        registerManager.setZeroFlag((result & 0xFF) == 0);
+        registerManager.setHalfCarryFlag(true);
+        registerManager.setCarryFlag(false);
+        registerManager.setOperationFlag(false);
+
+        return result;
+    }
+
+    /**
+     * Pops top element of the stack increments the stack pointer
      *
      * @return element popped
      * */
