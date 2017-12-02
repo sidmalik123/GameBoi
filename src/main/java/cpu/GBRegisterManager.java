@@ -11,6 +11,16 @@ public interface GBRegisterManager {
     int get(DoubleRegister doubleRegister);
     void set(DoubleRegister doubleRegister, int data);
 
+    /**
+     * Sets r1 to have the same value as r2
+     * */
+    void set(SingleRegister r1, SingleRegister r2);
+
+    /**
+     * Sets d1 to have the same value as d2
+     * */
+    void set(DoubleRegister d1, DoubleRegister d2);
+
     int getHigh(DoubleRegister doubleRegister);
     int getLow(DoubleRegister doubleRegister);
 

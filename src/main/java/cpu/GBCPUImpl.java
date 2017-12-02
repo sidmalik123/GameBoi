@@ -5,12 +5,10 @@ import core.BitUtils;
 import cpu.interrupts.GBInterruptManager;
 import mmu.GBMMU;
 
-public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
+public class GBCPUImpl extends AbstractGBCPUImpl {
 
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
     private static final int CPU_FREQUENCY = 4194304;
-
-    private GBMMU mmu;
 
     private GBRegisterManager registerManager;
 
@@ -27,179 +25,202 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     }
 
     private int readInstruction() {
-        return mmu.readData(programCounter);
+        return readMemory(programCounter);
     }
 
     /**
      * Execute instruction
-     *
-     * @return num of clock cycles taken to execute the instruction
      * */
-    private int executeInstruction(int instruction) { // todo - update programCounter at the end
+    private void executeInstruction(int instruction) { // todo - update programCounter at the end
 
         int opCode = instruction & 0xFF;
 
         switch (opCode) {
-            case 0x06: return loadImmediateByteIntoRegister(SingleRegister.B);
-            case 0x0E: return loadImmediateByteIntoRegister(SingleRegister.C);
-            case 0x16: return loadImmediateByteIntoRegister(SingleRegister.D);
-            case 0x1E: return loadImmediateByteIntoRegister(SingleRegister.E);
-            case 0x26: return loadImmediateByteIntoRegister(SingleRegister.H);
-            case 0x2E: return loadImmediateByteIntoRegister(SingleRegister.L);
+            // load register with immediate byte
+            case 0x06: registerManager.set(SingleRegister.B, getImmediateByte());
+            case 0x0E: registerManager.set(SingleRegister.C, getImmediateByte());
+            case 0x16: registerManager.set(SingleRegister.D, getImmediateByte());
+            case 0x1E: registerManager.set(SingleRegister.E, getImmediateByte());
+            case 0x26: registerManager.set(SingleRegister.H, getImmediateByte());
+            case 0x2E: registerManager.set(SingleRegister.L, getImmediateByte());
 
-            case 0x7F: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.A);
-            case 0x78: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.B);
-            case 0x79: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.C);
-            case 0x7A: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.D);
-            case 0x7B: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.E);
-            case 0x7C: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.H);
-            case 0x7D: return loadRegisterFromRegister(SingleRegister.A, SingleRegister.L);
-            case 0x40: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.B);
-            case 0x41: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.C);
-            case 0x42: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.D);
-            case 0x43: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.E);
-            case 0x44: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.H);
-            case 0x45: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.L);
-            case 0x48: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.B);
-            case 0x49: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.C);
-            case 0x4A: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.D);
-            case 0x4B: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.E);
-            case 0x4C: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.H);
-            case 0x4D: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.L);
-            case 0x50: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.B);
-            case 0x51: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.C);
-            case 0x52: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.D);
-            case 0x53: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.E);
-            case 0x54: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.H);
-            case 0x55: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.L);
-            case 0x58: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.B);
-            case 0x59: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.C);
-            case 0x5A: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.D);
-            case 0x5B: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.E);
-            case 0x5C: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.H);
-            case 0x5D: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.L);
-            case 0x60: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.B);
-            case 0x61: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.C);
-            case 0x62: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.D);
-            case 0x63: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.E);
-            case 0x64: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.H);
-            case 0x65: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.L);
-            case 0x68: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.B);
-            case 0x69: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.C);
-            case 0x6A: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.D);
-            case 0x6B: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.E);
-            case 0x6C: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.H);
-            case 0x6D: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.L);
-            case 0x47: return loadRegisterFromRegister(SingleRegister.B, SingleRegister.A);
-            case 0x4F: return loadRegisterFromRegister(SingleRegister.C, SingleRegister.A);
-            case 0x57: return loadRegisterFromRegister(SingleRegister.D, SingleRegister.A);
-            case 0x5F: return loadRegisterFromRegister(SingleRegister.E, SingleRegister.A);
-            case 0x67: return loadRegisterFromRegister(SingleRegister.H, SingleRegister.A);
-            case 0x6F: return loadRegisterFromRegister(SingleRegister.L, SingleRegister.A);
-            case 0xF9: return loadRegisterFromRegister(DoubleRegister.SP, DoubleRegister.HL);
+            // set register from register
+            case 0x7F: registerManager.set(SingleRegister.A, SingleRegister.A);
+            case 0x78: registerManager.set(SingleRegister.A, SingleRegister.B);
+            case 0x79: registerManager.set(SingleRegister.A, SingleRegister.C);
+            case 0x7A: registerManager.set(SingleRegister.A, SingleRegister.D);
+            case 0x7B: registerManager.set(SingleRegister.A, SingleRegister.E);
+            case 0x7C: registerManager.set(SingleRegister.A, SingleRegister.H);
+            case 0x7D: registerManager.set(SingleRegister.A, SingleRegister.L);
+            case 0x40: registerManager.set(SingleRegister.B, SingleRegister.B);
+            case 0x41: registerManager.set(SingleRegister.B, SingleRegister.C);
+            case 0x42: registerManager.set(SingleRegister.B, SingleRegister.D);
+            case 0x43: registerManager.set(SingleRegister.B, SingleRegister.E);
+            case 0x44: registerManager.set(SingleRegister.B, SingleRegister.H);
+            case 0x45: registerManager.set(SingleRegister.B, SingleRegister.L);
+            case 0x48: registerManager.set(SingleRegister.C, SingleRegister.B);
+            case 0x49: registerManager.set(SingleRegister.C, SingleRegister.C);
+            case 0x4A: registerManager.set(SingleRegister.C, SingleRegister.D);
+            case 0x4B: registerManager.set(SingleRegister.C, SingleRegister.E);
+            case 0x4C: registerManager.set(SingleRegister.C, SingleRegister.H);
+            case 0x4D: registerManager.set(SingleRegister.C, SingleRegister.L);
+            case 0x50: registerManager.set(SingleRegister.D, SingleRegister.B);
+            case 0x51: registerManager.set(SingleRegister.D, SingleRegister.C);
+            case 0x52: registerManager.set(SingleRegister.D, SingleRegister.D);
+            case 0x53: registerManager.set(SingleRegister.D, SingleRegister.E);
+            case 0x54: registerManager.set(SingleRegister.D, SingleRegister.H);
+            case 0x55: registerManager.set(SingleRegister.D, SingleRegister.L);
+            case 0x58: registerManager.set(SingleRegister.E, SingleRegister.B);
+            case 0x59: registerManager.set(SingleRegister.E, SingleRegister.C);
+            case 0x5A: registerManager.set(SingleRegister.E, SingleRegister.D);
+            case 0x5B: registerManager.set(SingleRegister.E, SingleRegister.E);
+            case 0x5C: registerManager.set(SingleRegister.E, SingleRegister.H);
+            case 0x5D: registerManager.set(SingleRegister.E, SingleRegister.L);
+            case 0x60: registerManager.set(SingleRegister.H, SingleRegister.B);
+            case 0x61: registerManager.set(SingleRegister.H, SingleRegister.C);
+            case 0x62: registerManager.set(SingleRegister.H, SingleRegister.D);
+            case 0x63: registerManager.set(SingleRegister.H, SingleRegister.E);
+            case 0x64: registerManager.set(SingleRegister.H, SingleRegister.H);
+            case 0x65: registerManager.set(SingleRegister.H, SingleRegister.L);
+            case 0x68: registerManager.set(SingleRegister.L, SingleRegister.B);
+            case 0x69: registerManager.set(SingleRegister.L, SingleRegister.C);
+            case 0x6A: registerManager.set(SingleRegister.L, SingleRegister.D);
+            case 0x6B: registerManager.set(SingleRegister.L, SingleRegister.E);
+            case 0x6C: registerManager.set(SingleRegister.L, SingleRegister.H);
+            case 0x6D: registerManager.set(SingleRegister.L, SingleRegister.L);
+            case 0x47: registerManager.set(SingleRegister.B, SingleRegister.A);
+            case 0x4F: registerManager.set(SingleRegister.C, SingleRegister.A);
+            case 0x57: registerManager.set(SingleRegister.D, SingleRegister.A);
+            case 0x5F: registerManager.set(SingleRegister.E, SingleRegister.A);
+            case 0x67: registerManager.set(SingleRegister.H, SingleRegister.A);
+            case 0x6F: registerManager.set(SingleRegister.L, SingleRegister.A);
+            case 0xF9: registerManager.set(DoubleRegister.SP, DoubleRegister.HL);
 
-            case 0x70: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.B);
-            case 0x71: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.C);
-            case 0x72: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.D);
-            case 0x73: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.E);
-            case 0x74: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.H);
-            case 0x75: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.L);
-            case 0x02: return writeRegisterToMemory(DoubleRegister.BC, SingleRegister.A);
-            case 0x12: return writeRegisterToMemory(DoubleRegister.DE, SingleRegister.A);
-            case 0x77: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.A);
-            case 0xE2: return writeRegisterToMemory(SingleRegister.C, SingleRegister.L);
+            // write register value to memory
+            case 0x70: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.B));
+            case 0x71: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.C));
+            case 0x72: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.D));
+            case 0x73: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.E));
+            case 0x74: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.H));
+            case 0x75: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.L));
+            case 0x02: writeToMemory(registerManager.get(DoubleRegister.BC), registerManager.get(SingleRegister.A));
+            case 0x12: writeToMemory(registerManager.get(DoubleRegister.DE), registerManager.get(SingleRegister.A));
+            case 0x77: writeToMemory(registerManager.get(DoubleRegister.HL), registerManager.get(SingleRegister.A));
+            case 0xE2: writeToMemory(registerManager.get(SingleRegister.C) + LOAD_SPECIAL_ADDRESS,
+                    registerManager.get(SingleRegister.A));
 
-            case 0x7E: return writeMemoryToRegister(SingleRegister.A, DoubleRegister.HL);
-            case 0x46: return writeMemoryToRegister(SingleRegister.B, DoubleRegister.HL);
-            case 0x4E: return writeMemoryToRegister(SingleRegister.C, DoubleRegister.HL);
-            case 0x56: return writeMemoryToRegister(SingleRegister.D, DoubleRegister.HL);
-            case 0x5E: return writeMemoryToRegister(SingleRegister.E, DoubleRegister.HL);
-            case 0x66: return writeMemoryToRegister(SingleRegister.H, DoubleRegister.HL);
-            case 0x6E: return writeMemoryToRegister(SingleRegister.L, DoubleRegister.HL);
-            case 0x0A: return writeMemoryToRegister(SingleRegister.A, DoubleRegister.BC);
-            case 0x1A: return writeMemoryToRegister(SingleRegister.A, DoubleRegister.DE);
-            case 0xF2: return writeMemoryToRegister(SingleRegister.A, SingleRegister.C);
+            // set register with value from memory
+            case 0x7E: registerManager.set(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x46: registerManager.set(SingleRegister.B, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x4E: registerManager.set(SingleRegister.C, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x56: registerManager.set(SingleRegister.D, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x5E: registerManager.set(SingleRegister.E, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x66: registerManager.set(SingleRegister.H, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x6E: registerManager.set(SingleRegister.L, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0x0A: registerManager.set(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.BC)));
+            case 0x1A: registerManager.set(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.DE)));
+            case 0xF2: registerManager.set(SingleRegister.A,
+                    readMemory(registerManager.get(SingleRegister.C) + LOAD_SPECIAL_ADDRESS));
 
-            case 0x3A: return (writeMemoryToRegister(SingleRegister.A, DoubleRegister.HL) + decrementRegister(DoubleRegister.HL));
-            case 0x2A: return (writeMemoryToRegister(SingleRegister.A, DoubleRegister.HL) + incrementRegister(DoubleRegister.HL));
+            case 0x3A: {
+                int address = registerManager.get(DoubleRegister.HL);
+                registerManager.set(SingleRegister.A, readMemory(address));
+                registerManager.set(DoubleRegister.HL, address - 1);
+            }
+            case 0x2A: {
+                int address = registerManager.get(DoubleRegister.HL);
+                registerManager.set(SingleRegister.A, readMemory(address));
+                registerManager.set(DoubleRegister.HL, address + 1);
+            }
 
-            case 0x32: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.A) + decrementRegister(DoubleRegister.HL);
-            case 0x22: return writeRegisterToMemory(DoubleRegister.HL, SingleRegister.A) + incrementRegister(DoubleRegister.HL);
+            case 0x32: {
+                int address = registerManager.get(DoubleRegister.HL);
+                writeToMemory(address, registerManager.get(SingleRegister.A));
+                registerManager.set(DoubleRegister.HL, address - 1);
+            }
+            case 0x22: {
+                int address = registerManager.get(DoubleRegister.HL);
+                writeToMemory(address, registerManager.get(SingleRegister.A));
+                registerManager.set(DoubleRegister.HL, address + 1);
+            }
 
-            case 0x01: return loadImmediateWordIntoRegister(DoubleRegister.BC);
-            case 0x11: return loadImmediateWordIntoRegister(DoubleRegister.DE);
-            case 0x21: return loadImmediateWordIntoRegister(DoubleRegister.HL);
-            case 0x31: return loadImmediateWordIntoRegister(DoubleRegister.SP);
+            // set double register with immediate word
+            case 0x01: registerManager.set(DoubleRegister.BC, getImmediateWord());
+            case 0x11: registerManager.set(DoubleRegister.DE, getImmediateWord());
+            case 0x21: registerManager.set(DoubleRegister.HL, getImmediateWord());
+            case 0x31: registerManager.set(DoubleRegister.SP, getImmediateWord());
 
-            case 0xF5: return pushRegisterToStack(DoubleRegister.AF);
-            case 0xC5: return pushRegisterToStack(DoubleRegister.BC);
-            case 0xD5: return pushRegisterToStack(DoubleRegister.DE);
-            case 0xE5: return pushRegisterToStack(DoubleRegister.HL);
+            // push register to stack
+            case 0xF5: pushToStack(registerManager.get(DoubleRegister.AF));
+            case 0xC5: pushToStack(registerManager.get(DoubleRegister.BC));
+            case 0xD5: pushToStack(registerManager.get(DoubleRegister.DE));
+            case 0xE5: pushToStack(registerManager.get(DoubleRegister.HL));
 
-            case 0xF1: return popStackIntoRegister(DoubleRegister.AF);
-            case 0xC1: return popStackIntoRegister(DoubleRegister.BC);
-            case 0xD1: return popStackIntoRegister(DoubleRegister.DE);
-            case 0xE1: return popStackIntoRegister(DoubleRegister.HL);
+            // pop stack into register
+            case 0xF1: registerManager.set(DoubleRegister.AF, popStack());
+            case 0xC1: registerManager.set(DoubleRegister.BC, popStack());
+            case 0xD1: registerManager.set(DoubleRegister.DE, popStack());
+            case 0xE1: registerManager.set(DoubleRegister.HL, popStack());
 
-            case 0x87: return add(SingleRegister.A, SingleRegister.A, false);
-            case 0x80: return add(SingleRegister.A, SingleRegister.B, false);
-            case 0x81: return add(SingleRegister.A, SingleRegister.C, false);
-            case 0x82: return add(SingleRegister.A, SingleRegister.D, false);
-            case 0x83: return add(SingleRegister.A, SingleRegister.E, false);
-            case 0x84: return add(SingleRegister.A, SingleRegister.H, false);
-            case 0x85: return add(SingleRegister.A, SingleRegister.L, false);
-            case 0x86: return add(SingleRegister.A, DoubleRegister.HL, false);
-            case 0xC6: return add(SingleRegister.A, false);
+            case 0x87: add(SingleRegister.A, registerManager.get(SingleRegister.A), false);
+            case 0x80: add(SingleRegister.A, registerManager.get(SingleRegister.B), false);
+            case 0x81: add(SingleRegister.A, registerManager.get(SingleRegister.C), false);
+            case 0x82: add(SingleRegister.A, registerManager.get(SingleRegister.D), false);
+            case 0x83: add(SingleRegister.A, registerManager.get(SingleRegister.E), false);
+            case 0x84: add(SingleRegister.A, registerManager.get(SingleRegister.H), false);
+            case 0x85: add(SingleRegister.A, registerManager.get(SingleRegister.L), false);
+            case 0x86: add(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)), false);
+            case 0xC6: add(SingleRegister.A, getImmediateByte(), false);
 
-            case 0x8F: return add(SingleRegister.A, SingleRegister.A, true);
-            case 0x88: return add(SingleRegister.A, SingleRegister.B, true);
-            case 0x89: return add(SingleRegister.A, SingleRegister.C, true);
-            case 0x8A: return add(SingleRegister.A, SingleRegister.D, true);
-            case 0x8B: return add(SingleRegister.A, SingleRegister.E, true);
-            case 0x8C: return add(SingleRegister.A, SingleRegister.H, true);
-            case 0x8D: return add(SingleRegister.A, SingleRegister.L, true);
-            case 0x8E: return add(SingleRegister.A, DoubleRegister.HL, true);
-            case 0xCE: return add(SingleRegister.A, true);
+            case 0x8F: add(SingleRegister.A, registerManager.get(SingleRegister.A), true);
+            case 0x88: add(SingleRegister.A, registerManager.get(SingleRegister.B), true);
+            case 0x89: add(SingleRegister.A, registerManager.get(SingleRegister.C), true);
+            case 0x8A: add(SingleRegister.A, registerManager.get(SingleRegister.D), true);
+            case 0x8B: add(SingleRegister.A, registerManager.get(SingleRegister.E), true);
+            case 0x8C: add(SingleRegister.A, registerManager.get(SingleRegister.H), true);
+            case 0x8D: add(SingleRegister.A, registerManager.get(SingleRegister.L), true);
+            case 0x8E: add(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)), true);
+            case 0xCE: add(SingleRegister.A, getImmediateByte(), true);
 
-            case 0x97: return sub(SingleRegister.A, SingleRegister.A, false);
-            case 0x90: return sub(SingleRegister.A, SingleRegister.B, false);
-            case 0x91: return sub(SingleRegister.A, SingleRegister.C, false);
-            case 0x92: return sub(SingleRegister.A, SingleRegister.D, false);
-            case 0x93: return sub(SingleRegister.A, SingleRegister.E, false);
-            case 0x94: return sub(SingleRegister.A, SingleRegister.H, false);
-            case 0x95: return sub(SingleRegister.A, SingleRegister.L, false);
-            case 0x96: return sub(SingleRegister.A, DoubleRegister.HL, false);
-            case 0xD6: return sub(SingleRegister.A, false);
+            case 0x97: sub(SingleRegister.A, registerManager.get(SingleRegister.A), false);
+            case 0x90: sub(SingleRegister.A, registerManager.get(SingleRegister.B), false);
+            case 0x91: sub(SingleRegister.A, registerManager.get(SingleRegister.C), false);
+            case 0x92: sub(SingleRegister.A, registerManager.get(SingleRegister.D), false);
+            case 0x93: sub(SingleRegister.A, registerManager.get(SingleRegister.E), false);
+            case 0x94: sub(SingleRegister.A, registerManager.get(SingleRegister.H), false);
+            case 0x95: sub(SingleRegister.A, registerManager.get(SingleRegister.L), false);
+            case 0x96: sub(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)), false);
+            case 0xD6: sub(SingleRegister.A, getImmediateByte(),false);
 
-            case 0x9F: return sub(SingleRegister.A, SingleRegister.A, true);
-            case 0x98: return sub(SingleRegister.A, SingleRegister.B, true);
-            case 0x99: return sub(SingleRegister.A, SingleRegister.C, true);
-            case 0x9A: return sub(SingleRegister.A, SingleRegister.D, true);
-            case 0x9B: return sub(SingleRegister.A, SingleRegister.E, true);
-            case 0x9C: return sub(SingleRegister.A, SingleRegister.H, true);
-            case 0x9D: return sub(SingleRegister.A, SingleRegister.L, true);
-            case 0x9E: return sub(SingleRegister.A, DoubleRegister.HL, true);
-            case 0xDE: return sub(SingleRegister.A, true);
+            case 0x9F: sub(SingleRegister.A, registerManager.get(SingleRegister.A), true);
+            case 0x98: sub(SingleRegister.A, registerManager.get(SingleRegister.B), true);
+            case 0x99: sub(SingleRegister.A, registerManager.get(SingleRegister.C), true);
+            case 0x9A: sub(SingleRegister.A, registerManager.get(SingleRegister.D), true);
+            case 0x9B: sub(SingleRegister.A, registerManager.get(SingleRegister.E), true);
+            case 0x9C: sub(SingleRegister.A, registerManager.get(SingleRegister.H), true);
+            case 0x9D: sub(SingleRegister.A, registerManager.get(SingleRegister.L), true);
+            case 0x9E: sub(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)), true);
+            case 0xDE: sub(SingleRegister.A, getImmediateByte(),true);
 
-            case 0xA7: return and(SingleRegister.A, SingleRegister.A);
-            case 0xA0: return and(SingleRegister.A, SingleRegister.B);
-            case 0xA1: return and(SingleRegister.A, SingleRegister.C);
-            case 0xA2: return and(SingleRegister.A, SingleRegister.D);
-            case 0xA3: return and(SingleRegister.A, SingleRegister.E);
-            case 0xA4: return and(SingleRegister.A, SingleRegister.H);
-            case 0xA5: return and(SingleRegister.A, SingleRegister.L);
-            case 0xA6: return and(SingleRegister.A, DoubleRegister.HL);
-            case 0xE6: return and(SingleRegister.A);
+            case 0xA7: and(SingleRegister.A, registerManager.get(SingleRegister.A));
+            case 0xA0: and(SingleRegister.A, registerManager.get(SingleRegister.B));
+            case 0xA1: and(SingleRegister.A, registerManager.get(SingleRegister.C));
+            case 0xA2: and(SingleRegister.A, registerManager.get(SingleRegister.D));
+            case 0xA3: and(SingleRegister.A, registerManager.get(SingleRegister.E));
+            case 0xA4: and(SingleRegister.A, registerManager.get(SingleRegister.H));
+            case 0xA5: and(SingleRegister.A, registerManager.get(SingleRegister.L));
+            case 0xA6: and(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0xE6: and(SingleRegister.A, getImmediateByte());
 
-            case 0xB7: return or(SingleRegister.A, SingleRegister.A);
-            case 0xB0: return or(SingleRegister.A, SingleRegister.B);
-            case 0xB1: return or(SingleRegister.A, SingleRegister.C);
-            case 0xB2: return or(SingleRegister.A, SingleRegister.D);
-            case 0xB3: return or(SingleRegister.A, SingleRegister.E);
-            case 0xB4: return or(SingleRegister.A, SingleRegister.H);
-            case 0xB5: return or(SingleRegister.A, SingleRegister.L);
-            case 0xB6: return or(SingleRegister.A, DoubleRegister.HL);
-            case 0xF6: return or(SingleRegister.A);
+            case 0xB7: or(SingleRegister.A, registerManager.get(SingleRegister.A));
+            case 0xB0: or(SingleRegister.A, registerManager.get(SingleRegister.B));
+            case 0xB1: or(SingleRegister.A, registerManager.get(SingleRegister.C));
+            case 0xB2: or(SingleRegister.A, registerManager.get(SingleRegister.D));
+            case 0xB3: or(SingleRegister.A, registerManager.get(SingleRegister.E));
+            case 0xB4: or(SingleRegister.A, registerManager.get(SingleRegister.H));
+            case 0xB5: or(SingleRegister.A, registerManager.get(SingleRegister.L));
+            case 0xB6: or(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0xF6: or(SingleRegister.A, getImmediateByte());
 
             default:
                 throw new IllegalArgumentException("Unknow opcode: " + opCode);
@@ -207,288 +228,19 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
 
     }
 
-
-    /**
-     * Loads immediate byte into register r,
-     * increments the programCounter by 1
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int loadImmediateByteIntoRegister(SingleRegister r) {
-        registerManager.set(r, getImmediateByte());
-        return 8;
-    }
-
-    /**
-     * Loads r1 with the value in r2
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int loadRegisterFromRegister(SingleRegister r1, SingleRegister r2) {
-        registerManager.set(r1, registerManager.get(r2));
-        return 4;
-    }
-
-    /**
-     * Sets the value of d1 to be the same as the value of d2
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int loadRegisterFromRegister(DoubleRegister d1, DoubleRegister d2) {
-        registerManager.set(d1, registerManager.get(d2));
-        return 8;
-    }
-
-    /**
-     * Writes the value of r to the address value in d
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int writeRegisterToMemory(DoubleRegister d, SingleRegister r) {
-        mmu.writeData(registerManager.get(d), registerManager.get(r));
-        return 8;
-    }
-
-    /**
-     * Writes the value of r2 to address (0xFF00 + r2.val)
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int writeRegisterToMemory(SingleRegister r1, SingleRegister r2) {
-        mmu.writeData(LOAD_SPECIAL_ADDRESS + registerManager.get(r1), registerManager.get(r2));
-        return 8;
-    }
-
-    /**
-     * Writes the value at address d to r
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int writeMemoryToRegister(SingleRegister r, DoubleRegister d) {
-        registerManager.set(r, mmu.readData(registerManager.get(d)));
-        return 8;
-    }
-
-    /**
-     * Writes the value at address (0xFF00 + r2.val) to r1
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int writeMemoryToRegister(SingleRegister r1, SingleRegister r2) {
-        registerManager.set(r1, mmu.readData(LOAD_SPECIAL_ADDRESS + registerManager.get(r2)));
-        return 8;
-    }
-
-    /**
-     * Decrements the value of d by 1
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int decrementRegister(DoubleRegister d) {
-        registerManager.set(d, registerManager.get(d) - 1);
-        return 0;
-    }
-
-    /**
-     * Increments the value of d by 1
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int incrementRegister(DoubleRegister d) {
-        registerManager.set(d, registerManager.get(d) + 1);
-        return 0;
-    }
-
-    /**
-     * Loads the immediate word into d
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int loadImmediateWordIntoRegister(DoubleRegister d) {
-        registerManager.set(d, getImmediateWord());
-        return 12;
-    }
-
-    /**
-     * Pushes d's values onto the stack
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int pushRegisterToStack(DoubleRegister d) {
-        pushToStack(registerManager.getHigh(d));
-        pushToStack(registerManager.getLow(d));
-
-        return 16;
-    }
-
-    /**
-     * Pops stack word into d
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int popStackIntoRegister(DoubleRegister d) {
-        registerManager.setLow(d, popStack());
-        registerManager.setHigh(d, popStack());
-
-        return 12;
-    }
-
-    /**
-     * Adds r1 and r2, puts the value in r1
-     * Sets the flags carry, half-carry and zero
-     *
-     * @param addCarry if carry flag is set add result is incremented by 1
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int add(SingleRegister r1, SingleRegister r2, boolean addCarry) {
-        registerManager.set(r1,
-                performAdd(registerManager.get(r1), registerManager.get(r2), addCarry));
-        return 4;
-    }
-
-    /**
-     * Adds r and value at memory address d, puts the value in r
-     * Sets the flags carry, half-carry and zero
-     *
-     * @param addCarry if carry flag is set add result is incremented by 1
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int add(SingleRegister r, DoubleRegister d, boolean addCarry) {
-        registerManager.set(r,
-                performAdd(registerManager.get(r), mmu.readData(registerManager.get(d)), addCarry));
-        return 8;
-    }
-
-    /**
-     * Adds r and the immediate byte, puts the result in r
-     * Sets the flags carry, half-carry and zero
-     *
-     * @param addCarry if carry flag is set add result is incremented by 1
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int add(SingleRegister r, boolean addCarry) {
-        registerManager.set(r,
-                performAdd(registerManager.get(r), getImmediateByte(), addCarry));
-        return 8;
-    }
-
-    /**
-     * Subtracts r1 and r2, puts the result in r1
-     * Sets the flags carry, half-carry, zero and operation flag
-     *
-     * @param subCarry if carry flag is set add result is decremented by 1
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int sub(SingleRegister r1, SingleRegister r2, boolean subCarry) {
-        registerManager.set(r1,
-                performSub(registerManager.get(r1), registerManager.get(r2), subCarry));
-
-        return 4;
-    }
-
-    /**
-     * Subs value at memory address d from r, puts the value in r
-     * Sets the flags carry, half-carry, zero and operation flag
-     *
-     * @param addCarry if carry flag is set add result is incremented by 1
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int sub(SingleRegister r, DoubleRegister d, boolean addCarry) {
-        registerManager.set(r,
-                performSub(registerManager.get(r), mmu.readData(registerManager.get(d)), addCarry));
-        return 8;
-    }
-
-    /**
-     * Subs immediate byte from r, puts the result in r
-     * Sets the flags carry, half-carry, zero and operation flag
-     *
-     * @param addCarry if carry flag is set add result is incremented by 1
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int sub(SingleRegister r, boolean addCarry) {
-        registerManager.set(r,
-                performSub(registerManager.get(r), getImmediateByte(), addCarry));
-        return 8;
-    }
-
-    /**
-     * Ands r1 with r2 stores result in r2,
-     * Sets zero flag if result is zero, sets half-carry flag,
-     * resets carry and operation flag
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int and(SingleRegister r1, SingleRegister r2) {
-        registerManager.set(r1,
-                performAnd(registerManager.get(r1), registerManager.get(r2)));
-        return 4;
-    }
-
-    /**
-     * Sames as and but uses the value at memory address d as second arg
-     * */
-    private int and(SingleRegister r, DoubleRegister d) {
-        registerManager.set(r,
-                performAnd(registerManager.get(r), mmu.readData(registerManager.get(d))));
-        return 8;
-    }
-
-    /**
-     * Sames as and but uses the immediate byte as second arg
-     * */
-    private int and(SingleRegister r) {
-        registerManager.set(r,
-                performAnd(registerManager.get(r), getImmediateByte()));
-        return 8;
-    }
-
-    /**
-     * ORs r1 with r2 stores result in r1,
-     * Sets zero flag if result is zero
-     * resets carry, operation flag, half-carry flag
-     *
-     * @return num of cpu cycles taken to perform op
-     * */
-    private int or(SingleRegister r1, SingleRegister r2) {
-        registerManager.set(r1,
-                performOr(registerManager.get(r1), registerManager.get(r2)));
-        return 4;
-    }
-
-    /**
-     * Sames as or(SingleRegister r1, SingleRegister r2)
-     * but uses value at address as second arg
-     * */
-    private int or(SingleRegister r, DoubleRegister d) {
-        registerManager.set(r,
-                performOr(registerManager.get(r), mmu.readData(registerManager.get(d))));
-        return 8;
-    }
-
-    /**
-     * Sames as or(SingleRegister r1, SingleRegister r2)
-     * but uses immediate byte as second arg
-     * */
-    private int or(SingleRegister r) {
-        registerManager.set(r,
-                performOr(registerManager.get(r), getImmediateByte()));
-        return 8;
-    }
-
     /**
      * Reads and returns the next 8 immediate bits from memory
      * */
     private int getImmediateByte() {
-        return mmu.readData(++programCounter);
+        return readMemory(++programCounter);
     }
 
     /**
      * Reads and returns the next 16 immediate bits from memory
      * */
     private int getImmediateWord() {
-        int val1 = mmu.readData(++programCounter);
-        int val2 = mmu.readData(++programCounter);
+        int val1 = readMemory(++programCounter);
+        int val2 = readMemory(++programCounter);
         return val2 << 8 | val1;
     }
 
@@ -497,7 +249,7 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * */
     private void pushToStack(int data) {
         int stackPointer = registerManager.get(DoubleRegister.SP);
-        mmu.writeData(stackPointer - 1, data);
+        writeToMemory(stackPointer - 1, data);
         registerManager.set(DoubleRegister.SP, stackPointer - 1);
     }
 
@@ -506,7 +258,6 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * if addCarry is true and the carry flag is set, result is incremented by 1
      *
      * Sets the carry, half-carry and zero flag
-     * Note: This is used in ALU CPU methods as a helper
      * */
     private int performAdd(int val1, int val2, boolean addCarry) {
         int result;
@@ -526,7 +277,6 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
      * if addCarry is true and the carry flag is set, result is decremented by 1
      *
      * Sets the carry, half-carry and zero flag and operation flag
-     * Note: This is used in ALU CPU methods as a helper
      * */
     private int performSub(int val1, int val2, boolean subCarry) {
         int result;
@@ -586,6 +336,34 @@ public class GBCPUImpl extends AbstractTimingSubject implements GBCPU {
     private int popStack() {
         int stackPointer = registerManager.get(DoubleRegister.SP);
         registerManager.set(DoubleRegister.SP, stackPointer + 1);
-        return mmu.readData(stackPointer);
+        return readMemory(stackPointer);
+    }
+
+    /**
+     * Performs addition on r.val and toAdd, stores the result in r
+     * */
+    private void add(SingleRegister r, int toAdd, boolean addCarry) {
+        registerManager.set(r, performAdd(registerManager.get(r), toAdd, addCarry));
+    }
+
+    /**
+     * Performs subtraction on r.val and toSub, stores the result in r
+     * */
+    private void sub(SingleRegister r, int toSub, boolean addCarry) {
+        registerManager.set(r, performSub(registerManager.get(r), toSub, addCarry));
+    }
+
+    /**
+     * Performs and on r.val and toAnd, stores the result in r
+     * */
+    private void and(SingleRegister r, int toAnd) {
+        registerManager.set(r, performAnd(registerManager.get(r), toAnd));
+    }
+
+    /**
+     * Performs or on r.val and toAnd, stores the result in r
+     * */
+    private void or(SingleRegister r, int toAnd) {
+        registerManager.set(r, performOr(registerManager.get(r), toAnd));
     }
 }

@@ -1,155 +1,65 @@
 package cpu;
 
+import java.util.Map;
+
 public class GBRegisterManagerImpl implements GBRegisterManager {
 
-    // Registers
-    private Register regA;
-    private Register regB;
-    private Register regC;
-    private Register regD;
-    private Register regE;
-    private Register regH;
-    private Register regL;
+    private Map<SingleRegister, Register> registerMap; // for registers A,B,C,D,E,H,L
     private GBFlagRegister flagRegister;
     private int stackPointer;
 
-
-    // @todo - refactor this to use a map of registers and double registers to have methods to access single registers
-
+    public GBRegisterManagerImpl() {
+        for (SingleRegister r : SingleRegister.values()) {
+            registerMap.put(r, new Register());
+        }
+    }
 
     public int get(SingleRegister singleRegister) {
-        switch (singleRegister) {
-            case A:
-                return regA.getData();
-            case B:
-                return regB.getData();
-            case C:
-                return regC.getData();
-            case D:
-                return regD.getData();
-            case E:
-                return regE.getData();
-            case H:
-                return regH.getData();
-            case L:
-                return regL.getData();
-            default:
-                throw new IllegalArgumentException("Register type " + singleRegister + " has not been implemented yet");
-
-        }
+        return registerMap.get(singleRegister).getData();
     }
 
     public void set(SingleRegister singleRegister, int data) {
-        switch (singleRegister) {
-            case A:
-                regA.setData(data);
-            case B:
-                regB.setData(data);
-            case C:
-                regC.setData(data);
-            case D:
-                regD.setData(data);
-            case E:
-                regE.setData(data);
-            case H:
-                regH.setData(data);
-            case L:
-                regL.setData(data);
-            default:
-                throw new IllegalArgumentException("Register type " + singleRegister + " has not been implemented yet");
-
-        }
+        registerMap.get(singleRegister).setData(data);
     }
 
+    // Todo - refactor to have double register retunr
     public int get(DoubleRegister doubleRegister) {
-        switch (doubleRegister) {
-            case BC:
-                return regB.getData() << 8 | regC.getData();
-            case DE:
-                return regD.getData() << 8 | regE.getData();
-            case HL:
-                return regH.getData() << 8 | regL.getData();
-            case SP:
-                return stackPointer;
-            default:
-                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
-
-        }
+        if (doubleRegister == DoubleRegister.SP) return stackPointer;
+        return registerMap.get(doubleRegister.getHighRegister()).getData() << 8 |
+                registerMap.get(doubleRegister.getLowRegister()).getData();
     }
 
     public void set(DoubleRegister doubleRegister, int data) {
-        switch (doubleRegister) {
-            case BC:
-                regB.setData(data >> 8);
-                regC.setData(data & 0xFF);
-            case DE:
-                regD.setData(data >> 8);
-                regE.setData(data & 0xFF);
-            case HL:
-                regH.setData(data >> 8);
-                regL.setData(data & 0xFF);
-            case SP:
-                stackPointer = data;
-            default:
-                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
-
+        if (doubleRegister == DoubleRegister.SP) {
+            stackPointer = data;
+            return;
         }
+        registerMap.get(doubleRegister.getHighRegister()).setData(data >> 8);
+        registerMap.get(doubleRegister.getLowRegister()).setData(data & 0xFF);
+    }
+
+    public void set(SingleRegister r1, SingleRegister r2) {
+        set(r1, get(r2));
+    }
+
+    public void set(DoubleRegister d1, DoubleRegister d2) {
+        set(d1, get(d2));
     }
 
     public int getHigh(DoubleRegister doubleRegister) {
-        switch (doubleRegister) {
-            case BC:
-                return get(SingleRegister.B);
-            case DE:
-                return get(SingleRegister.D);
-            case HL:
-                return get(SingleRegister.H);
-            default:
-                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
-
-        }
+        return registerMap.get(doubleRegister.getHighRegister()).getData();
     }
 
     public int getLow(DoubleRegister doubleRegister) {
-        switch (doubleRegister) {
-            case BC:
-                return get(SingleRegister.C);
-            case DE:
-                return get(SingleRegister.E);
-            case HL:
-                return get(SingleRegister.L);
-            default:
-                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
-
-        }
+        return registerMap.get(doubleRegister.getLowRegister()).getData();
     }
 
     public void setHigh(DoubleRegister doubleRegister, int data) {
-        switch (doubleRegister) {
-            case BC:
-                set(SingleRegister.B, data);
-            case DE:
-                set(SingleRegister.D, data);
-            case HL:
-                set(SingleRegister.H, data);
-            default:
-                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
-
-        }
+        registerMap.get(doubleRegister.getHighRegister()).setData(data);
     }
 
     public void setLow(DoubleRegister doubleRegister, int data) {
-        switch (doubleRegister) {
-            case BC:
-                set(SingleRegister.C, data);
-            case DE:
-                set(SingleRegister.E, data);
-            case HL:
-                set(SingleRegister.L, data);
-            default:
-                throw new IllegalArgumentException("Register type " + doubleRegister + " has not been implemented yet");
-
-        }
+        registerMap.get(doubleRegister.getLowRegister()).setData(data);
     }
 
     public void setZeroFlag(boolean bool) {
