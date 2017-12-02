@@ -222,6 +222,16 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
             case 0xB6: or(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)));
             case 0xF6: or(SingleRegister.A, getImmediateByte());
 
+            case 0xAF: xor(SingleRegister.A, registerManager.get(SingleRegister.A));
+            case 0xA8: xor(SingleRegister.A, registerManager.get(SingleRegister.B));
+            case 0xA9: xor(SingleRegister.A, registerManager.get(SingleRegister.C));
+            case 0xAA: xor(SingleRegister.A, registerManager.get(SingleRegister.D));
+            case 0xAB: xor(SingleRegister.A, registerManager.get(SingleRegister.E));
+            case 0xAC: xor(SingleRegister.A, registerManager.get(SingleRegister.H));
+            case 0xAD: xor(SingleRegister.A, registerManager.get(SingleRegister.L));
+            case 0xAE: xor(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0xEE: xor(SingleRegister.A, getImmediateByte());
+
             default:
                 throw new IllegalArgumentException("Unknow opcode: " + opCode);
         }
@@ -329,6 +339,20 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
     }
 
     /**
+     * Performs bitwise XOR on val1 and val2,
+     * Sets zero flag if result is zero
+     *
+     * @return result of the AND
+     * */
+    private int performXor(int val1, int val2) {
+        int result = val1 ^ val2;
+
+        registerManager.setZeroFlag((result & 0xFF) == 0);
+
+        return result;
+    }
+
+    /**
      * Pops top element of the stack increments the stack pointer
      *
      * @return element popped
@@ -366,4 +390,13 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
     private void or(SingleRegister r, int toAnd) {
         registerManager.set(r, performOr(registerManager.get(r), toAnd));
     }
+
+    /**
+     * Performs xor on r.val and toAnd, stores the result in r
+     * */
+    private void xor(SingleRegister r, int toAnd) {
+        registerManager.set(r, performXor(registerManager.get(r), toAnd));
+    }
+
+
 }
