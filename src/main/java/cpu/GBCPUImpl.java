@@ -9,6 +9,7 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
 
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
     private static final int CPU_FREQUENCY = 4194304;
+    private boolean wasLastIntstructionJump;
 
     private GBRegisterManager registerManager;
 
@@ -18,6 +19,11 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
 
     public void run(String programLocation) {
         // Todo - process interrupts after every instruction
+        if (!wasLastIntstructionJump) {
+            ++programCounter;
+        } else {
+            wasLastIntstructionJump = true;
+        }
     }
 
     public int getFrequency() {
@@ -232,10 +238,80 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
             case 0xAE: xor(SingleRegister.A, readMemory(registerManager.get(DoubleRegister.HL)));
             case 0xEE: xor(SingleRegister.A, getImmediateByte());
 
-            default:
-                throw new IllegalArgumentException("Unknow opcode: " + opCode);
-        }
+            case 0xBF: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.A));
+            case 0xB8: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.B));
+            case 0xB9: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.C));
+            case 0xBA: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.D));
+            case 0xBB: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.E));
+            case 0xBC: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.H));
+            case 0xBD: compare(registerManager.get(SingleRegister.A), registerManager.get(SingleRegister.L));
+            case 0xBE: compare(registerManager.get(SingleRegister.A), readMemory(registerManager.get(DoubleRegister.HL)));
+            case 0xFE: compare(registerManager.get(SingleRegister.A), getImmediateByte());
 
+            // inc - register or memory
+            case 0x3C: add(SingleRegister.A, 1, false);
+            case 0x04: add(SingleRegister.B, 1, false);
+            case 0x0C: add(SingleRegister.C, 1, false);
+            case 0x14: add(SingleRegister.D, 1, false);
+            case 0x1C: add(SingleRegister.E, 1, false);
+            case 0x24: add(SingleRegister.H, 1, false);
+            case 0x2C: add(SingleRegister.L, 1, false);
+            case 0x34: memoryAdd(registerManager.get(DoubleRegister.HL), 1);
+
+            // dec - register or memory
+            case 0x3D: sub(SingleRegister.A, 1, false);
+            case 0x05: sub(SingleRegister.B, 1, false);
+            case 0x0D: sub(SingleRegister.C, 1, false);
+            case 0x15: sub(SingleRegister.D, 1, false);
+            case 0x1D: sub(SingleRegister.E, 1, false);
+            case 0x25: sub(SingleRegister.H, 1, false);
+            case 0x2D: sub(SingleRegister.L, 1, false);
+            case 0x35: memorySub(registerManager.get(DoubleRegister.HL), 1);
+
+            //jumps
+            case 0xE9: jump(registerManager.get(DoubleRegister.HL), false);
+            case 0xC3: jump(getImmediateWord(), false);
+            case 0xC2: if (!registerManager.getZeroFlag()) jump(getImmediateWord(), false);
+            case 0xCA: if (registerManager.getZeroFlag()) jump(getImmediateWord(), false);
+            case 0xD2: if (!registerManager.getCarryFlag()) jump(getImmediateWord(), false);
+            case 0xDA: if (registerManager.getCarryFlag()) jump(getImmediateWord(), false);
+
+            // jump to programCounter + immediateByte
+            case 0x18: jump(programCounter + getImmediateByte(), true);
+            case 0x20: if (!registerManager.getZeroFlag()) jump(programCounter + getImmediateByte(), true);
+            case 0x28: if (registerManager.getZeroFlag()) jump(programCounter + getImmediateByte(), true);
+            case 0x30: if (!registerManager.getCarryFlag()) jump(programCounter + getImmediateByte(), true);
+            case 0x38: if (registerManager.getCarryFlag()) jump(programCounter + getImmediateByte(), true);
+
+            // routine calls
+            case 0xCD: callRoutine(getImmediateWord());
+            case 0xC4: if (!registerManager.getZeroFlag()) callRoutine(getImmediateWord());
+            case 0xCC: if (registerManager.getZeroFlag()) callRoutine(getImmediateWord());
+            case 0xD4: if (!registerManager.getCarryFlag()) callRoutine(getImmediateWord());
+            case 0xDC: if(registerManager.getCarryFlag()) callRoutine(getImmediateWord());
+
+            // routine returns
+            case 0xC9: returnFromRoutine();
+            case 0xC0: if (!registerManager.getZeroFlag()) returnFromRoutine();
+            case 0xC8: if (registerManager.getZeroFlag()) returnFromRoutine();
+            case 0xD0: if (!registerManager.getCarryFlag()) returnFromRoutine();
+            case 0xD8: if (registerManager.getCarryFlag()) returnFromRoutine();
+
+            // restarts
+            case 0xC7: restartCPU(0x00);
+            case 0xCF: restartCPU(0x08);
+            case 0xD7: restartCPU(0x10);
+            case 0xDF: restartCPU(0x18);
+            case 0xE7: restartCPU(0x20);
+            case 0xEF: restartCPU(0x28);
+            case 0xF7: restartCPU(0x30);
+            case 0xFF: restartCPU(0x38);
+
+
+
+            default:
+                throw new IllegalArgumentException("Unknown opcode: " + opCode);
+        }
     }
 
     /**
@@ -278,6 +354,7 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
         registerManager.setZeroFlag((result & 0xFF) == 0);
         registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd(val1,toAdd));
         registerManager.setCarryFlag(BitUtils.isCarryAdd(val1, toAdd));
+        registerManager.setOperationFlag(false);
 
         return result;
     }
@@ -370,6 +447,10 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
         registerManager.set(r, performAdd(registerManager.get(r), toAdd, addCarry));
     }
 
+    private void add(DoubleRegister d, int toAdd) {
+
+    }
+
     /**
      * Performs subtraction on r.val and toSub, stores the result in r
      * */
@@ -396,6 +477,64 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
      * */
     private void xor(SingleRegister r, int toAnd) {
         registerManager.set(r, performXor(registerManager.get(r), toAnd));
+    }
+
+    /**
+     * Performs sub on val1 and val2, setting the appropriate registers
+     * */
+    private void compare(int val1, int val2) {
+        performSub(val1, val2, false);
+    }
+
+    /**
+     * Adds toAdd to the memory value at address
+     * */
+    private void memoryAdd(int address, int toAdd) {
+        writeToMemory(address, performAdd(readMemory(address), toAdd, false));
+    }
+
+    /**
+     * Subtracts toAdd from the memory value at address
+     * */
+    private void memorySub(int address, int toSub) {
+        writeToMemory(address, performSub(readMemory(address), toSub, false));
+    }
+
+    /**
+     * Changes
+     * */
+    private void jump(int newProgramCounterVal, boolean addToCurrent) {
+        if (addToCurrent) {
+            programCounter += newProgramCounterVal;
+        } else {
+            programCounter = newProgramCounterVal;
+        }
+        wasLastIntstructionJump = true;
+    }
+
+    /**
+     * Calls the routine at address routineAddress
+     * */
+    private void callRoutine(int routineAddress) {
+        pushToStack(++programCounter);
+        jump(routineAddress, false);
+    }
+
+    /**
+     * Returns from a routine call, sets program counter to the address the called the method
+     * */
+    private void returnFromRoutine() {
+        jump(popStack(), false);
+    }
+
+    /**
+     * Restarts cpu by changing program counter to restartAddress
+     * restartAddress = $00,$08,$10,$18,$20,$28,$30,$38
+     * */
+    private void restartCPU(int restartAddress) {
+        pushToStack(programCounter);
+        jump(restartAddress, false);
+        notifyTimingObservers(24);
     }
 
 
