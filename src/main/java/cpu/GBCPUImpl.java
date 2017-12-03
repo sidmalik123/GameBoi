@@ -10,6 +10,7 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
     private static final int LOAD_SPECIAL_ADDRESS = 0xFF00;
     private static final int CPU_FREQUENCY = 4194304;
     private boolean wasLastIntstructionJump;
+    private boolean isHalted;
 
     private GBRegisterManager registerManager;
 
@@ -307,6 +308,32 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
             case 0xF7: restartCPU(0x30);
             case 0xFF: restartCPU(0x38);
 
+            case 0xD9: returnFromRoutine(); interruptManager.setEnabled(true);
+            case 0x08: { // write stack to immediate address
+                int address = getImmediateWord();
+                writeToMemory(address, registerManager.getLow(DoubleRegister.SP));
+                writeToMemory(address + 1, registerManager.getHigh(DoubleRegister.SP));
+            }
+            case 0x36: writeToMemory(registerManager.get(DoubleRegister.HL), getImmediateByte());
+            case 0xFA: registerManager.set(SingleRegister.A, readMemory(getImmediateWord()));
+            case 0x3E: registerManager.set(SingleRegister.A, getImmediateByte());
+            case 0xEA: writeToMemory(getImmediateWord(), registerManager.get(SingleRegister.A));
+            case 0xF3: interruptManager.setEnabled(false);
+            case 0xFB: interruptManager.setEnabled(true);
+            case 0xE0: writeToMemory(LOAD_SPECIAL_ADDRESS + getImmediateByte(), registerManager.get(SingleRegister.A));
+            case 0xF0: registerManager.set(SingleRegister.A, readMemory(LOAD_SPECIAL_ADDRESS + getImmediateByte()));
+            case 0x2F: flipAllBits(SingleRegister.A);
+            case 0x76: isHalted = true;
+            case 0x3F: // complement carry flag
+                registerManager.setCarryFlag(!registerManager.getCarryFlag());
+                registerManager.setHalfCarryFlag(false);
+                registerManager.setOperationFlag(false);
+            case 0x37:
+                registerManager.setCarryFlag(true);
+                registerManager.setHalfCarryFlag(false);
+                registerManager.setOperationFlag(false);
+            
+
 
 
             default:
@@ -535,6 +562,17 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
         pushToStack(programCounter);
         jump(restartAddress, false);
         notifyTimingObservers(24);
+    }
+
+    /**
+     * Flips all bits of register r,
+     * Sets the operation and half-carry flag
+     * */
+    private void flipAllBits(SingleRegister r) {
+        int val = registerManager.get(r);
+        registerManager.set(r, val ^ 0xFF);
+        registerManager.setOperationFlag(true);
+        registerManager.setHalfCarryFlag(true);
     }
 
 

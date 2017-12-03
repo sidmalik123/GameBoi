@@ -47,10 +47,12 @@ public class GBRegisterManagerImpl implements GBRegisterManager {
     }
 
     public int getHigh(DoubleRegister doubleRegister) {
+        if (doubleRegister == DoubleRegister.SP) return stackPointer >> 8;
         return registerMap.get(doubleRegister.getHighRegister()).getData();
     }
 
     public int getLow(DoubleRegister doubleRegister) {
+        if (doubleRegister == DoubleRegister.SP) return stackPointer & 0xFF;
         return registerMap.get(doubleRegister.getLowRegister()).getData();
     }
 
