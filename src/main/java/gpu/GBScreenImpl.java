@@ -41,6 +41,15 @@ public class GBScreenImpl implements GBScreen {
 
     //Todo
     public void render() {
-
+        for (List<GBPalette.Color> row: screenBuffer) {
+            for (GBPalette.Color color : row) {
+                if (color == null || color == GBPalette.Color.WHITE) {
+                    System.out.print(" ");
+                } else {
+                    System.out.print("x");
+                }
+            }
+            System.out.println();
+        }
     }
 }

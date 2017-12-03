@@ -1,9 +1,10 @@
 package cpu;
 
-import core.AbstractTimingSubject;
 import core.BitUtils;
+import cpu.interrupts.GBInterrupt;
 import cpu.interrupts.GBInterruptManager;
-import mmu.GBMMU;
+
+import java.util.logging.Logger;
 
 public class GBCPUImpl extends AbstractGBCPUImpl {
 
@@ -11,6 +12,7 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
     private static final int CPU_FREQUENCY = 4194304;
     private boolean wasLastIntstructionJump;
     private boolean isHalted;
+    private final Logger LOGGER = Logger.getLogger(getClass().getName());
 
     private GBRegisterManager registerManager;
 
@@ -19,12 +21,18 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
     private int programCounter; // set by the mmu on program load
 
     public void run(String programLocation) {
+        initProgramCounter();
         // Todo - process interrupts after every instruction
+        executeInstruction(readInstruction());
         if (!wasLastIntstructionJump) {
             ++programCounter;
         } else {
             wasLastIntstructionJump = true;
         }
+
+//        for (GBInterrupt interrupt : interruptManager.getCurrentInterrupts()) {
+//            serviceInterrupt(interrupt);
+//        }
     }
 
     public int getFrequency() {
@@ -332,12 +340,39 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
                 registerManager.setCarryFlag(true);
                 registerManager.setHalfCarryFlag(false);
                 registerManager.setOperationFlag(false);
-            
 
+            case 0x09: add(DoubleRegister.HL, registerManager.get(DoubleRegister.BC));
+            case 0x19: add(DoubleRegister.HL, registerManager.get(DoubleRegister.DE));
+            case 0x29: add(DoubleRegister.HL, registerManager.get(DoubleRegister.HL));
+            case 0x39: add(DoubleRegister.HL, registerManager.get(DoubleRegister.SP));
+
+            case 0x03: add(DoubleRegister.BC, 1);
+            case 0x13: add(DoubleRegister.DE, 1);
+            case 0x23: add(DoubleRegister.HL, 1);
+            case 0x33: add(DoubleRegister.SP, 1);
+
+            case 0x0B: add(DoubleRegister.BC, -1);
+            case 0x1B: add(DoubleRegister.DE, -1);
+            case 0x2B: add(DoubleRegister.HL, -1);
+            case 0x3B: add(DoubleRegister.SP, -1);
+
+            case 0x10: // todo - implement stop
+
+            case 0xCB: executeExtendedOpcode(readMemory(++programCounter));
 
 
             default:
-                throw new IllegalArgumentException("Unknown opcode: " + opCode);
+                LOGGER.warning("Instruction " + opCode + " has not been implemented yet");
+        }
+    }
+
+    private void executeExtendedOpcode(int opCode) {
+        switch (opCode & 0xFF) {
+            case 0x4F: testBit(SingleRegister.A, 1);
+            case 0x7C: testBit(SingleRegister.H, 7);
+
+            default:
+                LOGGER.warning("Extended Instruction " + opCode + " has not been implemented yet");
         }
     }
 
@@ -379,8 +414,8 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
         result = val1 + toAdd;
 
         registerManager.setZeroFlag((result & 0xFF) == 0);
-        registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd(val1,toAdd));
-        registerManager.setCarryFlag(BitUtils.isCarryAdd(val1, toAdd));
+        registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd8Bit(val1,toAdd));
+        registerManager.setCarryFlag(BitUtils.isCarryAdd8Bit(val1, toAdd));
         registerManager.setOperationFlag(false);
 
         return result;
@@ -472,10 +507,6 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
      * */
     private void add(SingleRegister r, int toAdd, boolean addCarry) {
         registerManager.set(r, performAdd(registerManager.get(r), toAdd, addCarry));
-    }
-
-    private void add(DoubleRegister d, int toAdd) {
-
     }
 
     /**
@@ -575,5 +606,27 @@ public class GBCPUImpl extends AbstractGBCPUImpl {
         registerManager.setHalfCarryFlag(true);
     }
 
+    /***/
+    private int perform16BitAdd(int val, int toAdd, boolean setFlags) {
+        val += toAdd;
+        if (setFlags) {
+            registerManager.setOperationFlag(false);
+            registerManager.setHalfCarryFlag(BitUtils.isHalfCarryAdd8Bit(val, toAdd));
+            registerManager.setCarryFlag(BitUtils.isCarryAdd16Bit(val, toAdd));
+        }
+        notifyTimingObservers(4); // 16 bits ALUs take 4 cycles
+        return val;
+    }
 
+    private void add(DoubleRegister d, int toAdd) {
+        boolean setFlags = (-1 <= toAdd && toAdd <= 1) ? false : true; // don't set flags if inc or dec
+        registerManager.set(d, perform16BitAdd(registerManager.get(d), toAdd, setFlags));
+    }
+
+    private void testBit(SingleRegister r, int bitNum) {
+        registerManager.setZeroFlag(!BitUtils.isBitSet(registerManager.get(r), bitNum));
+        registerManager.setOperationFlag(false);
+        registerManager.setHalfCarryFlag(true);
+        notifyTimingObservers(4);
+    }
 }

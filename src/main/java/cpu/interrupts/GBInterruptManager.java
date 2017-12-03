@@ -21,7 +21,7 @@ public interface GBInterruptManager {
     /**
      * Returns the current active interrupt
      * */
-    GBInterrupt getCurrentInterrupt();
+    List<GBInterrupt> getCurrentInterrupts();
 
     /**
      * Enables all interupts present in enabledInterrupts

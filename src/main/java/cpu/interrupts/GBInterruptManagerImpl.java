@@ -1,6 +1,7 @@
 package cpu.interrupts;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,17 +28,18 @@ public class GBInterruptManagerImpl implements GBInterruptManager {
      * Returns the highest priority requested and enabled interrupt
      * resets it, TODO - return a copy here
      * */
-    public GBInterrupt getCurrentInterrupt() {
-        if (!isEnabled()) return null;
+    public List<GBInterrupt> getCurrentInterrupts() {
+        List<GBInterrupt> interrupts = new ArrayList<GBInterrupt>();
+        if (!isEnabled()) return interrupts;
 
         for (GBInterrupt interrupt : interruptMap.values()) {
             if (interrupt.isRequested() && interrupt.isEnabled()) {
                 interrupt.setRequested(false); // reset the interrupt
-                return interrupt;
+                interrupts.add(interrupt);
             }
         }
 
-        return null;
+        return interrupts;
     }
 
 

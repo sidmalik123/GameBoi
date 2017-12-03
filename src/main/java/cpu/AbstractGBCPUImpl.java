@@ -30,4 +30,8 @@ public abstract class AbstractGBCPUImpl extends AbstractTimingSubject implements
         mmu.writeData(address, data);
     }
 
+    protected int initProgramCounter() {
+        return mmu.loadProgram("");
+    }
+
 }
