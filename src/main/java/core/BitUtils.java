@@ -3,26 +3,26 @@ package core;
 public class BitUtils {
 
     public static boolean isHalfCarryAdd8Bit(int val1, int val2) {
-        return (((val1 & 0xF) + (val2 & 0xF)) & 0x10) == 0x10;
+        return (val1 & 0x0F) + (val2 & 0x0F) > 0x0F;
     }
 
     public static boolean isCarryAdd8Bit(int val1, int val2) {
-        return (((val1 & 0xFF) + (val2 & 0xFF)) & 0x100) == 0x100;
+        return val1 + val2 > 0xFF;
     }
 
     public static boolean isHalfCarryAdd16Bit(int val1, int val2) {
-        return (((val1 & 0xFF) + (val2 & 0xFF)) & 0x100) == 0x100;
+        return (val1 & 0x0FFF) + (val2 & 0x0FFF) > 0x0FFF;
     }
 
     public static boolean isCarryAdd16Bit(int val1, int val2) {
-        return (((val1 & 0xFFFF) + (val2 & 0xFFFF)) & 0x10000) == 0x10000;
+        return val1 + val2 > 0xFFFF;
     }
 
-    public static boolean isHalfCarrySub(int val1, int val2) {
+    public static boolean isHalfCarrySub8Bit(int val1, int val2) {
         return ((val1 & 0xF) - (val2 & 0xF)) < 0;
     }
 
-    public static boolean isCarrySub(int val1, int val2) {
+    public static boolean isCarrySub8Bit(int val1, int val2) {
         return ((val1 & 0xFF) - (val2 & 0xFF)) < 0;
     }
 
