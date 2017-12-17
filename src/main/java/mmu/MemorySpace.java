@@ -13,10 +13,10 @@ public interface MemorySpace {
     /**
      * Returns the byte at address
      * */
-    int getByte(int address);
+    int read(int address);
 
     /**
      * Sets byte at address to have value data
      * */
-    void setByte(int address, int data);
+    void write(int address, int data);
 }

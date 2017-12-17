@@ -3,7 +3,7 @@ package mmu;
 /**
  * Represents a memory space that is present as one continuous block of memory
  * */
-public abstract class ContinuousMemorySpace implements MemorySpace {
+public class ContinuousMemorySpace implements MemorySpace {
 
     private int[] memoryBlock;
 
@@ -17,13 +17,18 @@ public abstract class ContinuousMemorySpace implements MemorySpace {
     }
 
     @Override
-    public int getByte(int address) {
+    public boolean accepts(int address) {
+        return address >= START_ADDRESS && address <= END_ADDRESS;
+    }
+
+    @Override
+    public int read(int address) {
         checkAddress(address);
         return memoryBlock[getAddressIndex(address)];
     }
 
     @Override
-    public void setByte(int address, int data) {
+    public void write(int address, int data) {
         checkAddress(address);
         memoryBlock[getAddressIndex(address)] = data;
     }
