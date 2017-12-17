@@ -49,5 +49,12 @@ public class BitUtils {
     public static int resetBit(int data, int bitPos) {
         return data & ~(1 << bitPos);
     }
+
+    /**
+     * Joins highByte and lowByte to form a word
+     * */
+    public static int joinBytes(int highByte, int lowByte) {
+        return (highByte << 8) | lowByte;
+    }
 }
 

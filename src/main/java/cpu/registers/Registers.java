@@ -10,7 +10,7 @@ public interface Registers {
     * 2 Single registers can be joined together to form a double
     * register. Eg. A and F join to become AF
     * */
-    enum Register {A, B, C, D, E, F, H, L, AF, BC, DE, HL, SP, PC};
+    enum Register {A, B, C, D, E, F, H, L, AF, BC, DE, HL, SP};
 
     /**
      * @return the value read from register

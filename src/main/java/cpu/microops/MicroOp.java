@@ -1,4 +1,4 @@
-package cpu;
+package cpu.microops;
 
 /**
  * Represents a micro operation in a GameBoy instruction
