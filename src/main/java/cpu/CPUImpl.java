@@ -1,7 +1,5 @@
 package cpu;
 
-import afu.org.checkerframework.checker.units.qual.C;
-import core.BitUtils;
 import core.exceptions.UnknownMicroOpException;
 import cpu.alu.ALU;
 import cpu.alu.ALUMicroOp;

@@ -56,5 +56,19 @@ public class BitUtils {
     public static int joinBytes(int highByte, int lowByte) {
         return (highByte << 8) | lowByte;
     }
+
+    /**
+     * @return lower byte of word
+     * */
+    public static int getLowByte(int word) {
+        return word & 0xFF;
+    }
+
+    /**
+     * @return higher byte of word
+     * */
+    public static int getHighByte(int word) {
+        return (word >> 8) & 0xFF;
+    }
 }
 
