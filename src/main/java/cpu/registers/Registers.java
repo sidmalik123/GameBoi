@@ -7,10 +7,10 @@ public interface Registers {
 
     /*
     * Represents the different registers in a GameBoy,
-    * Single registers can be joined together to form double
-    * registers. Eg. A and F join to become AF
+    * 2 Single registers can be joined together to form a double
+    * register. Eg. A and F join to become AF
     * */
-    enum Register {A, B, C, D, E, F, H, L, AF, BC, DE, HL};
+    enum Register {A, B, C, D, E, F, H, L, AF, BC, DE, HL, SP, PC};
 
     /**
      * @return the value read from register
