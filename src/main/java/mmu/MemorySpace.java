@@ -2,6 +2,9 @@ package mmu;
 
 /**
  * Represents a part of GameBoy's memory
+ *
+ * This is intentionally package protected because
+ * I want memory to be read and set by MMU APIs
  * */
 public interface MemorySpace {
 

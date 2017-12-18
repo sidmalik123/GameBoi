@@ -45,6 +45,9 @@ public class MMUImpl implements MMU {
         memorySpace.write(address, data & 0xFF);
     }
 
+    /**
+     * Returns the memory space that accepts address
+     **/
     private MemorySpace getMemorySpace(int address) {
         for (MemorySpace memorySpace : memorySpaces) {
             if (memorySpace.accepts(address)) return memorySpace;
