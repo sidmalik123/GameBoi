@@ -5,6 +5,8 @@ package cpu.registers;
  * */
 public interface Registers {
 
+    enum Flag {ZERO, SUBTRACTION, HALF_CARRY, CARRY};
+
     /*
     * Represents the different registers in a GameBoy,
     * 2 Single registers can be joined together to form a double
@@ -21,4 +23,14 @@ public interface Registers {
      * Writes data to register
      * */
     void write(Register register, int data);
+
+    /**
+     * Sets/resets one of the four flags
+     * */
+    void setFlag(Flag flag, boolean val);
+
+    /**
+     * Checks if flag is set or not
+     * */
+    boolean getFlag(Flag flag);
 }

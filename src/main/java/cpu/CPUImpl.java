@@ -45,14 +45,29 @@ public class CPUImpl extends ClockSubject implements CPU {
                 handleALUMicroOp((ALUMicroOp) microOp);
             } else if (microOp instanceof RegisterMicroOp) {
                 handleRegisterMicroOp((RegisterMicroOp) microOp);
+            } else if (microOp instanceof MiscellaneousMicroOp) {
+                handleMiscellaneousMicroOp((MiscellaneousMicroOp) microOp);
             } else {
                 throw new UnknownMicroOpException("MicroOp " + microOp.getClass().getName() + " not handled");
             }
 
             // increment clock by number of CCs it took to execute microOp
-            notifyClockIncrement(microOp.getNumCycles());
+            if (microOp.getNumCycles() > 0) notifyClockIncrement(microOp.getNumCycles());
         }
 
+    }
+
+    private void handleMiscellaneousMicroOp(MiscellaneousMicroOp microOp) {
+        switch (microOp) {
+            case JR_NZ:
+                if (!registers.getFlag(Registers.Flag.ZERO)) {
+                    PC += (byte) mmu.read(PC); // add signed byte
+                }
+            case LD_CA:
+                registers.write(Registers.Register.A, mmu.read(0xFF00 + registers.read(Registers.Register.C)));
+            default:
+                throw new IllegalArgumentException("Unhandled microp " + microOp);
+        }
     }
 
     /**
@@ -124,6 +139,23 @@ public class CPUImpl extends ClockSubject implements CPU {
         switch (microOp) {
             case JOIN_BYTES:
                 setLastOpResult(alu.joinBytes(lastOpResult & 0xFF, secondLastOpResult & 0xFF));
+            case CMP:
+                alu.cmpBytes(lastOpResult, secondLastOpResult);
+            case XOR:
+                // assumes secondLastOp has val1, and lastOpResult has val2
+                setLastOpResult(alu.xor(secondLastOpResult, lastOpResult));
+            case SUB_CARRY_BYTES:
+                setLastOpResult(alu.subBytes(secondLastOpResult, lastOpResult, true));
+            case DEC_WORD:
+                setLastOpResult(alu.dec(lastOpResult));
+            case TEST_BIT_7:
+                alu.testBit(lastOpResult, 7);
+            case ADD_BYTES:
+                setLastOpResult(alu.addBytes(secondLastOpResult, lastOpResult));
+            case INC_BYTE:
+                setLastOpResult(alu.incByte(lastOpResult));
+            default:
+                throw new IllegalArgumentException("Unhandled ALUop " + microOp);
         }
     }
 

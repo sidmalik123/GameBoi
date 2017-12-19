@@ -32,15 +32,62 @@ public class GPUImpl implements GPU {
     private MemorySpace oam;
     private MemorySpace gpuControls;
 
+    private GPUMode currMode;
+    private int numCyclesInCurrMode;
+
     public GPUImpl() {
         vram = new ContinuousMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS);
         oam = new ContinuousMemorySpace(OAM_START_ADDRESS, OAM_END_ADDRESS);
         gpuControls = new ContinuousMemorySpace(WINDOW_SCROLL_Y_ADDRESS, LCD_CONTROL_REGISTER_ADDRESS);
+
+        // initial settings
+        currMode = GPUMode.ACCESSING_OAM;
     }
 
     @Override
     public void handleClockIncrement(int increment) {
+        numCyclesInCurrMode += increment;
 
+        switch (currMode) {
+            case ACCESSING_OAM:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    currMode = GPUMode.ACCESSING_VRAM;
+                    numCyclesInCurrMode = 0;
+                }
+                break;
+            case ACCESSING_VRAM:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    currMode = GPUMode.HBLANK;
+                    numCyclesInCurrMode = 0;
+
+                    renderLine();
+                }
+                break;
+            case HBLANK:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    numCyclesInCurrMode = 0;
+                    ++currLineNum; // move to the next line after hblank
+
+                    if (getCurrLineNum() == 143) {
+                        currMode = GPUModeType.VBLANK;
+
+                    } else { // back to OAM for the next line
+                        currMode = GPUModeType.ACCESSING_OAM;
+                    }
+                }
+                break;
+            case VBLANK:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    numCyclesInCurrMode = 0;
+                    ++numLinesInVblank;
+
+                    if (numLinesInVblank > NUM_LINES_IN_VBLANK) { // end of vblank
+                        numLinesInVblank = currLineNum = 0;
+
+                        currMode = GPUModeType.ACCESSING_OAM;
+                    }
+                }
+        }
     }
 
     @Override
@@ -67,5 +114,9 @@ public class GPUImpl implements GPU {
         if (gpuControls.accepts(address)) return gpuControls;
 
         throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " not accepted by any memory space");
+    }
+
+    private int getCurrLineNum() {
+        return gpuControls.read(GPU_CURR_LINE_NUM_ADDRESS);
     }
 }
