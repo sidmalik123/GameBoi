@@ -8,7 +8,7 @@ public interface InstructionExecuteStage {
     /**
      * Performs the work needed in this stage
      *
-     * @return num cycles taken to perform this work
+     * @return num cycles spent in this stage
      * */
     int execute();
 }

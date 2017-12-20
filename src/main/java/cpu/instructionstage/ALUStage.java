@@ -11,11 +11,15 @@ public class ALUStage implements InstructionExecuteStage {
 
     private DataBus dataBus1, dataBus2;
 
-    private Op currOp;
+    private Op op;
 
     public ALUStage(DataBus dataBus1, DataBus dataBus2) {
         this.dataBus1 = dataBus1;
         this.dataBus2 = dataBus2;
+    }
+
+    public void setOp(Op op) {
+        this.op = op;
     }
 
     /**
@@ -24,7 +28,7 @@ public class ALUStage implements InstructionExecuteStage {
      * */
     @Override
     public int execute() {
-        if (currOp == null) return 0; // skip this stage
+        if (op == null) return 0; // skip this stage
         return 0;
     }
 }

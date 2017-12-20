@@ -26,6 +26,7 @@ public class RegisterWriteStage implements InstructionExecuteStage {
     @Override
     public int execute() {
         if (registerToWriteTo != null) registers.write(registerToWriteTo, dataBus1.getData());
+        registerToWriteTo = null; // reset
         return 0;
     }
 }
