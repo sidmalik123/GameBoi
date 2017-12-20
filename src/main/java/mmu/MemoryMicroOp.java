@@ -1,7 +1,5 @@
 package mmu;
 
-import cpu.microops.MicroOp;
-
 public enum MemoryMicroOp implements MicroOp {
 
     READ_PC, READ_ADDRESS, WRITE_ADDRESS;

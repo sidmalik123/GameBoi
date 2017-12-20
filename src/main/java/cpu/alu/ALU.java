@@ -65,5 +65,5 @@ public interface ALU {
      * @return the resulting byte
      * Z 0 H C
      * */
-    void int addBytes(int byte1, int byte2);
+     int addBytes(int byte1, int byte2);
 }

@@ -1,4 +1,4 @@
-package cpu;
+package cpu.clock;
 
 public interface ClockObserver {
 

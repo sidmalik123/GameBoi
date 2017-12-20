@@ -14,14 +14,14 @@ public abstract class AbstractSubject<T> {
     /**
      * Attaches newObserver to this subject
      * */
-    void attach(T newObserver) {
+    public void attach(T newObserver) {
         observers.add(newObserver);
     }
 
     /**
      * Detaches toDetach from this subject
      * */
-    void detach(T toDetach) {
+    public void detach(T toDetach) {
         observers.remove(toDetach);
     }
 }

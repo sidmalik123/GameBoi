@@ -1,6 +1,6 @@
 package gpu;
 
-import cpu.ClockObserver;
+import cpu.clock.ClockObserver;
 import mmu.MemorySpace;
 
 /**
