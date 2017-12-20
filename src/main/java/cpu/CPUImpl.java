@@ -3,9 +3,13 @@ package cpu;
 import cpu.alu.ALU;
 import cpu.clock.ClockObserver;
 import cpu.clock.ClockSubject;
+import cpu.instructionstage.*;
 import cpu.registers.Registers;
 import mmu.MMU;
 import mmu.MemoryMicroOp;
+
+import java.util.LinkedList;
+import java.util.List;
 
 
 public class CPUImpl extends ClockSubject implements CPU {
@@ -14,44 +18,32 @@ public class CPUImpl extends ClockSubject implements CPU {
 
     private DataBus dataBus1, dataBus2;
 
-    private MMU mmu;
-
-    private Registers registers;
-
-    private ALU alu;
+    List<InstructionExecuteStage> pipeline;
 
     public CPUImpl(MMU mmu, Registers registers, ALU alu) {
-        this.mmu = mmu;
-        this.registers = registers;
-        this.alu = alu;
+        dataBus1 = new DataBus();
+        dataBus2 = new DataBus();
+        // init pipeline
+        pipeline = new LinkedList<>();
+        pipeline.add(new FetchStage(mmu, dataBus1));
+        pipeline.add(new ControlsGeneratorStage(dataBus1));
+        pipeline.add(new RegisterReadStage(registers, dataBus1, dataBus2));
+        pipeline.add(new MemoryStage(mmu, dataBus1, dataBus2));
+        pipeline.add(new ALUStage(dataBus1, dataBus2));
+        pipeline.add(new RegisterWriteStage(registers, dataBus1));
     }
 
     @Override
     public void run() {
-        // instruction fetch
-        int instruction = fetchInstruction();
-
-        // instruction decode - set control bits
-
-        // register reads
-
-        // memory read/write
-
-        // alu ops
-
-        // register writes
-
-
+        while(true) {
+            executeNextInstruction();
+        }
     }
 
-    /**
-     * Returns the next instruction to be executed
-     * */
-    private int fetchInstruction() {
-        int instruction = mmu.read(PC);
-        ++PC;
-        notifyClockIncrement(MemoryMicroOp.READ_PC.getNumCycles());
-        return instruction;
+    private void executeNextInstruction() {
+        for (InstructionExecuteStage stage : pipeline) {
+            stage.execute();
+        }
     }
 
     /**

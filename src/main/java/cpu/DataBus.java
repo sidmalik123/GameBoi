@@ -5,10 +5,15 @@ package cpu;
  * */
 public class DataBus {
 
-    int data; // the data that is present in this bus
+    private static final int RESET_VALUE = 0;
+    private int data; // the data that is present in this bus
 
     public int getData() {
         return data;
+    }
+
+    public void reset() {
+        this.data = RESET_VALUE;
     }
 
     public void setData(int data) {
