@@ -1,7 +1,5 @@
 package cpu.instructionstage;
 
-import cpu.DataBus;
-import cpu.ProgramCounter;
 import mmu.MMU;
 
 /**
@@ -9,13 +7,13 @@ import mmu.MMU;
  * */
 public class FetchStage implements InstructionExecuteStage {
 
-    private DataBus dataBus1;
+    private Integer dataBus1;
 
-    private ProgramCounter programCounter;
+    private Integer programCounter;
 
     private MMU mmu;
 
-    public FetchStage(MMU mmu, DataBus dataBus1, ProgramCounter programCounter) {
+    public FetchStage(MMU mmu, Integer dataBus1, Integer programCounter) {
         this.mmu = mmu;
         this.dataBus1 = dataBus1;
         this.programCounter = programCounter;
@@ -25,8 +23,8 @@ public class FetchStage implements InstructionExecuteStage {
     @Override
     public int execute() {
         // assumes databus1 contains the program counter
-        dataBus1.setData(mmu.read(programCounter.getValue())); // put instruction into databus1
-        programCounter.inc();
+        dataBus1 = mmu.read(programCounter); // put instruction into databus1
+        ++programCounter;
         return 4;
     }
 }

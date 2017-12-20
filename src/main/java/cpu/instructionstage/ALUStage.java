@@ -1,7 +1,5 @@
 package cpu.instructionstage;
 
-import cpu.DataBus;
-
 /**
  * In this stage ALUops are done
  * */
@@ -9,11 +7,11 @@ public class ALUStage implements InstructionExecuteStage {
 
     public enum Op {}; // ALU ops
 
-    private DataBus dataBus1, dataBus2;
+    private Integer dataBus1, dataBus2;
 
     private Op op;
 
-    public ALUStage(DataBus dataBus1, DataBus dataBus2) {
+    public ALUStage(Integer dataBus1, Integer dataBus2) {
         this.dataBus1 = dataBus1;
         this.dataBus2 = dataBus2;
     }

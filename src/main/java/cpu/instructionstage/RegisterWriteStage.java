@@ -1,6 +1,5 @@
 package cpu.instructionstage;
 
-import cpu.DataBus;
 import cpu.registers.Registers;
 
 /**
@@ -8,13 +7,13 @@ import cpu.registers.Registers;
  * */
 public class RegisterWriteStage implements InstructionExecuteStage {
 
-    private DataBus dataBus1;
+    private Integer dataBus1;
 
     private Registers.Register registerToWriteTo;
 
     private Registers registers;
 
-    public RegisterWriteStage(Registers registers, DataBus dataBus1) {
+    public RegisterWriteStage(Registers registers, Integer dataBus1) {
         this.registers = registers;
         this.dataBus1 = dataBus1;
     }
@@ -25,7 +24,7 @@ public class RegisterWriteStage implements InstructionExecuteStage {
 
     @Override
     public int execute() {
-        if (registerToWriteTo != null) registers.write(registerToWriteTo, dataBus1.getData());
+        if (registerToWriteTo != null) registers.write(registerToWriteTo, dataBus1);
         registerToWriteTo = null; // reset
         return 0;
     }

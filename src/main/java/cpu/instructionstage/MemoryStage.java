@@ -1,8 +1,6 @@
 package cpu.instructionstage;
 
 import core.BitUtils;
-import cpu.DataBus;
-import cpu.ProgramCounter;
 import mmu.MMU;
 
 /**
@@ -12,15 +10,15 @@ public class MemoryStage implements InstructionExecuteStage {
 
     enum Op {READ_BYTE, WRITE_BYTE, READ_IMMEDIATE_BYTE, READ_IMMEDIATE_WORD};
 
-    private DataBus dataBus1, dataBus2;
+    private Integer dataBus1, dataBus2;
 
-    private ProgramCounter programCounter;
+    private Integer programCounter;
 
     private Op op;
 
     private MMU mmu;
 
-    public MemoryStage(MMU mmu, DataBus dataBus1, DataBus dataBus2, ProgramCounter programCounter) {
+    public MemoryStage(MMU mmu, Integer dataBus1, Integer dataBus2, Integer programCounter) {
         this.mmu = mmu;
         this.dataBus1 = dataBus1;
         this.dataBus2 = dataBus2;
@@ -36,21 +34,19 @@ public class MemoryStage implements InstructionExecuteStage {
         int numCycles;
         switch (op) {
             case READ_BYTE:
-                dataBus1.setData(mmu.read(dataBus1.getData()));
+                dataBus1 = mmu.read(dataBus1);
                 numCycles = 4; break;
             case WRITE_BYTE:
-                mmu.write(dataBus1.getData(), dataBus2.getData());
+                mmu.write(dataBus1, dataBus2);
                 numCycles = 4; break;
             case READ_IMMEDIATE_BYTE:
-                dataBus1.setData(mmu.read(programCounter.getValue()));
-                programCounter.inc();
+                dataBus1 = mmu.read(programCounter);
+                ++programCounter;
                 numCycles = 4; break;
             case READ_IMMEDIATE_WORD:
-                int lowerByte = mmu.read(programCounter.getValue());
-                programCounter.inc();
-                int higherByte = mmu.read(programCounter.getValue());
-                programCounter.inc();
-                dataBus1.setData(BitUtils.joinBytes(higherByte, lowerByte));
+                int lowerByte = mmu.read(programCounter++);
+                int higherByte = mmu.read(programCounter++);
+                dataBus1 = BitUtils.joinBytes(higherByte, lowerByte);
                 numCycles = 8; break;
             default: // ignore, data buses keep the same value
                 numCycles = 0;

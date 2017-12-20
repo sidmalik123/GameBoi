@@ -1,6 +1,5 @@
 package cpu;
 
-import cpu.alu.ALU;
 import cpu.clock.ClockObserver;
 import cpu.clock.ClockSubject;
 import cpu.instructionstage.*;
@@ -13,14 +12,9 @@ import java.util.List;
 
 public class CPUImpl extends ClockSubject implements CPU {
 
-    private DataBus dataBus1, dataBus2;
-
     private List<InstructionExecuteStage> pipeline;
 
-    public CPUImpl(MMU mmu, Registers registers, ALU alu) {
-        ProgramCounter programCounter = new ProgramCounter(0);
-        dataBus1 = new DataBus();
-        dataBus2 = new DataBus();
+    public CPUImpl(MMU mmu, Registers registers, Integer programCounter, Integer dataBus1, Integer dataBus2) {
         // init pipeline
         pipeline = new LinkedList<>();
         pipeline.add(new FetchStage(mmu, dataBus1, programCounter));
@@ -42,8 +36,6 @@ public class CPUImpl extends ClockSubject implements CPU {
         for (InstructionExecuteStage stage : pipeline) {
             notifyClockIncrement(stage.execute());
         }
-        dataBus1.reset();
-        dataBus2.reset();
     }
 
     /**

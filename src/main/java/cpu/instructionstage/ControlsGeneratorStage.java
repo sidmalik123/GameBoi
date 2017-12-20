@@ -1,15 +1,13 @@
 package cpu.instructionstage;
 
-import cpu.DataBus;
-
 /**
  * This stage generates sets controls for stages that follow after this
  * */
 public class ControlsGeneratorStage implements InstructionExecuteStage {
 
-    private DataBus dataBus1; // this contains the instruction
+    private Integer dataBus1; // this contains the instruction
 
-    public ControlsGeneratorStage(DataBus dataBus1) {
+    public ControlsGeneratorStage(Integer dataBus1) {
         this.dataBus1 = dataBus1;
     }
 
