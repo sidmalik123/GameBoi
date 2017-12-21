@@ -1,19 +1,18 @@
 package gpu;
 
-import mmu.ContinuousMemorySpace;
-import mmu.MemorySpace;
+import mmu.memoryspaces.ContinuousMemorySpace;
+import mmu.memoryspaces.MemorySpace;
 
 /**
  * Concrete class implementing CPU
  * */
 public class GPUImpl implements GPU {
 
-    // memory regions in GPU
     private static final int VRAM_START_ADDRESS = 0x8000;
     private static final int VRAM_END_ADDRESS = 0x9FFF;
 
-    private static final int OAM_START_ADDRESS = 0xFE00;
-    private static final int OAM_END_ADDRESS = 0xFE9F;
+    private static final int SPRITE_START_ADDRESS = 0xFE00;
+    private static final int SPRITE_END_ADDRESS = 0xFE9F;
 
     private static final int LCD_CONTROL_REGISTER_ADDRESS = 0XFF40;
     private static final int LCD_STATUS_REGISTER_ADDRESS = 0xFF41;
@@ -29,7 +28,7 @@ public class GPUImpl implements GPU {
     private static final int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
 
     private MemorySpace vram;
-    private MemorySpace oam;
+    private MemorySpace spriteMemory;
     private MemorySpace gpuControls;
 
     private GPUMode currMode;
@@ -37,8 +36,8 @@ public class GPUImpl implements GPU {
 
     public GPUImpl() {
         vram = new ContinuousMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS);
-        oam = new ContinuousMemorySpace(OAM_START_ADDRESS, OAM_END_ADDRESS);
-        gpuControls = new ContinuousMemorySpace(WINDOW_SCROLL_Y_ADDRESS, LCD_CONTROL_REGISTER_ADDRESS);
+        spriteMemory = new ContinuousMemorySpace(SPRITE_START_ADDRESS, SPRITE_END_ADDRESS);
+        gpuControls = new ContinuousMemorySpace(LCD_CONTROL_REGISTER_ADDRESS, WINDOW_SCROLL_Y_ADDRESS);
 
         // initial settings
         currMode = GPUMode.ACCESSING_OAM;
@@ -46,74 +45,69 @@ public class GPUImpl implements GPU {
 
     @Override
     public void handleClockIncrement(int increment) {
-        numCyclesInCurrMode += increment;
-
-        switch (currMode) {
-            case ACCESSING_OAM:
-                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    currMode = GPUMode.ACCESSING_VRAM;
-                    numCyclesInCurrMode = 0;
-                }
-                break;
-            case ACCESSING_VRAM:
-                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    currMode = GPUMode.HBLANK;
-                    numCyclesInCurrMode = 0;
-
-                    renderLine();
-                }
-                break;
-            case HBLANK:
-                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    numCyclesInCurrMode = 0;
-                    ++currLineNum; // move to the next line after hblank
-
-                    if (getCurrLineNum() == 143) {
-                        currMode = GPUModeType.VBLANK;
-
-                    } else { // back to OAM for the next line
-                        currMode = GPUModeType.ACCESSING_OAM;
-                    }
-                }
-                break;
-            case VBLANK:
-                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    numCyclesInCurrMode = 0;
-                    ++numLinesInVblank;
-
-                    if (numLinesInVblank > NUM_LINES_IN_VBLANK) { // end of vblank
-                        numLinesInVblank = currLineNum = 0;
-
-                        currMode = GPUModeType.ACCESSING_OAM;
-                    }
-                }
-        }
+//        numCyclesInCurrMode += increment;
+//
+//        switch (currMode) {
+//            case ACCESSING_OAM:
+//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+//                    currMode = GPUMode.ACCESSING_VRAM;
+//                    numCyclesInCurrMode = 0;
+//                }
+//                break;
+//            case ACCESSING_VRAM:
+//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+//                    currMode = GPUMode.HBLANK;
+//                    numCyclesInCurrMode = 0;
+//
+//                    renderLine();
+//                }
+//                break;
+//            case HBLANK:
+//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+//                    numCyclesInCurrMode = 0;
+//                    ++currLineNum; // move to the next line after hblank
+//
+//                    if (getCurrLineNum() == 143) {
+//                        currMode = GPUModeType.VBLANK;
+//
+//                    } else { // back to OAM for the next line
+//                        currMode = GPUModeType.ACCESSING_OAM;
+//                    }
+//                }
+//                break;
+//            case VBLANK:
+//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+//                    numCyclesInCurrMode = 0;
+//                    ++numLinesInVblank;
+//
+//                    if (numLinesInVblank > NUM_LINES_IN_VBLANK) { // end of vblank
+//                        numLinesInVblank = currLineNum = 0;
+//
+//                        currMode = GPUModeType.ACCESSING_OAM;
+//                    }
+//                }
+//        }
     }
 
     @Override
     public boolean accepts(int address) {
-        return vram.accepts(address) || oam.accepts(address) || gpuControls.accepts(address);
+        return vram.accepts(address) || spriteMemory.accepts(address) || gpuControls.accepts(address);
     }
 
     @Override
     public int read(int address) {
-        return getMemorySpace(address).read(address);
+        if (vram.accepts(address)) return vram.read(address);
+        if (spriteMemory.accepts(address)) return spriteMemory.read(address);
+        if (gpuControls.accepts(address)) return gpuControls.read(address);
+        throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");
     }
 
     @Override
     public void write(int address, int data) {
-        getMemorySpace(address).write(address, data);
-    }
-
-    /**
-     * Returns MemorySpace that accepts address
-     * */
-    private MemorySpace getMemorySpace(int address) {
-        if (vram.accepts(address)) return vram;
-        if (oam.accepts(address)) return oam;
-        if (gpuControls.accepts(address)) return gpuControls;
-
-        throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " not accepted by any memory space");
+        if (vram.accepts(address)) {vram.write(address, data);}
+        else if (spriteMemory.accepts(address)) {spriteMemory.write(address, data);}
+        else if (gpuControls.accepts(address)) {gpuControls.write(address, data);}
+        else {throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");}
     }
 
     private int getCurrLineNum() {

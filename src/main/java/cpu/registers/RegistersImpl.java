@@ -53,35 +53,39 @@ public class RegistersImpl implements Registers {
     public void write(Register register, int data) {
         switch (register) {
             case A:
-                a = data & 0xFF;
+                a = data & 0xFF; break;
             case B:
-                b = data & 0xFF;
+                b = data & 0xFF; break;
             case C:
-                c = data & 0xFF;
+                c = data & 0xFF; break;
             case D:
-                d = data & 0xFF;
+                d = data & 0xFF; break;
             case E:
-                e = data & 0xFF;
+                e = data & 0xFF; break;
             case F:
-                f = data & 0xFF;
+                f = data & 0xFF; break;
             case H:
-                h = data & 0xFF;
+                h = data & 0xFF; break;
             case L:
-                l = data & 0xFF;
+                l = data & 0xFF; break;
             case AF:
                 a = BitUtils.getHighByte(data);
                 f = BitUtils.getLowByte(data);
+                break;
             case BC:
                 b = BitUtils.getHighByte(data);
                 c = BitUtils.getLowByte(data);
+                break;
             case DE:
                 d = BitUtils.getHighByte(data);
                 e = BitUtils.getLowByte(data);
+                break;
             case HL:
                 h = BitUtils.getHighByte(data);
                 l = BitUtils.getLowByte(data);
+                break;
             case SP:
-                sp = data & 0xFFFF;
+                sp = data & 0xFFFF; break;
         }
     }
 

@@ -1,4 +1,4 @@
-package mmu;
+package mmu.memoryspaces;
 
 /**
  * Represents a part of GameBoy's memory

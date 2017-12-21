@@ -14,4 +14,9 @@ public interface MMU {
      * Writes data to memory at address
      * */
     void write(int address, int data);
+
+    /**
+     * loads program into memory
+     * */
+    void load(int[] program);
 }

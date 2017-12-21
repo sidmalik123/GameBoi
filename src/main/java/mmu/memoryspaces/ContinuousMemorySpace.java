@@ -1,4 +1,4 @@
-package mmu;
+package mmu.memoryspaces;
 
 /**
  * Represents a memory space that is present as one continuous block of memory

@@ -1,7 +1,7 @@
 package gpu;
 
 import cpu.clock.ClockObserver;
-import mmu.MemorySpace;
+import mmu.memoryspaces.MemorySpace;
 
 /**
  * GameBoy's Graphic Processing Unit,

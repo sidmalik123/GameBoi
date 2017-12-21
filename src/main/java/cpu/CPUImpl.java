@@ -2,39 +2,21 @@ package cpu;
 
 import cpu.clock.ClockObserver;
 import cpu.clock.ClockSubject;
-import cpu.instructionstage.*;
-import cpu.registers.Registers;
-import mmu.MMU;
-
-import java.util.LinkedList;
-import java.util.List;
-
 
 public class CPUImpl extends ClockSubject implements CPU {
 
-    private List<InstructionExecuteStage> pipeline;
+    private InstructionExecutor instructionExecutor;
 
-    public CPUImpl(MMU mmu, Registers registers, Integer programCounter, Integer dataBus1, Integer dataBus2) {
-        // init pipeline
-        pipeline = new LinkedList<>();
-        pipeline.add(new FetchStage(mmu, dataBus1, programCounter));
-        pipeline.add(new ControlsGeneratorStage(dataBus1));
-        pipeline.add(new RegisterReadStage(registers, dataBus1, dataBus2));
-        pipeline.add(new MemoryStage(mmu, dataBus1, dataBus2, programCounter));
-        pipeline.add(new ALUStage(dataBus1, dataBus2));
-        pipeline.add(new RegisterWriteStage(registers, dataBus1));
+    public CPUImpl(InstructionExecutor instructionExecutor) {
+        this.instructionExecutor = instructionExecutor;
     }
 
     @Override
     public void run() {
-        while(true) {
-            executeNextInstruction();
-        }
-    }
-
-    private void executeNextInstruction() {
-        for (InstructionExecuteStage stage : pipeline) {
-            notifyClockIncrement(stage.execute());
+        int num = 1;
+        while (true) {
+            System.out.println("Executing instruction: " + num++);
+            instructionExecutor.executeInstruction();
         }
     }
 
