@@ -18,7 +18,7 @@ public class GPUImpl implements GPU {
     private static final int LCD_STATUS_REGISTER_ADDRESS = 0xFF41;
     private static final int BACKGROUND_SCROLL_X_ADDRESS = 0xFF42;
     private static final int BACKGROUND_SCROLL_Y_ADDRESS = 0xFF43;
-    private static final int GPU_CURR_LINE_NUM_ADDRESS = 0xFF44;
+    private static final int CURR_LINE_NUM_ADDRESS = 0xFF44;
     private static final int COINCIDENCE_LINE_ADDRESS = 0xFF45;
     private static final int DMA_ADDRESS = 0xFF46;
     private static final int BACKGROUND_PALETTE_ADDRESS = 0xFF47;
@@ -45,48 +45,51 @@ public class GPUImpl implements GPU {
 
     @Override
     public void handleClockIncrement(int increment) {
-//        numCyclesInCurrMode += increment;
-//
-//        switch (currMode) {
-//            case ACCESSING_OAM:
-//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-//                    currMode = GPUMode.ACCESSING_VRAM;
-//                    numCyclesInCurrMode = 0;
-//                }
-//                break;
-//            case ACCESSING_VRAM:
-//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-//                    currMode = GPUMode.HBLANK;
-//                    numCyclesInCurrMode = 0;
-//
-//                    renderLine();
-//                }
-//                break;
-//            case HBLANK:
-//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-//                    numCyclesInCurrMode = 0;
-//                    ++currLineNum; // move to the next line after hblank
-//
-//                    if (getCurrLineNum() == 143) {
-//                        currMode = GPUModeType.VBLANK;
-//
-//                    } else { // back to OAM for the next line
-//                        currMode = GPUModeType.ACCESSING_OAM;
-//                    }
-//                }
-//                break;
-//            case VBLANK:
-//                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-//                    numCyclesInCurrMode = 0;
-//                    ++numLinesInVblank;
-//
-//                    if (numLinesInVblank > NUM_LINES_IN_VBLANK) { // end of vblank
-//                        numLinesInVblank = currLineNum = 0;
-//
-//                        currMode = GPUModeType.ACCESSING_OAM;
-//                    }
-//                }
-//        }
+        numCyclesInCurrMode += increment;
+
+        switch (currMode) {
+            case ACCESSING_OAM:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    currMode = GPUMode.ACCESSING_VRAM;
+                    numCyclesInCurrMode = 0;
+                }
+                break;
+            case ACCESSING_VRAM:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    currMode = GPUMode.HBLANK;
+                    numCyclesInCurrMode = 0;
+
+                    renderCurrLine();
+                }
+                break;
+            case HBLANK:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    numCyclesInCurrMode = 0;
+                    gpuControls.write(CURR_LINE_NUM_ADDRESS, getCurrLineNum() + 1); // move to the next line after HBlank
+
+                    if (getCurrLineNum() == 144) {
+                        currMode = GPUMode.VBLANK;
+
+                    } else { // back to OAM for the next line
+                        currMode = GPUMode.ACCESSING_OAM;
+                    }
+                }
+                break;
+            case VBLANK:
+                if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
+                    numCyclesInCurrMode = 0;
+
+                    if (getCurrLineNum() == 154) { // end of vblank
+                        setCurrLineNum(0);
+
+                        currMode = GPUMode.ACCESSING_OAM;
+                    }
+                }
+        }
+    }
+
+    private void renderCurrLine() {
+
     }
 
     @Override
@@ -111,6 +114,10 @@ public class GPUImpl implements GPU {
     }
 
     private int getCurrLineNum() {
-        return gpuControls.read(GPU_CURR_LINE_NUM_ADDRESS);
+        return gpuControls.read(CURR_LINE_NUM_ADDRESS);
+    }
+
+    private void setCurrLineNum(int lineNum) {
+        gpuControls.write(CURR_LINE_NUM_ADDRESS, lineNum);
     }
 }

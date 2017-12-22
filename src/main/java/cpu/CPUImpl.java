@@ -13,9 +13,7 @@ public class CPUImpl extends ClockSubject implements CPU {
 
     @Override
     public void run() {
-        int num = 1;
         while (true) {
-            System.out.println("Executing instruction: " + num++);
             instructionExecutor.executeInstruction();
         }
     }

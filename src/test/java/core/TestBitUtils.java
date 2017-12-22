@@ -5,10 +5,8 @@ import cpu.CPUImpl;
 import cpu.InstructionExecutor;
 import cpu.InstructionExecutorImpl;
 import cpu.registers.RegistersImpl;
-import gpu.GPUImpl;
 import mmu.MMU;
 import mmu.MMUFactoryImpl;
-import mmu.MMUImpl;
 import org.junit.Test;
 
 public class TestBitUtils {
