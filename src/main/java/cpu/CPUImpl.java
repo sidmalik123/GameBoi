@@ -1,12 +1,16 @@
 package cpu;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import cpu.clock.ClockObserver;
 import cpu.clock.ClockSubject;
 
+@Singleton
 public class CPUImpl extends ClockSubject implements CPU {
 
     private InstructionExecutor instructionExecutor;
 
+    @Inject
     public CPUImpl(InstructionExecutor instructionExecutor) {
         this.instructionExecutor = instructionExecutor;
     }

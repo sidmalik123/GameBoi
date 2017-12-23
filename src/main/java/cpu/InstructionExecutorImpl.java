@@ -1,5 +1,6 @@
 package cpu;
 
+import com.google.inject.Inject;
 import core.BitUtils;
 import cpu.registers.Registers;
 import mmu.MMU;
@@ -20,6 +21,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private boolean lastOpWasCB;
     private static final int OFF_SET = 0xFF00;
 
+    @Inject
     public InstructionExecutorImpl(Registers registers, MMU mmu) {
         this.registers = registers;
         this.mmu = mmu;

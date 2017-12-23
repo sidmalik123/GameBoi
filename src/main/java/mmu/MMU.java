@@ -1,6 +1,8 @@
 package mmu;
 
 import cpu.clock.ClockObserver;
+import mmu.memoryspaces.MemorySpace;
+import mmu.memoryspaces.ROM;
 
 /**
  * Represents GameBoy's Memory Management Unit
@@ -21,4 +23,9 @@ public interface MMU extends ClockObserver {
      * loads program into memory
      * */
     void load(int[] program);
+
+    /**
+     * Sets rom to be used as Read only memory (to load programs)
+     * */
+    void setROM(ROM rom);
 }

@@ -1,5 +1,6 @@
 package gpu;
 
+import com.google.inject.Inject;
 import core.BitUtils;
 import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.MemorySpace;
@@ -37,6 +38,7 @@ public class GPUImpl implements GPU {
 
     private Display display;
 
+    @Inject
     public GPUImpl(Display display) {
         this.display = display;
         vram = new ContinuousMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS);

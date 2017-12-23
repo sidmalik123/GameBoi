@@ -1,10 +1,12 @@
 package mmu;
 
+import com.google.inject.Singleton;
 import cpu.clock.ClockObserver;
 import cpu.clock.ClockSubject;
 import gpu.GPU;
 import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.MemorySpace;
+import mmu.memoryspaces.ROM;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +14,13 @@ import java.util.List;
 /**
  * Concrete implementation of a GameBoy MMU
  * */
+@Singleton
 public class MMUImpl extends ClockSubject implements MMU {
 
     private List<MemorySpace> memorySpaces;
+    private ROM rom;
 
-    MMUImpl(List<MemorySpace> memorySpaces) {
+    public MMUImpl(List<MemorySpace> memorySpaces) {
         this.memorySpaces = memorySpaces;
     } // package-private
 
@@ -37,6 +41,11 @@ public class MMUImpl extends ClockSubject implements MMU {
         for (int i = 0; i < program.length; ++i) {
             write(i, program[i]);
         }
+    }
+
+    @Override
+    public void setROM(ROM rom) {
+        this.rom = rom;
     }
 
     /**
