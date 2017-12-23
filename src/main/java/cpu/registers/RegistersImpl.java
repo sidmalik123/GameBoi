@@ -1,10 +1,12 @@
 package cpu.registers;
 
+import com.google.inject.Singleton;
 import core.BitUtils;
 
 /**
  * Concrete class to implement Registers
  * */
+@Singleton
 public class RegistersImpl implements Registers {
 
     // int is sufficient to represent a register
