@@ -1,5 +1,6 @@
 package core;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -9,7 +10,7 @@ import java.util.List;
  * */
 public abstract class AbstractSubject<T> {
 
-    protected List<T> observers;
+    protected List<T> observers = new ArrayList<T>();
 
     /**
      * Attaches newObserver to this subject

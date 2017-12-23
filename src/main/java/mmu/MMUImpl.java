@@ -1,5 +1,7 @@
 package mmu;
 
+import cpu.clock.ClockObserver;
+import cpu.clock.ClockSubject;
 import gpu.GPU;
 import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.MemorySpace;
@@ -10,7 +12,7 @@ import java.util.List;
 /**
  * Concrete implementation of a GameBoy MMU
  * */
-public class MMUImpl implements MMU {
+public class MMUImpl extends ClockSubject implements MMU {
 
     private List<MemorySpace> memorySpaces;
 
@@ -45,5 +47,15 @@ public class MMUImpl implements MMU {
             if (memorySpace.accepts(address)) return memorySpace;
         }
         throw new RuntimeException("No memory space available for address " + Integer.toHexString(address));
+    }
+
+    @Override
+    protected void notifyClockIncrement(int increment) {
+        for (ClockObserver observer : this.observers) observer.handleClockIncrement(increment);
+    }
+
+    @Override
+    public void handleClockIncrement(int increment) {
+        notifyClockIncrement(increment);
     }
 }

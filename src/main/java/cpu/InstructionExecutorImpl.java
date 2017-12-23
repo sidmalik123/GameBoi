@@ -150,7 +150,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
 
             case 0xCB: lastOpWasCB = true; return 4;
 
-            case 0x17: logger.info("0x17 called - RLA"); return 0;
+            case 0x17: registers.write(Registers.Register.A, rl(registers.read(Registers.Register.A))); return 4;
 
             default:
                 throw new IllegalArgumentException("Opcode " + Integer.toHexString(instruction) + " not implementede");
@@ -349,6 +349,16 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     * Miscellaneous ops end
     * */
 
+    private int rl(int arg) {
+        int result = (arg << 1) & 0xff;
+        result |= registers.getFlag(Registers.Flag.CARRY) ? 1 : 0;
+        registers.setFlag(Registers.Flag.CARRY, (arg & (1<<7)) != 0);
+        registers.setFlag(Registers.Flag.ZERO, result == 0);
+        registers.setFlag(Registers.Flag.SUBTRACTION, false);
+        registers.setFlag(Registers.Flag.HALF_CARRY, false);
+        return result;
+    }
+
     /**
      * Executes extended opcodes
      *
@@ -357,7 +367,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private int executeExtendedOpcode(int instruction) {
         switch (instruction) {
             case 0x7C: testBit(registers.read(Registers.Register.H), 7); return 8;
-            case 0x11: logger.info("CB 0x11 called - RL C"); return 0;
+            case 0x11: registers.write(Registers.Register.C, rl(registers.read(Registers.Register.C))); return 8;
 
             default:
                 throw new IllegalArgumentException("Extended opcode " + Integer.toHexString(instruction) + " not implementede");

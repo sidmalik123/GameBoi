@@ -14,7 +14,8 @@ public class CPUImpl extends ClockSubject implements CPU {
     @Override
     public void run() {
         while (true) {
-            instructionExecutor.executeInstruction();
+            int numCycles = instructionExecutor.executeInstruction();
+            notifyClockIncrement(numCycles);
         }
     }
 

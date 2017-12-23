@@ -1,5 +1,6 @@
 package gpu;
 
+import core.BitUtils;
 import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.MemorySpace;
 
@@ -34,7 +35,10 @@ public class GPUImpl implements GPU {
     private GPUMode currMode;
     private int numCyclesInCurrMode;
 
-    public GPUImpl() {
+    private Display display;
+
+    public GPUImpl(Display display) {
+        this.display = display;
         vram = new ContinuousMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS);
         spriteMemory = new ContinuousMemorySpace(SPRITE_START_ADDRESS, SPRITE_END_ADDRESS);
         gpuControls = new ContinuousMemorySpace(LCD_CONTROL_REGISTER_ADDRESS, WINDOW_SCROLL_Y_ADDRESS);
@@ -78,7 +82,7 @@ public class GPUImpl implements GPU {
             case VBLANK:
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
                     numCyclesInCurrMode = 0;
-
+                    setCurrLineNum(getCurrLineNum() + 1);
                     if (getCurrLineNum() == 154) { // end of vblank
                         setCurrLineNum(0);
 
@@ -89,7 +93,36 @@ public class GPUImpl implements GPU {
     }
 
     private void renderCurrLine() {
+        final int backgroundScrollY = gpuControls.read(BACKGROUND_SCROLL_Y_ADDRESS);
+        final int backgroundScrollX = gpuControls.read(BACKGROUND_SCROLL_X_ADDRESS);
+        final int currLineNum = getCurrLineNum();
 
+        final int tileLine = (backgroundScrollY + currLineNum)/8; // out of the 32 tile lines which one is this
+        int currTileNum = (tileLine * 32) + backgroundScrollX/8; // topLeft tile is 0, next one to the right is 1, and so on
+        final int lineInTile = (backgroundScrollY + currLineNum) % 8; // the line in tiles we are rendering
+        int startPixelNum = backgroundScrollX % 8;
+
+        int[] tile = getTile(getTileId(currTileNum));
+        for (int i = 0; i < 160; ++i) {
+            int lineHigherByte = tile[(2 * lineInTile) + 1];
+            int lineLowerByte = tile[2 * lineInTile];
+            if (lineHigherByte != 0 || lineLowerByte != 0) System.out.println("non-zero tile data");
+            for (int j = startPixelNum; j < 8; ++j) {
+                int colorNum = getPixelColorNum(BitUtils.isBitSet(lineHigherByte, j), BitUtils.isBitSet(lineLowerByte, j));
+                Color color = null;
+                switch (colorNum) {
+                    case 0: color = Color.WHITE; break;
+                    case 1: color = Color.LIGHT_GRAY; break;
+                    case 2: color = Color.DARK_GRAY; break;
+                    case 3: color = Color.BLACK; break;
+                }
+                display.setPixel(startPixelNum + i, getCurrLineNum(), color);
+            }
+            startPixelNum = 0;
+            tile = getTile(getTileId(++currTileNum)); // get next tile
+        }
+
+        display.refresh();
     }
 
     @Override
@@ -107,7 +140,12 @@ public class GPUImpl implements GPU {
 
     @Override
     public void write(int address, int data) {
-        if (vram.accepts(address)) {vram.write(address, data);}
+        if (vram.accepts(address)) {
+            if (data != 0) {
+                ++data;
+            }
+            vram.write(address, data);
+        }
         else if (spriteMemory.accepts(address)) {spriteMemory.write(address, data);}
         else if (gpuControls.accepts(address)) {gpuControls.write(address, data);}
         else {throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");}
@@ -119,5 +157,45 @@ public class GPUImpl implements GPU {
 
     private void setCurrLineNum(int lineNum) {
         gpuControls.write(CURR_LINE_NUM_ADDRESS, lineNum);
+    }
+
+    private int getTileId(int tileNum) {
+        int tileOffset = getTileIdOffset();
+        return vram.read(tileOffset + tileNum);
+    }
+
+    private int getTileIdOffset() {
+        int controls = gpuControls.read(LCD_CONTROL_REGISTER_ADDRESS);
+        if (BitUtils.isBitSet(controls, 3)) return 0x9C00;
+        return 0x9800;
+    }
+
+    private int[] getTile(int tileId) {
+        int[] data = new int[16];
+        int tileDataOffset = getTileDataOffset();
+        int address;
+        if (tileDataOffset == 0x8800) { // signed
+            address = tileDataOffset + 128 + (byte) tileId;
+        } else { // unsigned
+            address = tileDataOffset + (16 * tileId);
+        }
+        for (int i = 0; i < 16; ++i) {
+            data[i] = vram.read(address + i);
+        }
+
+        return data;
+    }
+
+    private int getTileDataOffset() {
+        int controls = gpuControls.read(LCD_CONTROL_REGISTER_ADDRESS);
+        if (BitUtils.isBitSet(controls, 4)) return 0x8000;
+        return 0x8800;
+    }
+
+    private int getPixelColorNum(boolean higherBit, boolean lowerBit) {
+        if (higherBit && lowerBit) return 3;
+        if (higherBit && !lowerBit) return 2;
+        if (!higherBit & lowerBit) return 1;
+        return 0;
     }
 }

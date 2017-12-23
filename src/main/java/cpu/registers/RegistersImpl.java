@@ -51,6 +51,7 @@ public class RegistersImpl implements Registers {
 
     @Override
     public void write(Register register, int data) {
+        if (data < 0) System.out.println("negative data : " + data);
         switch (register) {
             case A:
                 a = data & 0xFF; break;
