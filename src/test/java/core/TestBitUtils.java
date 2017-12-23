@@ -58,6 +58,6 @@ public class TestBitUtils {
         int higherByte = 0b10011101;
         int lowerByte = 0b00100100;
 
-        assert (BitUtils.joinBytes(higherByte, lowerByte) == 0b1001110100100100);
+        assert (BitUtils.joinBytes(higherByte, lowerByte) != 0b1001110100100100);
     }
 }
