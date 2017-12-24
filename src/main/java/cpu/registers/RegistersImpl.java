@@ -10,12 +10,7 @@ import core.BitUtils;
 public class RegistersImpl implements Registers {
 
     // int is sufficient to represent a register
-    private int a, b, c, d, e, f, h, l, sp;
-
-    private static int ZERO_FLAG_BIT = 7;
-    private static int SUBTRACTION_FLAG_BIT = 6;
-    private static int HALF_CARRY_BIT = 5;
-    private static int CARRY_BIT = 4;
+    private int a, b, c, d, e, f, h, l, sp, pc;
 
     @Override
     public int read(Register register) {
@@ -46,6 +41,8 @@ public class RegistersImpl implements Registers {
                 return BitUtils.joinBytes(h, l);
             case SP:
                 return sp;
+            case PC:
+                return pc;
             default:
                 throw new IllegalArgumentException("Read not implemented for register " + register);
         }
@@ -53,7 +50,6 @@ public class RegistersImpl implements Registers {
 
     @Override
     public void write(Register register, int data) {
-        if (data < 0) System.out.println("negative data : " + data);
         switch (register) {
             case A:
                 a = data & 0xFF; break;
@@ -89,30 +85,19 @@ public class RegistersImpl implements Registers {
                 break;
             case SP:
                 sp = data & 0xFFFF; break;
+            case PC:
+                pc = data & 0xFFFF; break;
         }
     }
 
     @Override
     public void setFlag(Flag flag, boolean val) {
-        final int bitNum;
-        switch (flag) {
-            case ZERO: bitNum = ZERO_FLAG_BIT; break;
-            case SUBTRACTION: bitNum = SUBTRACTION_FLAG_BIT; break;
-            case HALF_CARRY: bitNum = HALF_CARRY_BIT; break;
-            case CARRY: bitNum = CARRY_BIT; break;
-            default: throw new IllegalArgumentException("Unhandled flag " + flag);
-        }
+        final int bitNum = flag.getBitNum();
         f = val ? BitUtils.setBit(f, bitNum) : BitUtils.resetBit(f, bitNum);
     }
 
     @Override
     public boolean getFlag(Flag flag) {
-        switch (flag) {
-            case ZERO: return BitUtils.isBitSet(f, ZERO_FLAG_BIT);
-            case SUBTRACTION: return BitUtils.isBitSet(f, SUBTRACTION_FLAG_BIT);
-            case HALF_CARRY: return BitUtils.isBitSet(f, HALF_CARRY_BIT);
-            case CARRY: return BitUtils.isBitSet(f, CARRY_BIT);
-            default: throw new IllegalArgumentException("Unhandled flag " + flag);
-        }
+        return BitUtils.isBitSet(f, flag.getBitNum());
     }
 }

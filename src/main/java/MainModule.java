@@ -4,7 +4,6 @@ import com.google.inject.Provides;
 import cpu.CPU;
 import cpu.CPUImpl;
 import cpu.InstructionExecutor;
-import cpu.InstructionExecutorImpl;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
 import gpu.Display;
@@ -29,7 +28,6 @@ public class MainModule extends AbstractModule {
     protected void configure() {
         bind(Registers.class).to(RegistersImpl.class);
         bind(CPU.class).to(CPUImpl.class);
-        bind(InstructionExecutor.class).to(InstructionExecutorImpl.class);
         bind(GPU.class).to(GPUImpl.class);
         bind(Display.class).to(DisplayImpl.class);
         bind(ROM.class).to(ROMImpl.class);
