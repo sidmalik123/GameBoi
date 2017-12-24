@@ -18,7 +18,7 @@ public class CPUImpl implements CPU {
     @Override
     public void run() {
         while (true) {
-            int numCycles = instructionExecutor.executeInstruction();
+            instructionExecutor.executeInstruction();
         }
     }
 }

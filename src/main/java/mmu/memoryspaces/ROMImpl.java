@@ -1,5 +1,7 @@
 package mmu.memoryspaces;
 
+import mmu.ReadOnlyMemoryException;
+
 public class ROMImpl implements ROM {
 
     private static final int ROM0_START_ADDRESS = 0x0000;
@@ -30,7 +32,7 @@ public class ROMImpl implements ROM {
 
     @Override
     public void write(int address, int data) {
-        throw new IllegalArgumentException("Cannot write to read only memory");
+        throw new ReadOnlyMemoryException("Cannot write to read only memory: " + Integer.toHexString(address));
     }
 
     @Override

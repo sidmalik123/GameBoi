@@ -1,6 +1,6 @@
 package cpu.instructions;
 
-import core.exceptions.UnknownInstructionException;
+import cpu.UnknownInstructionException;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -6,9 +6,7 @@ package cpu.instructions;
 public interface InstructionExecutor {
 
     /**
-     * Executes instruction
-     *
-     * @return the number of clock cycles taken to execute instruction
+     * Executes the next instruction
      * */
-    int executeInstruction();
+    void executeInstruction();
 }
