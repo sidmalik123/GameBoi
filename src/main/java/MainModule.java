@@ -3,7 +3,10 @@ import com.google.inject.Inject;
 import com.google.inject.Provides;
 import cpu.CPU;
 import cpu.CPUImpl;
-import cpu.InstructionExecutor;
+import cpu.instructions.InstructionExecutor;
+import cpu.instructions.InstructionExecutorImpl;
+import cpu.instructions.InstructionTimer;
+import cpu.instructions.InstructionTimerImpl;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
 import gpu.Display;
@@ -26,10 +29,17 @@ public class MainModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        /* CPU */
         bind(Registers.class).to(RegistersImpl.class);
         bind(CPU.class).to(CPUImpl.class);
+        bind(InstructionExecutor.class).to(InstructionExecutorImpl.class);
+        bind(InstructionTimer.class).to(InstructionTimerImpl.class);
+
+        /* GPU */
         bind(GPU.class).to(GPUImpl.class);
         bind(Display.class).to(DisplayImpl.class);
+
+        /* MMU */
         bind(ROM.class).to(ROMImpl.class);
     }
 

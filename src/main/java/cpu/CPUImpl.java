@@ -3,10 +3,10 @@ package cpu;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import cpu.clock.ClockObserver;
-import cpu.clock.ClockSubject;
+import cpu.instructions.InstructionExecutor;
 
 @Singleton
-public class CPUImpl extends ClockSubject implements CPU {
+public class CPUImpl implements CPU {
 
     private InstructionExecutor instructionExecutor;
 
@@ -19,17 +19,6 @@ public class CPUImpl extends ClockSubject implements CPU {
     public void run() {
         while (true) {
             int numCycles = instructionExecutor.executeInstruction();
-            notifyClockIncrement(numCycles);
-        }
-    }
-
-    /**
-     * Notifies all of its observers to handle clock increment
-     * */
-    @Override
-    protected void notifyClockIncrement(int increment) {
-        for (ClockObserver observer : this.observers) {
-            observer.handleClockIncrement(increment);
         }
     }
 }

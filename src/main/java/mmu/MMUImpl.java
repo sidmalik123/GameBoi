@@ -2,20 +2,16 @@ package mmu;
 
 import com.google.inject.Singleton;
 import cpu.clock.ClockObserver;
-import cpu.clock.ClockSubject;
-import gpu.GPU;
-import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.MemorySpace;
 import mmu.memoryspaces.ROM;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Concrete implementation of a GameBoy MMU
  * */
 @Singleton
-public class MMUImpl extends ClockSubject implements MMU {
+public class MMUImpl implements MMU {
 
     private List<MemorySpace> memorySpaces;
     private ROM rom;
@@ -56,15 +52,5 @@ public class MMUImpl extends ClockSubject implements MMU {
             if (memorySpace.accepts(address)) return memorySpace;
         }
         throw new RuntimeException("No memory space available for address " + Integer.toHexString(address));
-    }
-
-    @Override
-    protected void notifyClockIncrement(int increment) {
-        for (ClockObserver observer : this.observers) observer.handleClockIncrement(increment);
-    }
-
-    @Override
-    public void handleClockIncrement(int increment) {
-        notifyClockIncrement(increment);
     }
 }

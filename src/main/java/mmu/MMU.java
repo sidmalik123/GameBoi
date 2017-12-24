@@ -1,13 +1,11 @@
 package mmu;
 
-import cpu.clock.ClockObserver;
-import mmu.memoryspaces.MemorySpace;
 import mmu.memoryspaces.ROM;
 
 /**
  * Represents GameBoy's Memory Management Unit
  * */
-public interface MMU extends ClockObserver {
+public interface MMU {
 
     /**
      * @return the value in memory at address

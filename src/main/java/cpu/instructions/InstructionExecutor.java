@@ -1,4 +1,4 @@
-package cpu;
+package cpu.instructions;
 
 /**
  * Executes an instruction
