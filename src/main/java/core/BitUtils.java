@@ -2,27 +2,45 @@ package core;
 
 public class BitUtils {
 
-    public static boolean isHalfCarryAdd8Bit(int val1, int val2) {
-        return (val1 & 0x0F) + (val2 & 0x0F) > 0x0F;
+    /**
+     * Checks if carry occurs from bit 3 to bit 4 in addition of byte1 and byte2
+     * */
+    public static boolean isHalfCarryByteAddition(int byte1, int byte2) {
+        return (byte1 & 0x0F) + (byte2 & 0x0F) > 0x0F;
     }
 
-    public static boolean isCarryAdd8Bit(int val1, int val2) {
+    /**
+     * Checks if carry occurs from bit 7 to bit 8
+     * */
+    public static boolean isCarryByteAddition(int val1, int val2) {
         return val1 + val2 > 0xFF;
     }
 
+    /**
+     * Todo
+     * */
     public static boolean isHalfCarryAdd16Bit(int val1, int val2) {
         return (val1 & 0x0FFF) + (val2 & 0x0FFF) > 0x0FFF;
     }
 
+    /**
+     * Todo
+     * */
     public static boolean isCarryAdd16Bit(int val1, int val2) {
         return val1 + val2 > 0xFFFF;
     }
 
-    public static boolean isHalfCarrySub8Bit(int val1, int val2) {
+    /**
+     * Checks if borrow happens from bit4
+     * */
+    public static boolean isHalfCarryByteSubtraction(int val1, int val2) {
         return ((val1 & 0xF) - (val2 & 0xF)) < 0;
     }
 
-    public static boolean isCarrySub8Bit(int val1, int val2) {
+    /**
+     * Checks if borrow occurs
+     * */
+    public static boolean isCarryByteSubtraction(int val1, int val2) {
         return ((val1 & 0xFF) - (val2 & 0xFF)) < 0;
     }
 

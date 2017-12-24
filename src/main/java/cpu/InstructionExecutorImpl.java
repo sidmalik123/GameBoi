@@ -221,7 +221,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         int result = ++bytee & 0xFF;
         registers.setFlag(Registers.Flag.ZERO, result == 0);
         registers.setFlag(Registers.Flag.SUBTRACTION, false);
-        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryAdd8Bit(bytee, 1));
+        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(bytee, 1));
         return result;
     }
 
@@ -234,7 +234,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         int result = --bytee & 0xFF;
         registers.setFlag(Registers.Flag.ZERO, result == 0);
         registers.setFlag(Registers.Flag.SUBTRACTION, false);
-        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarrySub8Bit(bytee, 1));
+        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryByteSubtraction(bytee, 1));
         return result;
     }
 
@@ -264,8 +264,8 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private void compareBytes(int byte1, int byte2) {
         registers.setFlag(Registers.Flag.ZERO,byte1 == byte2);
         registers.setFlag(Registers.Flag.SUBTRACTION, false);
-        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarrySub8Bit(byte1, byte2));
-        registers.setFlag(Registers.Flag.CARRY, BitUtils.isCarrySub8Bit(byte1, byte2));
+        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryByteSubtraction(byte1, byte2));
+        registers.setFlag(Registers.Flag.CARRY, BitUtils.isCarryByteSubtraction(byte1, byte2));
     }
 
     /**
@@ -277,8 +277,8 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         int result = (byte1 - byte2) & 0xFF;
         registers.setFlag(Registers.Flag.ZERO, result == 0);
         registers.setFlag(Registers.Flag.SUBTRACTION, true);
-        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarrySub8Bit(byte1, byte2));
-        registers.setFlag(Registers.Flag.CARRY, BitUtils.isCarrySub8Bit(byte1, byte2));
+        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryByteSubtraction(byte1, byte2));
+        registers.setFlag(Registers.Flag.CARRY, BitUtils.isCarryByteSubtraction(byte1, byte2));
         return result;
     }
 
@@ -293,8 +293,8 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         int result = (byte1 + toAdd) & 0xFF;
         registers.setFlag(Registers.Flag.ZERO, result == 0);
         registers.setFlag(Registers.Flag.SUBTRACTION, false);
-        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryAdd8Bit(byte1, toAdd));
-        registers.setFlag(Registers.Flag.CARRY, BitUtils.isCarryAdd8Bit(byte1, toAdd));
+        registers.setFlag(Registers.Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(byte1, toAdd));
+        registers.setFlag(Registers.Flag.CARRY, BitUtils.isCarryByteAddition(byte1, toAdd));
         return result;
     }
     /*
