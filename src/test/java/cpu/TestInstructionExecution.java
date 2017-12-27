@@ -1,15 +1,17 @@
 package cpu;
 
+import cpu.alu.ALUImpl;
 import cpu.clock.Clock;
 import cpu.clock.ClockImpl;
 import cpu.instructions.InstructionExecutor;
 import cpu.instructions.InstructionExecutorImpl;
-import cpu.instructions.InstructionTimerImpl;
+import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
 import mmu.MMU;
 import mmu.MockMMU;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -25,18 +27,98 @@ public class TestInstructionExecution {
     private Registers registers;
     private Clock clock;
     private MMU mmu;
+    private int instructionAddress = 0;
 
     public TestInstructionExecution() {
-        registers = new RegistersImpl();
         clock = new ClockImpl();
-        mmu = new MockMMU();
-        instructionExecutor = new InstructionExecutorImpl(mmu, registers, clock, new InstructionTimerImpl());
+        registers = new RegistersImpl(clock);
+        mmu = new MockMMU(clock);
+        instructionExecutor = new InstructionExecutorImpl(mmu, registers, clock,
+                new ALUImpl(registers, clock), new CPUImpl(instructionExecutor));
     }
 
     @Test
     public void testInstructions() {
-        mmu.write(0, 0x00);
+        mmu.write(instructionAddress++, 0x00);
         executeInstructionAndTestPCAndClock(1, 4);
+
+        mmu.write(instructionAddress++, 0x18);
+        mmu.write(instructionAddress++, 0x03);
+        executeInstructionAndTestPCAndClock(5, 12);
+
+        mmu.write(6, 0x18);
+        mmu.write(7, 0xFF);
+        executeInstructionAndTestPCAndClock(1, 12);
+    }
+
+    @Test
+    public void testPOP() {
+        mmu.write(0x1000, 0x55);
+        mmu.write(0x1001, 0x33);
+
+        registers.write(Register.SP, 0x1000);
+        mmu.write(0x00, 0xC1);
+        instructionExecutor.executeInstruction();
+
+        assert (registers.read(Register.BC) == 0x3355);
+        assert (registers.read(Register.SP) == 0x1002);
+    }
+
+    @Test
+    public void testJP() {
+        mmu.write(0, 0xC3);
+        mmu.write(1, 0x20);
+        mmu.write(2, 0x15);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.read(Register.PC) == 0x1520);
+    }
+
+    @Test
+    public void testCall() {
+        // call NZ
+        registers.write(Register.PC, 0x1A47);
+        registers.write(Register.SP, 0x3002);
+        registers.setFlag(Flag.ZERO, false);
+
+        mmu.write(0x1A47, 0xC4);
+        mmu.write(0x1A48, 0x35);
+        mmu.write(0x1A49, 0x21);
+
+        instructionExecutor.executeInstruction();
+
+        assert (mmu.read(0x3001) == 0x1A);
+        assert (mmu.read(0x3000) == 0x4A);
+        assert (registers.read(Register.SP) == 0x3000);
+        assert (registers.read(Register.PC) == 0x2135);
+    }
+
+    @Test
+    public void testRST() {
+        registers.write(Register.SP, 0x3002);
+        mmu.write(0, 0xC7);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.read(Register.PC) == 0x00);
+        assert (mmu.read(0x3001) == 0x00);
+        assert (mmu.read(0x3000) == 0x01);
+        assert (registers.read(Register.SP) == 0x3000);
+    }
+
+    @Test
+    public void testRET() {
+        registers.write(Register.PC, 0x3535);
+        mmu.write(0x3535, 0xC9);
+        registers.write(Register.SP, 0x2000);
+        mmu.write(0x2000, 0xB5);
+        mmu.write(0x2001, 0x18);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.read(Register.SP) == 0x2002);
+        assert (registers.read(Register.PC) == 0x18B5);
     }
 
     private void executeInstructionAndTestPCAndClock(int pcIncrement, int cycleIncrement) {
@@ -47,5 +129,10 @@ public class TestInstructionExecution {
 
         assert (registers.read(Register.PC) - oldPC == pcIncrement);
         assert (clock.getTotalCycles() - oldCycles == cycleIncrement);
+    }
+
+    @After
+    public void reset() {
+        registers.write(Register.PC, 0);
     }
 }

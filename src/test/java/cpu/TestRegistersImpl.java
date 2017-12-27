@@ -1,6 +1,7 @@
 package cpu;
 
 import core.BitUtils;
+import cpu.clock.ClockImpl;
 import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
@@ -9,7 +10,7 @@ import org.junit.Test;
 
 public class TestRegistersImpl {
 
-    private Registers registers = new RegistersImpl();
+    private Registers registers = new RegistersImpl(new ClockImpl());
 
     @Test
     public void testRegisterInitialValues() {
@@ -66,5 +67,19 @@ public class TestRegistersImpl {
             assert (registers.getFlag(flag));
             assert (BitUtils.isBitSet(registers.read(Register.F), flag.getBitNum()));
         }
+    }
+
+    @Test
+    public void testIncrementPC() {
+        int pcBeforeIncrement = registers.read(Register.PC);
+        registers.incrementPC();
+        assert (registers.read(Register.PC) == pcBeforeIncrement + 1);
+    }
+
+    @Test
+    public void testSignedByteAdditionToPC() {
+        int pcBeforeIncrement = registers.read(Register.PC);
+        registers.addSignedByteToPC(0xFF);
+        assert (registers.read(Register.PC) == pcBeforeIncrement - 1);
     }
 }

@@ -19,14 +19,14 @@ public class BitUtils {
     /**
      * Todo
      * */
-    public static boolean isHalfCarryAdd16Bit(int val1, int val2) {
+    public static boolean isHalfCarryWordAddition(int val1, int val2) {
         return (val1 & 0x0FFF) + (val2 & 0x0FFF) > 0x0FFF;
     }
 
     /**
      * Todo
      * */
-    public static boolean isCarryAdd16Bit(int val1, int val2) {
+    public static boolean isCarryWordAddition(int val1, int val2) {
         return val1 + val2 > 0xFFFF;
     }
 

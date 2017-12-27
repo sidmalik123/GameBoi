@@ -1,7 +1,9 @@
 package cpu.registers;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import core.BitUtils;
+import cpu.clock.Clock;
 
 /**
  * Concrete class to implement Registers
@@ -11,6 +13,13 @@ public class RegistersImpl implements Registers {
 
     // int is sufficient to represent a register
     private int a, b, c, d, e, f, h, l, sp, pc;
+
+    private Clock clock;
+
+    @Inject
+    public RegistersImpl(Clock clock) {
+        this.clock = clock;
+    }
 
     @Override
     public int read(Register register) {
@@ -99,5 +108,16 @@ public class RegistersImpl implements Registers {
     @Override
     public boolean getFlag(Flag flag) {
         return BitUtils.isBitSet(f, flag.getBitNum());
+    }
+
+    @Override
+    public void incrementPC() {
+        ++pc;
+    }
+
+    @Override
+    public void addSignedByteToPC(int signedByte) {
+        pc += (byte) signedByte;
+        clock.addCycles(4);
     }
 }

@@ -24,4 +24,14 @@ public interface Registers {
      * Returns the value of flag
      * */
     boolean getFlag(Flag flag);
+
+    /**
+     * Increments PC by 1
+     * */
+    void incrementPC();
+
+    /**
+     * Adds signed byte to PC
+     * */
+    void addSignedByteToPC(int signedByte);
 }

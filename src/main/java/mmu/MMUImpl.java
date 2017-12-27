@@ -1,6 +1,8 @@
 package mmu;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import cpu.clock.Clock;
 import cpu.clock.ClockObserver;
 import mmu.memoryspaces.MemorySpace;
 import mmu.memoryspaces.ROM;
@@ -15,14 +17,21 @@ public class MMUImpl implements MMU {
 
     private List<MemorySpace> memorySpaces;
     private ROM rom;
+    private Clock clock;
 
-    public MMUImpl(List<MemorySpace> memorySpaces) {
+    private static final int NUM_CYCLES_TO_READ_BYTE = 4;
+    private static final int NUM_CYCLES_TO_WRITE_BYTE = 4;
+
+    @Inject
+    public MMUImpl(List<MemorySpace> memorySpaces, Clock clock) {
         this.memorySpaces = memorySpaces;
-    } // package-private
+        this.clock = clock;
+    }
 
     @Override
     public int read(int address) {
         MemorySpace memorySpace = getMemorySpace(address);
+        clock.addCycles(NUM_CYCLES_TO_READ_BYTE);
         return memorySpace.read(address);
     }
 
@@ -30,6 +39,7 @@ public class MMUImpl implements MMU {
     public void write(int address, int data) {
         MemorySpace memorySpace = getMemorySpace(address);
         memorySpace.write(address, data & 0xFF);
+        clock.addCycles(NUM_CYCLES_TO_WRITE_BYTE);
     }
 
     @Override

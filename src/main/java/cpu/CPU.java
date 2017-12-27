@@ -9,4 +9,14 @@ public interface CPU {
      *  Runs the CPU so that it starts executing instructions
      * */
     void run();
+
+    /**
+     * Stops the CPU
+     * */
+    void stop();
+
+    /**
+     * Halts the CPU
+     * */
+    void halt();
 }

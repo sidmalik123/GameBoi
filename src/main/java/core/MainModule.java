@@ -5,10 +5,11 @@ import com.google.inject.Inject;
 import com.google.inject.Provides;
 import cpu.CPU;
 import cpu.CPUImpl;
+import cpu.alu.ALU;
+import cpu.alu.ALUImpl;
+import cpu.clock.Clock;
 import cpu.instructions.InstructionExecutor;
 import cpu.instructions.InstructionExecutorImpl;
-import cpu.instructions.InstructionTimer;
-import cpu.instructions.InstructionTimerImpl;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
 import gpu.Display;
@@ -35,7 +36,7 @@ public class MainModule extends AbstractModule {
         bind(Registers.class).to(RegistersImpl.class);
         bind(CPU.class).to(CPUImpl.class);
         bind(InstructionExecutor.class).to(InstructionExecutorImpl.class);
-        bind(InstructionTimer.class).to(InstructionTimerImpl.class);
+        bind(ALU.class).to(ALUImpl.class);
 
         /* GPU */
         bind(GPU.class).to(GPUImpl.class);
@@ -50,7 +51,7 @@ public class MainModule extends AbstractModule {
      * sets ROM
      * */
     @Provides @Inject
-    MMU provideMMU(GPU gpu, ROM rom) {
+    MMU provideMMU(GPU gpu, ROM rom, Clock clock) {
         List<MemorySpace> memorySpaces = new ArrayList<>();
         memorySpaces.add(rom);
         memorySpaces.add(new RAM());
@@ -58,7 +59,7 @@ public class MainModule extends AbstractModule {
         memorySpaces.add(new IOMemory());
         memorySpaces.add(new ContinuousMemorySpace(ZERO_PAGE_START_ADDRESS, ZERO_PAGE_END_ADDRESS));
 
-        MMU mmu = new MMUImpl(memorySpaces);
+        MMU mmu = new MMUImpl(memorySpaces, clock);
         mmu.setROM(rom);
         return mmu;
     }
