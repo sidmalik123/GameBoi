@@ -121,6 +121,55 @@ public class TestInstructionExecution {
         assert (registers.read(Register.PC) == 0x18B5);
     }
 
+    @Test
+    public void testSLA() {
+        mmu.write(0, 0xCB);
+        mmu.write(0x01, 0x20);
+        registers.write(Register.B, 0b10110001);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.getFlag(Flag.CARRY));
+        assert (registers.read(Register.B) == 0b01100010);
+    }
+
+    @Test
+    public void testSRA() {
+        mmu.write(0x00, 0xCB);
+        mmu.write(0x01, 0x28);
+        registers.write(Register.B, 0b10111000);
+
+        instructionExecutor.executeInstruction();
+
+        assert (!registers.getFlag(Flag.CARRY));
+        assert (registers.read(Register.B) == 0b11011100);
+    }
+
+    @Test
+    public void testSRL() {
+        mmu.write(0x00, 0xCB);
+        mmu.write(0x01, 0x38);
+        registers.write(Register.B, 0b10001111);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.getFlag(Flag.CARRY));
+        assert (registers.read(Register.B) == 0b01000111);
+    }
+
+    @Test
+    public void testPush() {
+        mmu.write(0x00, 0xF5);
+        registers.write(Register.AF, 0x2233);
+        registers.write(Register.SP, 0x1007);
+
+        instructionExecutor.executeInstruction();
+
+        assert (mmu.read(0x1006) == 0x22);
+        assert (mmu.read(0x1005) == 0x33);
+        assert (registers.read(Register.SP) == 0x1005);
+    }
+
     private void executeInstructionAndTestPCAndClock(int pcIncrement, int cycleIncrement) {
         int oldPC = registers.read(Register.PC);
         int oldCycles = clock.getTotalCycles();

@@ -3,6 +3,7 @@ package cpu.instructions;
 import com.google.inject.Inject;
 import core.BitUtils;
 import cpu.CPU;
+import cpu.UnknownInstructionException;
 import cpu.alu.ALU;
 import cpu.clock.Clock;
 import cpu.registers.Flag;
@@ -20,7 +21,6 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private Clock clock;
     private ALU alu;
     private CPU cpu;
-    private boolean lastInstructionWasCB;
 
     @Inject
     public InstructionExecutorImpl(MMU mmu, Registers registers, Clock clock, ALU alu, CPU cpu) {
@@ -239,7 +239,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xC8: if (registers.getFlag(Flag.ZERO)) ret(); break;
             case 0xC9: ret(); break;
             case 0xCA: if (registers.getFlag(Flag.ZERO)) jp(); break;
-            case 0xCB: lastInstructionWasCB = true; break;
+            case 0xCB: executeExtendedOpcode(getImmediateByte()); break;
             case 0xCC: call(registers.getFlag(Flag.ZERO)); break;
             case 0xCD: call(true); break;
             case 0xCE: addA(getImmediateByte(), true); break;
@@ -281,7 +281,271 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xFB: break; // Todo - enable interrupts
             case 0xFE: cpA(getImmediateByte()); break;
             case 0xFF: rst(0x38); break;
+
+            default: throw new UnknownInstructionException("Invalid instruction 0x" + Integer.toHexString(instruction));
          }
+    }
+
+    private void executeExtendedOpcode(int instruction) {
+        switch (instruction) {
+            case 0x00: rotateByteRegisterLeft(Register.B, false); break;
+            case 0x01: rotateByteRegisterLeft(Register.C, false); break;
+            case 0x02: rotateByteRegisterLeft(Register.D, false); break;
+            case 0x03: rotateByteRegisterLeft(Register.E, false); break;
+            case 0x04: rotateByteRegisterLeft(Register.H, false); break;
+            case 0x05: rotateByteRegisterLeft(Register.L, false); break;
+            case 0x06: mmu.write(registers.read(Register.HL), alu.rotateByteLeft(mmu.read(registers.read(Register.HL)), false)); break;
+            case 0x07: rotateByteRegisterLeft(Register.A, false); break;
+            case 0x08: rotateByteRegisterRight(Register.B, false); break;
+            case 0x09: rotateByteRegisterRight(Register.C, false); break;
+            case 0x0A: rotateByteRegisterRight(Register.D, false); break;
+            case 0x0B: rotateByteRegisterRight(Register.E, false); break;
+            case 0x0C: rotateByteRegisterRight(Register.H, false); break;
+            case 0x0D: rotateByteRegisterRight(Register.L, false); break;
+            case 0x0E: mmu.write(registers.read(Register.HL), alu.rotateByteRight(mmu.read(registers.read(Register.HL)), false)); break;
+            case 0x0F: rotateByteRegisterRight(Register.A, false); break;
+            case 0x10: rotateByteRegisterLeft(Register.B, true); break;
+            case 0x11: rotateByteRegisterLeft(Register.C, true); break;
+            case 0x12: rotateByteRegisterLeft(Register.D, true); break;
+            case 0x13: rotateByteRegisterLeft(Register.E, true); break;
+            case 0x14: rotateByteRegisterLeft(Register.H, true); break;
+            case 0x15: rotateByteRegisterLeft(Register.L, true); break;
+            case 0x16: mmu.write(registers.read(Register.HL), alu.rotateByteLeft(mmu.read(registers.read(Register.HL)), true)); break;
+            case 0x17: rotateByteRegisterLeft(Register.A, true); break;
+            case 0x18: rotateByteRegisterRight(Register.B, true); break;
+            case 0x19: rotateByteRegisterRight(Register.C, true); break;
+            case 0x1A: rotateByteRegisterRight(Register.D, true); break;
+            case 0x1B: rotateByteRegisterRight(Register.E, true); break;
+            case 0x1C: rotateByteRegisterRight(Register.H, true); break;
+            case 0x1D: rotateByteRegisterRight(Register.L, true); break;
+            case 0x1E: mmu.write(registers.read(Register.HL), alu.rotateByteRight(mmu.read(registers.read(Register.HL)), true)); break;
+            case 0x20: shiftByteRegisterLeft(Register.B); break;
+            case 0x21: shiftByteRegisterLeft(Register.C); break;
+            case 0x22: shiftByteRegisterLeft(Register.D); break;
+            case 0x23: shiftByteRegisterLeft(Register.E); break;
+            case 0x24: shiftByteRegisterLeft(Register.H); break;
+            case 0x25: shiftByteRegisterLeft(Register.L); break;
+            case 0x26: mmu.write(registers.read(Register.HL), alu.shiftByteLeft(mmu.read(registers.read(Register.HL)))); break;
+            case 0x27: shiftByteRegisterLeft(Register.A); break;
+            case 0x28: shiftByteRegisterRight(Register.B, false); break;
+            case 0x29: shiftByteRegisterRight(Register.C, false); break;
+            case 0x2A: shiftByteRegisterRight(Register.D, false); break;
+            case 0x2B: shiftByteRegisterRight(Register.E, false); break;
+            case 0x2C: shiftByteRegisterRight(Register.H, false); break;
+            case 0x2D: shiftByteRegisterRight(Register.L, false); break;
+            case 0x2E: mmu.write(registers.read(Register.HL), alu.shiftByteRight(mmu.read(registers.read(Register.HL)), false)); break;
+            case 0x2F: shiftByteRegisterRight(Register.A, false); break;
+            case 0x30: swapNibbles(Register.B); break;
+            case 0x31: swapNibbles(Register.C); break;
+            case 0x32: swapNibbles(Register.D); break;
+            case 0x33: swapNibbles(Register.E); break;
+            case 0x34: swapNibbles(Register.H); break;
+            case 0x35: swapNibbles(Register.L); break;
+            case 0x36: mmu.write(registers.read(Register.HL), alu.swapNibbles(mmu.read(registers.read(Register.HL)))); break;
+            case 0x37: swapNibbles(Register.A); break;
+            case 0x38: shiftByteRegisterRight(Register.B, true); break;
+            case 0x39: shiftByteRegisterRight(Register.C, true); break;
+            case 0x3A: shiftByteRegisterRight(Register.D, true); break;
+            case 0x3B: shiftByteRegisterRight(Register.E, true); break;
+            case 0x3C: shiftByteRegisterRight(Register.H, true); break;
+            case 0x3D: shiftByteRegisterRight(Register.L, true); break;
+            case 0x3E: mmu.write(registers.read(Register.HL), alu.shiftByteRight(mmu.read(registers.read(Register.HL)), true)); break;
+            case 0x3F: shiftByteRegisterRight(Register.A, true); break;
+            case 0x40: testBit(Register.B, 0); break;
+            case 0x41: testBit(Register.C, 0); break;
+            case 0x42: testBit(Register.D, 0); break;
+            case 0x43: testBit(Register.E, 0); break;
+            case 0x44: testBit(Register.H, 0); break;
+            case 0x45: testBit(Register.L, 0); break;
+            case 0x46: alu.testBit(mmu.read(registers.read(Register.HL)), 0); break;
+            case 0x47: testBit(Register.A, 0); break;
+            case 0x48: testBit(Register.B, 1); break;
+            case 0x49: testBit(Register.C, 1); break;
+            case 0x4A: testBit(Register.D, 1); break;
+            case 0x4B: testBit(Register.E, 1); break;
+            case 0x4C: testBit(Register.H, 1); break;
+            case 0x4D: testBit(Register.L, 1); break;
+            case 0x4E: alu.testBit(mmu.read(registers.read(Register.HL)), 1); break;
+            case 0x4F: testBit(Register.A, 1); break;
+            case 0x50: testBit(Register.B, 2); break;
+            case 0x51: testBit(Register.C, 2); break;
+            case 0x52: testBit(Register.D, 2); break;
+            case 0x53: testBit(Register.E, 2); break;
+            case 0x54: testBit(Register.H, 2); break;
+            case 0x55: testBit(Register.L, 2); break;
+            case 0x56: alu.testBit(mmu.read(registers.read(Register.HL)), 2); break;
+            case 0x57: testBit(Register.A, 2); break;
+            case 0x58: testBit(Register.B, 3); break;
+            case 0x59: testBit(Register.C, 3); break;
+            case 0x5A: testBit(Register.D, 3); break;
+            case 0x5B: testBit(Register.E, 3); break;
+            case 0x5C: testBit(Register.H, 3); break;
+            case 0x5D: testBit(Register.L, 3); break;
+            case 0x5E: alu.testBit(mmu.read(registers.read(Register.HL)), 3); break;
+            case 0x5F: testBit(Register.A, 3); break;
+            case 0x60: testBit(Register.B, 4); break;
+            case 0x61: testBit(Register.C, 4); break;
+            case 0x62: testBit(Register.D, 4); break;
+            case 0x63: testBit(Register.E, 4); break;
+            case 0x64: testBit(Register.H, 4); break;
+            case 0x65: testBit(Register.L, 4); break;
+            case 0x66: alu.testBit(mmu.read(registers.read(Register.HL)), 4); break;
+            case 0x67: testBit(Register.A, 4); break;
+            case 0x68: testBit(Register.B, 5); break;
+            case 0x69: testBit(Register.C, 5); break;
+            case 0x6A: testBit(Register.D, 5); break;
+            case 0x6B: testBit(Register.E, 5); break;
+            case 0x6C: testBit(Register.H, 5); break;
+            case 0x6D: testBit(Register.L, 5); break;
+            case 0x6E: alu.testBit(mmu.read(registers.read(Register.HL)), 5); break;
+            case 0x6F: testBit(Register.A, 5); break;
+            case 0x70: testBit(Register.B, 6); break;
+            case 0x71: testBit(Register.C, 6); break;
+            case 0x72: testBit(Register.D, 6); break;
+            case 0x73: testBit(Register.E, 6); break;
+            case 0x74: testBit(Register.H, 6); break;
+            case 0x75: testBit(Register.L, 6); break;
+            case 0x76: alu.testBit(mmu.read(registers.read(Register.HL)), 6); break;
+            case 0x77: testBit(Register.A, 6); break;
+            case 0x78: testBit(Register.B, 7); break;
+            case 0x79: testBit(Register.C, 7); break;
+            case 0x7A: testBit(Register.D, 7); break;
+            case 0x7B: testBit(Register.E, 7); break;
+            case 0x7C: testBit(Register.H, 7); break;
+            case 0x7D: testBit(Register.L, 7); break;
+            case 0x7E: alu.testBit(mmu.read(registers.read(Register.HL)), 7); break;
+            case 0x7F: testBit(Register.A, 7); break;
+            case 0x80: resetBit(Register.B, 0); break;
+            case 0x81: resetBit(Register.C, 0); break;
+            case 0x82: resetBit(Register.D, 0); break;
+            case 0x83: resetBit(Register.E, 0); break;
+            case 0x84: resetBit(Register.H, 0); break;
+            case 0x85: resetBit(Register.L, 0); break;
+            case 0x86: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 0)); break;
+            case 0x87: resetBit(Register.A, 0); break;
+            case 0x88: resetBit(Register.B, 1); break;
+            case 0x89: resetBit(Register.C, 1); break;
+            case 0x8A: resetBit(Register.D, 1); break;
+            case 0x8B: resetBit(Register.E, 1); break;
+            case 0x8C: resetBit(Register.H, 1); break;
+            case 0x8D: resetBit(Register.L, 1); break;
+            case 0x8E: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 1)); break;
+            case 0x8F: resetBit(Register.A, 1); break;
+            case 0x90: resetBit(Register.B, 2); break;
+            case 0x91: resetBit(Register.C, 2); break;
+            case 0x92: resetBit(Register.D, 2); break;
+            case 0x93: resetBit(Register.E, 2); break;
+            case 0x94: resetBit(Register.H, 2); break;
+            case 0x95: resetBit(Register.L, 2); break;
+            case 0x96: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 2)); break;
+            case 0x97: resetBit(Register.A, 2); break;
+            case 0x98: resetBit(Register.B, 3); break;
+            case 0x99: resetBit(Register.C, 3); break;
+            case 0x9A: resetBit(Register.D, 3); break;
+            case 0x9B: resetBit(Register.E, 3); break;
+            case 0x9C: resetBit(Register.H, 3); break;
+            case 0x9D: resetBit(Register.L, 3); break;
+            case 0x9E: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 3)); break;
+            case 0x9F: resetBit(Register.A, 3); break;
+            case 0xA0: resetBit(Register.B, 4); break;
+            case 0xA1: resetBit(Register.C, 4); break;
+            case 0xA2: resetBit(Register.D, 4); break;
+            case 0xA3: resetBit(Register.E, 4); break;
+            case 0xA4: resetBit(Register.H, 4); break;
+            case 0xA5: resetBit(Register.L, 4); break;
+            case 0xA6: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 4)); break;
+            case 0xA7: resetBit(Register.A, 4); break;
+            case 0xA8: resetBit(Register.B, 5); break;
+            case 0xA9: resetBit(Register.C, 5); break;
+            case 0xAA: resetBit(Register.D, 5); break;
+            case 0xAB: resetBit(Register.E, 5); break;
+            case 0xAC: resetBit(Register.H, 5); break;
+            case 0xAD: resetBit(Register.L, 5); break;
+            case 0xAE: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 5)); break;
+            case 0xAF: resetBit(Register.A, 5); break;
+            case 0xB0: resetBit(Register.B, 6); break;
+            case 0xB1: resetBit(Register.C, 6); break;
+            case 0xB2: resetBit(Register.D, 6); break;
+            case 0xB3: resetBit(Register.E, 6); break;
+            case 0xB4: resetBit(Register.H, 6); break;
+            case 0xB5: resetBit(Register.L, 6); break;
+            case 0xB6: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 6)); break;
+            case 0xB7: resetBit(Register.A, 6); break;
+            case 0xB8: resetBit(Register.B, 7); break;
+            case 0xB9: resetBit(Register.C, 7); break;
+            case 0xBA: resetBit(Register.D, 7); break;
+            case 0xBB: resetBit(Register.E, 7); break;
+            case 0xBC: resetBit(Register.H, 7); break;
+            case 0xBD: resetBit(Register.L, 7); break;
+            case 0xBE: mmu.write(registers.read(Register.HL), alu.resetBit(mmu.read(registers.read(Register.HL)), 7)); break;
+            case 0xBF: resetBit(Register.A, 7); break;
+            case 0xC0: setBit(Register.B, 0); break;
+            case 0xC1: setBit(Register.C, 0); break;
+            case 0xC2: setBit(Register.D, 0); break;
+            case 0xC3: setBit(Register.E, 0); break;
+            case 0xC4: setBit(Register.H, 0); break;
+            case 0xC5: setBit(Register.L, 0); break;
+            case 0xC6: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 0)); break;
+            case 0xC7: setBit(Register.A, 0); break;
+            case 0xC8: setBit(Register.B, 1); break;
+            case 0xC9: setBit(Register.C, 1); break;
+            case 0xCA: setBit(Register.D, 1); break;
+            case 0xCB: setBit(Register.E, 1); break;
+            case 0xCC: setBit(Register.H, 1); break;
+            case 0xCD: setBit(Register.L, 1); break;
+            case 0xCE: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 1)); break;
+            case 0xCF: setBit(Register.A, 1); break;
+            case 0xD0: setBit(Register.B, 2); break;
+            case 0xD1: setBit(Register.C, 2); break;
+            case 0xD2: setBit(Register.D, 2); break;
+            case 0xD3: setBit(Register.E, 2); break;
+            case 0xD4: setBit(Register.H, 2); break;
+            case 0xD5: setBit(Register.L, 2; break;
+            case 0xD6: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 2)); break;
+            case 0xD7: setBit(Register.A, 2); break;
+            case 0xD8: setBit(Register.B, 3); break;
+            case 0xD9: setBit(Register.C, 3); break;
+            case 0xDA: setBit(Register.D, 3); break;
+            case 0xDB: setBit(Register.E, 3); break;
+            case 0xDC: setBit(Register.H, 3); break;
+            case 0xDD: setBit(Register.L, 3); break;
+            case 0xDE: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 3)); break;
+            case 0xDF: setBit(Register.A, 3); break;
+            case 0xE0: setBit(Register.B, 4); break;
+            case 0xE1: setBit(Register.C, 4); break;
+            case 0xE2: setBit(Register.D, 4); break;
+            case 0xE3: setBit(Register.E, 4); break;
+            case 0xE4: setBit(Register.H, 4); break;
+            case 0xE5: setBit(Register.L, 4); break;
+            case 0xE6: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 4)); break;
+            case 0xE7: setBit(Register.A, 4); break;
+            case 0xE8: setBit(Register.B, 5); break;
+            case 0xE9: setBit(Register.C, 5); break;
+            case 0xEA: setBit(Register.D, 5); break;
+            case 0xEB: setBit(Register.E, 5); break;
+            case 0xEC: setBit(Register.H, 5); break;
+            case 0xED: setBit(Register.L, 5); break;
+            case 0xEE: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 5)); break;
+            case 0xEF: setBit(Register.A, 5); break;
+            case 0xF0: setBit(Register.B, 6); break;
+            case 0xF1: setBit(Register.C, 6); break;
+            case 0xF2: setBit(Register.D, 6); break;
+            case 0xF3: setBit(Register.E, 6); break;
+            case 0xF4: setBit(Register.H, 6); break;
+            case 0xF5: setBit(Register.L, 6); break;
+            case 0xF6: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 6)); break;
+            case 0xF7: setBit(Register.A, 6); break;
+            case 0xF8: setBit(Register.B, 7); break;
+            case 0xF9: setBit(Register.C, 7); break;
+            case 0xFA: setBit(Register.D, 7); break;
+            case 0xFB: setBit(Register.E, 7); break;
+            case 0xFC: setBit(Register.H, 7); break;
+            case 0xFD: setBit(Register.L, 7); break;
+            case 0xFE: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 7)); break;
+            case 0xFF: setBit(Register.A, 7); break;
+
+            default: throw new UnknownInstructionException("Invalid extended instruction 0x" + Integer.toHexString(instruction));
+        }
     }
 
     /**
@@ -467,5 +731,29 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private void rst(int restartAddress) {
         pushWordToStack(registers.read(Register.PC));
         registers.write(Register.PC, restartAddress);
+    }
+
+    private void shiftByteRegisterLeft(Register register) {
+        registers.write(register, alu.shiftByteLeft(registers.read(register)));
+    }
+
+    private void shiftByteRegisterRight(Register register, boolean resetBit7) {
+        registers.write(register, alu.shiftByteRight(registers.read(register), resetBit7));
+    }
+
+    private void swapNibbles(Register byteRegister) {
+        registers.write(byteRegister, alu.swapNibbles(registers.read(byteRegister)));
+    }
+
+    private void testBit(Register register, int bitNum) {
+        alu.testBit(registers.read(register), bitNum);
+    }
+
+    private void resetBit(Register register, int bitNum) {
+        registers.write(register, alu.resetBit(registers.read(register), bitNum));
+    }
+
+    private void setBit(Register register, int bitNum) {
+        registers.write(register, alu.setBit(registers.read(register), bitNum));
     }
 }

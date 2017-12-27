@@ -108,4 +108,26 @@ public class TestALU {
     public void testOR() {
         assert (alu.orBytes(0b01000100, 0b00010010) == 0b01010110);
     }
+
+    @Test
+    public void testSwapNibbles() {
+        assert (alu.swapNibbles(0x2F) == 0xF2);
+    }
+
+    @Test
+    public void testTestBit() {
+        registers.setFlag(Flag.ZERO, false);
+        alu.testBit(0b10101010, 2);
+        assert (registers.getFlag(Flag.ZERO));
+    }
+
+    @Test
+    public void testResetBit() {
+        assert (alu.resetBit(0b10110111, 1) == 0b10110101);
+    }
+
+    @Test
+    public void testSetBit() {
+        assert (alu.setBit(0b10110111, 6) == 0b11110111);
+    }
 }

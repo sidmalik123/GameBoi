@@ -69,4 +69,34 @@ public interface ALU {
      * ORs byte1 and byte2 and returns the result
      * */
     int orBytes(int byte1, int byte2);
+
+    /**
+     * Shifts bytee left by 1 bit
+     * */
+    int shiftByteLeft(int bytee);
+
+    /**
+     * Shifts bytee right by 1 bit
+     * */
+    int shiftByteRight(int bytee, boolean resetBit7);
+
+    /**
+     * Swaps upper and lower nibbles if bytee
+     * */
+    int swapNibbles(int bytee);
+
+    /**
+     * Tests bitnum of bytee
+     * */
+    void testBit(int bytee, int bitNum);
+
+    /**
+     * Resets bitNum in bytee
+     * */
+    int resetBit(int bytee, int bitNum);
+
+    /**
+     * Sets bitNum in bytee
+     * */
+    int setBit(int bytee, int bitNum);
 }

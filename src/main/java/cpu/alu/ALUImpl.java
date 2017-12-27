@@ -174,5 +174,60 @@ public class ALUImpl implements ALU {
         return result;
     }
 
+    @Override
+    public int shiftByteLeft(int bytee) {
+        int result = bytee << 1;
+        registers.setFlag(Flag.ZERO, result == 0);
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, false);
+        registers.setFlag(Flag.CARRY, BitUtils.isBitSet(bytee, 7));
+
+        return result;
+    }
+
+    @Override
+    public int shiftByteRight(int bytee, boolean resetBit7) {
+        int result = bytee >> 1;
+        if (!resetBit7 && BitUtils.isBitSet(bytee, 7)) {
+            result = BitUtils.setBit(result, 7);
+        }
+        registers.setFlag(Flag.ZERO, result == 0);
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, false);
+        registers.setFlag(Flag.CARRY, BitUtils.isBitSet(bytee, 0));
+
+        return result;
+    }
+
+    @Override
+    public int swapNibbles(int bytee) {
+        int upperNibble = bytee >> 4;
+        int lowerNibble = (bytee << 4) & 0xFF;
+        int result = lowerNibble | upperNibble;
+        registers.setFlag(Flag.ZERO, result == 0);
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, false);
+        registers.setFlag(Flag.CARRY, false);
+
+        return result;
+    }
+
+    @Override
+    public void testBit(int bytee, int bitNum) {
+        registers.setFlag(Flag.ZERO, !BitUtils.isBitSet(bytee, bitNum));
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, true);
+    }
+
+    @Override
+    public int resetBit(int bytee, int bitNum) {
+        return BitUtils.resetBit(bytee, bitNum);
+    }
+
+    @Override
+    public int setBit(int bytee, int bitNum) {
+        return BitUtils.setBit(bytee, bitNum);
+    }
+
 
 }
