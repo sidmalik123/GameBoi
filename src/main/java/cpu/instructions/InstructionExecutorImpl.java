@@ -500,7 +500,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xD2: setBit(Register.D, 2); break;
             case 0xD3: setBit(Register.E, 2); break;
             case 0xD4: setBit(Register.H, 2); break;
-            case 0xD5: setBit(Register.L, 2; break;
+            case 0xD5: setBit(Register.L, 2); break;
             case 0xD6: mmu.write(registers.read(Register.HL), alu.setBit(mmu.read(registers.read(Register.HL)), 2)); break;
             case 0xD7: setBit(Register.A, 2); break;
             case 0xD8: setBit(Register.B, 3); break;
