@@ -84,6 +84,9 @@ public class TestALU {
         registers.setFlag(Flag.CARRY, false);
 
         assert (alu.addBytes(byte1, byte2, true) == 0x55);
+
+        assert (alu.addBytes(250, 7, false) == 1);
+        assert (registers.getFlag(Flag.CARRY));
     }
 
     @Test

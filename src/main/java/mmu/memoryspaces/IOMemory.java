@@ -1,35 +1,42 @@
 package mmu.memoryspaces;
 
 /**
- * IO memory in GameBoy
+ * IO memory in GameBoy, used for sound and joypad
  * */
 public class IOMemory implements MemorySpace {
-    private static final int IO_MEMORY_START_ADDRESS = 0xFF00;
-    private static final int IO_MEMORY_END_ADDRESS = 0xFF7F;
+    private static final int IO_MEMORY_1_START_ADDRESS = 0xFF00;
+    private static final int IO_MEMORY_1_END_ADDRESS = 0xFF3B;
+    private static final int IO_MEMORY_2_START_ADDRESS = 0xFF50;
+    private static final int IO_MEMORY_2_END_ADDRESS = 0xFF7F;
 
-    private MemorySpace ioMemory;
+    private MemorySpace ioMemory1;
+    private MemorySpace ioMemory2;
 
     public IOMemory() {
-        ioMemory = new ContinuousMemorySpace(IO_MEMORY_START_ADDRESS, IO_MEMORY_END_ADDRESS);
+        ioMemory1 = new ContinuousMemorySpace(IO_MEMORY_1_START_ADDRESS, IO_MEMORY_1_END_ADDRESS);
+        ioMemory2 = new ContinuousMemorySpace(IO_MEMORY_2_START_ADDRESS, IO_MEMORY_2_END_ADDRESS);
     }
 
     @Override
     public boolean accepts(int address) {
-        return ioMemory.accepts(address);
+        return ioMemory1.accepts(address) || ioMemory2.accepts(address);
     }
 
     @Override
     public int read(int address) {
-        if (ioMemory.accepts(address)) return ioMemory.read(address);
+        if (ioMemory1.accepts(address)) return ioMemory1.read(address);
+        if (ioMemory2.accepts(address)) return ioMemory2.read(address);
         throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");
     }
 
     @Override
     public void write(int address, int data) {
-        if (ioMemory.accepts(address))
-            ioMemory.write(address, data);
-        else
+        if (ioMemory1.accepts(address)) {
+            ioMemory1.write(address, data);
+        } else if (ioMemory2.accepts(address)) {
+            ioMemory2.write(address, data);
+        } else {
             throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");
-
+        }
     }
 }

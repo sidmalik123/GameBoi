@@ -13,13 +13,6 @@ public class TestRegistersImpl {
     private Registers registers = new RegistersImpl(new ClockImpl());
 
     @Test
-    public void testRegisterInitialValues() {
-        for (Register register : Register.values()) {
-            assert (registers.read(register) == 0);
-        }
-    }
-
-    @Test
     public void testWriteAndRead() {
         int val = 0;
         for (Register register : Register.values()) {
@@ -58,10 +51,6 @@ public class TestRegistersImpl {
 
     @Test
     public void testFlags() {
-        for (Flag flag: Flag.values()) { // initially all flags are 0
-            assert (registers.getFlag(flag) == false);
-        }
-
         for (Flag flag : Flag.values()) {
             registers.setFlag(flag, true);
             assert (registers.getFlag(flag));
@@ -78,8 +67,33 @@ public class TestRegistersImpl {
 
     @Test
     public void testSignedByteAdditionToPC() {
-        int pcBeforeIncrement = registers.read(Register.PC);
+        registers.write(Register.PC, 0);
         registers.addSignedByteToPC(0xFF);
-        assert (registers.read(Register.PC) == pcBeforeIncrement - 1);
+        assert (registers.read(Register.PC) == 0xFFFF);
+
+        registers.write(Register.PC, 0x3456);
+        registers.addSignedByteToPC(0xFF);
+        assert (registers.read(Register.PC) == 0x3455);
+
+        registers.addSignedByteToPC(0x01);
+        assert (registers.read(Register.PC) == 0x3456);
+    }
+
+    @Test
+    public void testFlagBitNums() {
+        assert (Flag.ZERO.getBitNum() == 7);
+        assert (Flag.SUBTRACTION.getBitNum() == 6);
+        assert (Flag.HALF_CARRY.getBitNum() == 5);
+        assert (Flag.CARRY.getBitNum() == 4);
+    }
+
+    @Test
+    public void testInitialRegisterValues() {
+        assert (registers.read(Register.PC) == 0x100);
+        assert (registers.read(Register.AF) == 0x01B0);
+        assert (registers.read(Register.BC) == 0x0013);
+        assert (registers.read(Register.DE) == 0x00D8);
+        assert (registers.read(Register.HL) == 0x014D);
+        assert (registers.read(Register.SP) == 0xFFFE);
     }
 }

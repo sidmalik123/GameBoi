@@ -9,6 +9,7 @@ import cpu.CPUImpl;
 import cpu.alu.ALU;
 import cpu.alu.ALUImpl;
 import cpu.clock.Clock;
+import cpu.clock.ClockImpl;
 import cpu.instructions.InstructionExecutor;
 import cpu.instructions.InstructionExecutorImpl;
 import cpu.registers.Registers;
@@ -40,6 +41,7 @@ public class MainModule extends AbstractModule {
         bind(CPU.class).to(CPUImpl.class);
         bind(InstructionExecutor.class).to(InstructionExecutorImpl.class);
         bind(ALU.class).to(ALUImpl.class);
+        bind(Clock.class).to(ClockImpl.class);
 
         /* GPU */
         bind(GPU.class).to(GPUImpl.class);
@@ -61,6 +63,7 @@ public class MainModule extends AbstractModule {
         memorySpaces.add(gpu);
         memorySpaces.add(new IOMemory());
         memorySpaces.add(new ContinuousMemorySpace(ZERO_PAGE_START_ADDRESS, ZERO_PAGE_END_ADDRESS));
+        memorySpaces.add(new RestrictedMemory());
 
         MMU mmu = new MMUImpl(memorySpaces, clock);
         mmu.setROM(rom);
