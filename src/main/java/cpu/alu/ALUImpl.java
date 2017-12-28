@@ -229,5 +229,42 @@ public class ALUImpl implements ALU {
         return BitUtils.setBit(bytee, bitNum);
     }
 
+    @Override
+    public int decimalAdjust(int bytee) {
+        int result = bytee;
+        if (registers.getFlag(Flag.SUBTRACTION)) {
+            if (registers.getFlag(Flag.HALF_CARRY)) {
+                result = (result - 6) & 0xff;
+            }
+            if (registers.getFlag(Flag.CARRY)) {
+                result = (result - 0x60) & 0xff;
+            }
+        } else {
+            if (registers.getFlag(Flag.HALF_CARRY) || (result & 0xf) > 9) {
+                result += 0x06;
+            }
+            if (registers.getFlag(Flag.CARRY) || result > 0x9f) {
+                result += 0x60;
+            }
+        }
+        registers.setFlag(Flag.HALF_CARRY, false);
+        if (result > 0xff) {
+            registers.setFlag(Flag.CARRY, true);
+        }
+        result &= 0xff;
+        registers.setFlag(Flag.ZERO, result == 0);
+        return result;
+    }
 
+    @Override
+    public int addSignedByteToWord(int word, int signedByte) {
+        registers.setFlag(Flag.ZERO, false);
+        registers.setFlag(Flag.SUBTRACTION, false);
+
+        int result = word + (byte) signedByte;
+        registers.setFlag(Flag.CARRY, (((word & 0xff) + (signedByte & 0xff)) & 0x100) != 0);
+        registers.setFlag(Flag.HALF_CARRY, (((word & 0x0f) + (signedByte & 0x0f)) & 0x10) != 0);
+        clock.addCycles(4);
+        return result & 0xffff;
+    }
 }

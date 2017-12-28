@@ -99,4 +99,14 @@ public interface ALU {
      * Sets bitNum in bytee
      * */
     int setBit(int bytee, int bitNum);
+
+    /**
+     * This is for the DAA instruction
+     * */
+    int decimalAdjust(int bytee);
+
+    /**
+     * Add signedByte to word
+     * */
+    int addSignedByteToWord(int word, int signedByte);
 }

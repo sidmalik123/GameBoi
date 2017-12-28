@@ -118,6 +118,7 @@ public class RegistersImpl implements Registers {
     @Override
     public void addSignedByteToPC(int signedByte) {
         pc += (byte) signedByte;
+        pc &= 0xFFFF;
         clock.addCycles(4);
     }
 }

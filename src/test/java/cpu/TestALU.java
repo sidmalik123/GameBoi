@@ -130,4 +130,9 @@ public class TestALU {
     public void testSetBit() {
         assert (alu.setBit(0b10110111, 6) == 0b11110111);
     }
+
+    @Test
+    public void testAddSignedByteToWord() {
+        assert (alu.addSignedByteToWord(0x3502, 0xFF) == 0x3501);
+    }
 }

@@ -263,7 +263,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xE5: pushWordToStack(registers.read(Register.HL)); break;
             case 0xE6: andA(getImmediateByte()); break;
             case 0xE7: rst(0x20); break;
-            case 0xE8: break; // Todo
+            case 0xE8: registers.write(Register.SP, alu.addSignedByteToWord(registers.read(Register.SP), getImmediateByte())); break;
             case 0xE9: registers.write(Register.PC, registers.read(Register.HL)); break;
             case 0xEA: mmu.write(getImmediateWord(), registers.read(Register.A)); break;
             case 0xEE: xorA(getImmediateByte()); break;
@@ -275,7 +275,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xF5: pushWordToStack(registers.read(Register.AF)); break;
             case 0xF6: orA(getImmediateByte()); break;
             case 0xF7: rst(0x30); break;
-            case 0xF8: break; // Todo
+            case 0xF8: registers.write(Register.HL, alu.addSignedByteToWord(registers.read(Register.SP), getImmediateByte())); break;
             case 0xF9: registers.write(Register.SP, registers.read(Register.HL)); break;
             case 0xFA: registers.write(Register.A, mmu.read(getImmediateWord())); break;
             case 0xFB: break; // Todo - enable interrupts
