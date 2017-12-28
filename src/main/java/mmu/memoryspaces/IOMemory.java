@@ -5,8 +5,8 @@ package mmu.memoryspaces;
  * */
 public class IOMemory implements MemorySpace {
     private static final int IO_MEMORY_1_START_ADDRESS = 0xFF00;
-    private static final int IO_MEMORY_1_END_ADDRESS = 0xFF3B;
-    private static final int IO_MEMORY_2_START_ADDRESS = 0xFF50;
+    private static final int IO_MEMORY_1_END_ADDRESS = 0xFF3F;
+    private static final int IO_MEMORY_2_START_ADDRESS = 0xFF4C;
     private static final int IO_MEMORY_2_END_ADDRESS = 0xFF7F;
 
     private MemorySpace ioMemory1;

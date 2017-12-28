@@ -59,4 +59,14 @@ public class TestMMU {
             assert (mmu.read(i) == 0x00); // all writes in this are must default to 0
         }
     }
+
+    @Test
+    public void testAllMemoryLocationsHaveAMemorySpace() {
+        final int startAddress = 0x8000; // address after ROM
+        final int endAddress = 0xFFFF;
+        for (int i = startAddress; i <= endAddress; ++i) {
+            mmu.read(i);
+            mmu.write(i, 1);
+        }
+    }
 }

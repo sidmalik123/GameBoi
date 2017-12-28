@@ -30,9 +30,9 @@ public class RAM implements MemorySpace {
 
     @Override
     public int read(int address) {
-        if (externalRam.accepts(address)) externalRam.read(address);
-        if (workingRam.accepts(address)) workingRam.read(address);
-        if (workingRamShadow.accepts(address)) workingRamShadow.read(address);
+        if (externalRam.accepts(address)) return externalRam.read(address);
+        if (workingRam.accepts(address)) return workingRam.read(address);
+        if (workingRamShadow.accepts(address)) return workingRamShadow.read(address);
         throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");
     }
 
