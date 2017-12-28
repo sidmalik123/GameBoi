@@ -3,6 +3,7 @@ package core;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import cpu.CPU;
 import cpu.CPUImpl;
 import cpu.alu.ALU;
@@ -18,6 +19,8 @@ import gpu.GPU;
 import gpu.GPUImpl;
 import mmu.MMU;
 import mmu.MMUImpl;
+import mmu.cartridge.Cartridge;
+import mmu.cartridge.CartridgeImpl;
 import mmu.memoryspaces.*;
 
 import java.util.ArrayList;
@@ -50,7 +53,7 @@ public class MainModule extends AbstractModule {
      * Sets all memory spaces for MMU,
      * sets ROM
      * */
-    @Provides @Inject
+    @Provides @Inject @Singleton
     MMU provideMMU(GPU gpu, ROM rom, Clock clock) {
         List<MemorySpace> memorySpaces = new ArrayList<>();
         memorySpaces.add(rom);
