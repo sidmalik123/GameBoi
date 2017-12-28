@@ -44,6 +44,7 @@ public class RAM implements MemorySpace {
             workingRam.write(address, data);
         } else if (workingRamShadow.accepts(address)) {
             workingRamShadow.write(address, data);
+            workingRam.write(address - WORKING_RAM_SHADOW_START_ADDRESS + WORKING_RAM_START_ADDRESS, data); // write to ram too
         } else {
             throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");
         }
