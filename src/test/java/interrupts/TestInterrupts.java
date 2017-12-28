@@ -19,6 +19,7 @@ public class TestInterrupts extends TestWithTestModule {
 
     @Test
     public void testInterruptBits() {
+        assert (false);
         assert (Interrupt.VBLANK.getBitNum() == 0);
         assert (Interrupt.LCD.getBitNum() == 1);
         assert (Interrupt.TIMER.getBitNum() == 2);
