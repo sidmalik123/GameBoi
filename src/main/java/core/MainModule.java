@@ -18,10 +18,10 @@ import gpu.Display;
 import gpu.DisplayImpl;
 import gpu.GPU;
 import gpu.GPUImpl;
+import interrupts.InterruptManager;
+import interrupts.InterruptManagerImpl;
 import mmu.MMU;
 import mmu.MMUImpl;
-import mmu.cartridge.Cartridge;
-import mmu.cartridge.CartridgeImpl;
 import mmu.memoryspaces.*;
 
 import java.util.ArrayList;
@@ -31,8 +31,6 @@ import java.util.List;
  * This is the module that has all the real implementations
  * */
 public class MainModule extends AbstractModule {
-    private static final int ZERO_PAGE_START_ADDRESS = 0xFF80;
-    private static final int ZERO_PAGE_END_ADDRESS = 0xFFFF;
 
     @Override
     protected void configure() {
@@ -42,6 +40,9 @@ public class MainModule extends AbstractModule {
         bind(InstructionExecutor.class).to(InstructionExecutorImpl.class);
         bind(ALU.class).to(ALUImpl.class);
         bind(Clock.class).to(ClockImpl.class);
+
+        /* Interrupts */
+        bind(InterruptManager.class).to(InterruptManagerImpl.class);
 
         /* GPU */
         bind(GPU.class).to(GPUImpl.class);
@@ -56,13 +57,13 @@ public class MainModule extends AbstractModule {
      * sets ROM
      * */
     @Provides @Inject @Singleton
-    MMU provideMMU(GPU gpu, ROM rom, Clock clock) {
+    MMU provideMMU(GPU gpu, ROM rom, Clock clock, InterruptManager interruptManager) {
         List<MemorySpace> memorySpaces = new ArrayList<>();
         memorySpaces.add(rom);
         memorySpaces.add(new RAM());
         memorySpaces.add(gpu);
-        memorySpaces.add(new IOMemory());
-        memorySpaces.add(new ContinuousMemorySpace(ZERO_PAGE_START_ADDRESS, ZERO_PAGE_END_ADDRESS));
+        memorySpaces.add(new RestMemory());
+        memorySpaces.add(interruptManager);
         memorySpaces.add(new RestrictedMemory());
 
         MMU mmu = new MMUImpl(memorySpaces, clock);

@@ -9,6 +9,7 @@ import cpu.clock.Clock;
 import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
+import interrupts.InterruptManager;
 import mmu.MMU;
 
 /**
@@ -21,14 +22,17 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private Clock clock;
     private ALU alu;
     private CPU cpu;
+    private InterruptManager interruptManager;
 
     @Inject
-    public InstructionExecutorImpl(MMU mmu, Registers registers, Clock clock, ALU alu, CPU cpu) {
+    public InstructionExecutorImpl(MMU mmu, Registers registers,
+                                   Clock clock, ALU alu, CPU cpu, InterruptManager interruptManager) {
         this.mmu = mmu;
         this.registers = registers;
         this.clock = clock;
         this.alu = alu;
         this.cpu = cpu;
+        this.interruptManager = interruptManager;
     }
 
     @Override
@@ -75,7 +79,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x24: incByteRegister(Register.H); break;
             case 0x25: decByteRegister(Register.H); break;
             case 0x26: loadRegisterWithImmediateByte(Register.H); break;
-            case 0x27: break; // TODO - DAA
+            case 0x27: registers.write(Register.A, alu.decimalAdjust(registers.read(Register.A))); break; // DAA
             case 0x28: jr(registers.getFlag(Flag.ZERO)); break; // JR Z
             case 0x29: addWords(Register.HL, Register.HL); break;
             case 0x2A: registers.write(Register.A, mmu.read(registers.read(Register.HL))); incWordRegister(Register.HL); break;
@@ -252,7 +256,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xD6: subA(getImmediateByte(), false); break;
             case 0xD7: rst(0x10); break;
             case 0xD8: if (registers.getFlag(Flag.CARRY)) ret(); break;
-            case 0xD9: registers.write(Register.PC, popWordFromStack()); break; // RETI - TODO enable interrupts
+            case 0xD9: registers.write(Register.PC, popWordFromStack()); interruptManager.setInterruptsEnabled(true); break;
             case 0xDA: if (registers.getFlag(Flag.CARRY)) jp(); break;
             case 0xDC: call(registers.getFlag(Flag.CARRY)); break;
             case 0xDE: subA(getImmediateByte(), true); break;
@@ -271,14 +275,14 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xF0: registers.write(Register.A, mmu.read(0xFF00 + getImmediateByte())); break;
             case 0xF1: registers.write(Register.AF, popWordFromStack()); break;
             case 0xF2: registers.write(Register.A, mmu.read(0xFF00 + registers.read(Register.C))); break;
-            case 0xF3: break; // Todo - Disable interrupts
+            case 0xF3: interruptManager.setInterruptsEnabled(false); break;
             case 0xF5: pushWordToStack(registers.read(Register.AF)); break;
             case 0xF6: orA(getImmediateByte()); break;
             case 0xF7: rst(0x30); break;
             case 0xF8: registers.write(Register.HL, alu.addSignedByteToWord(registers.read(Register.SP), getImmediateByte())); break;
             case 0xF9: registers.write(Register.SP, registers.read(Register.HL)); break;
             case 0xFA: registers.write(Register.A, mmu.read(getImmediateWord())); break;
-            case 0xFB: break; // Todo - enable interrupts
+            case 0xFB: interruptManager.setInterruptsEnabled(true); break;
             case 0xFE: cpA(getImmediateByte()); break;
             case 0xFF: rst(0x38); break;
 

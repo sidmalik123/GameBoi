@@ -9,6 +9,7 @@ import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
+import interrupts.InterruptManagerImpl;
 import mmu.MMU;
 import mmu.MockMMU;
 import org.junit.After;
@@ -34,7 +35,7 @@ public class TestInstructionExecution {
         registers = new RegistersImpl(clock);
         mmu = new MockMMU(clock);
         instructionExecutor = new InstructionExecutorImpl(mmu, registers, clock,
-                new ALUImpl(registers, clock), new CPUImpl(instructionExecutor));
+                new ALUImpl(registers, clock), new CPUImpl(instructionExecutor), new InterruptManagerImpl());
     }
 
     @Test

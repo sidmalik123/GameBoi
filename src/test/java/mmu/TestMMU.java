@@ -1,19 +1,14 @@
 package mmu;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.util.Modules;
-import core.MainModule;
-import core.TestModule;
+import core.TestWithTestModule;
 import mmu.memoryspaces.RestrictedMemory;
 import org.junit.Test;
 
-public class TestMMU {
+public class TestMMU extends TestWithTestModule {
 
     private MMU mmu;
 
     public TestMMU() {
-        Injector testInjector = Guice.createInjector(Modules.override(new MainModule()).with(new TestModule()));
         mmu = testInjector.getInstance(MMU.class);
     }
 
