@@ -2,8 +2,6 @@ package interrupts;
 
 import mmu.memoryspaces.MemorySpace;
 
-import java.util.List;
-
 /**
  * Interface to manage GameBoy interrupts
  * */
@@ -17,12 +15,12 @@ public interface InterruptManager extends MemorySpace {
     void setInterruptsEnabled(boolean areInterruptsEnabled);
 
     /**
-     * Requests interrupt of type interruptType
+     * Requests interrupt of type interrupt
      * */
-    void requestInterrupt(InterruptType interruptType);
+    void requestInterrupt(Interrupt interrupt);
 
     /**
-     * Returns a list of pending interrupts
+     * Returns the highest priority pending interrupt
      * */
-    List<InterruptType> getPendingInterrupts();
+    Interrupt getPendingInterrupt();
 }

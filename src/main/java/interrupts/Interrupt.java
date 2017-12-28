@@ -5,7 +5,7 @@ package interrupts;
  *
  * Note: these are ordered below by priority
  * */
-public enum InterruptType {
+public enum Interrupt {
     VBLANK {
         @Override
         public int getBitNum() {

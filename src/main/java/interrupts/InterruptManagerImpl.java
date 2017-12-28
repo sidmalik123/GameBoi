@@ -23,22 +23,22 @@ public class InterruptManagerImpl implements InterruptManager {
     }
 
     @Override
-    public void requestInterrupt(InterruptType interruptType) {
-        interruptRequestRegister = BitUtils.setBit(interruptRequestRegister, interruptType.getBitNum());
+    public void requestInterrupt(Interrupt interrupt) {
+        interruptRequestRegister = BitUtils.setBit(interruptRequestRegister, interrupt.getBitNum());
     }
 
     @Override
-    public List<InterruptType> getPendingInterrupts() {
-        List<InterruptType> pendingInterrupts = new LinkedList<>();
+    public Interrupt getPendingInterrupt() {
         if (areInterruptsEnabled) {
-            for (InterruptType interruptType : InterruptType.values()) {
-                if (BitUtils.isBitSet(interruptRequestRegister, interruptType.getBitNum()) // if requested and enabled
-                        && BitUtils.isBitSet(interruptEnableRegister, interruptType.getBitNum())) {
-                    pendingInterrupts.add(interruptType);
+            for (Interrupt interrupt : Interrupt.values()) {
+                if (BitUtils.isBitSet(interruptRequestRegister, interrupt.getBitNum()) // if requested and enabled
+                        && BitUtils.isBitSet(interruptEnableRegister, interrupt.getBitNum())) {
+                    interruptRequestRegister = BitUtils.resetBit(interruptRequestRegister, interrupt.getBitNum()); // reset request bit
+                    return interrupt;
                 }
             }
         }
-        return pendingInterrupts;
+        return null;
     }
 
     @Override

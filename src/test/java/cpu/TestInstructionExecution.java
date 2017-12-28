@@ -9,10 +9,13 @@ import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
+import interrupts.Interrupt;
+import interrupts.InterruptManager;
 import interrupts.InterruptManagerImpl;
 import mmu.MMU;
 import mmu.MockMMU;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -28,14 +31,26 @@ public class TestInstructionExecution {
     private Registers registers;
     private Clock clock;
     private MMU mmu;
+    private InterruptManager interruptManager;
     private int instructionAddress = 0;
 
     public TestInstructionExecution() {
         clock = new ClockImpl();
         registers = new RegistersImpl(clock);
         mmu = new MockMMU(clock);
+        interruptManager = new InterruptManagerImpl();
         instructionExecutor = new InstructionExecutorImpl(mmu, registers, clock,
-                new ALUImpl(registers, clock), new CPUImpl(instructionExecutor), new InterruptManagerImpl());
+                new ALUImpl(registers, clock), interruptManager);
+    }
+
+    @Before
+    public void reset() {
+        interruptManager.setInterruptsEnabled(false);
+        registers.write(Register.PC, 0);
+        registers.write(Register.AF, 0);
+        registers.write(Register.BC, 0);
+        registers.write(Register.DE, 0);
+        registers.write(Register.HL, 0);
     }
 
     @Test
@@ -171,6 +186,18 @@ public class TestInstructionExecution {
         assert (registers.read(Register.SP) == 0x1005);
     }
 
+    @Test
+    public void testServiceInterrupts() {
+        mmu.write(0x00, 0x00); // NOP
+        interruptManager.write(InterruptManager.INTERRUPT_ENABLE_REGISTER, 0xFF); // enable all interrupts
+        interruptManager.setInterruptsEnabled(true);
+        interruptManager.requestInterrupt(Interrupt.VBLANK);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.read(Register.PC) == Interrupt.VBLANK.getServiceAddress());
+    }
+
     private void executeInstructionAndTestPCAndClock(int pcIncrement, int cycleIncrement) {
         int oldPC = registers.read(Register.PC);
         int oldCycles = clock.getTotalCycles();
@@ -179,10 +206,5 @@ public class TestInstructionExecution {
 
         assert (registers.read(Register.PC) - oldPC == pcIncrement);
         assert (clock.getTotalCycles() - oldCycles == cycleIncrement);
-    }
-
-    @After
-    public void reset() {
-        registers.write(Register.PC, 0);
     }
 }

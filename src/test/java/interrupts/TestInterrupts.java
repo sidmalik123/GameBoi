@@ -5,8 +5,6 @@ import core.TestWithTestModule;
 import mmu.MMU;
 import org.junit.Test;
 
-import java.util.List;
-
 public class TestInterrupts extends TestWithTestModule {
 
     private MMU mmu;
@@ -21,58 +19,56 @@ public class TestInterrupts extends TestWithTestModule {
 
     @Test
     public void testInterruptBits() {
-        assert (InterruptType.VBLANK.getBitNum() == 0);
-        assert (InterruptType.LCD.getBitNum() == 1);
-        assert (InterruptType.TIMER.getBitNum() == 2);
-        assert (InterruptType.JOYPAD.getBitNum() == 4);
+        assert (Interrupt.VBLANK.getBitNum() == 0);
+        assert (Interrupt.LCD.getBitNum() == 1);
+        assert (Interrupt.TIMER.getBitNum() == 2);
+        assert (Interrupt.JOYPAD.getBitNum() == 4);
     }
 
     @Test
     public void testInterruptServiceAddress() {
-        assert (InterruptType.VBLANK.getServiceAddress() == 0x40);
-        assert (InterruptType.LCD.getServiceAddress() == 0x48);
-        assert (InterruptType.TIMER.getServiceAddress() == 0x50);
-        assert (InterruptType.JOYPAD.getServiceAddress() == 0x60);
+        assert (Interrupt.VBLANK.getServiceAddress() == 0x40);
+        assert (Interrupt.LCD.getServiceAddress() == 0x48);
+        assert (Interrupt.TIMER.getServiceAddress() == 0x50);
+        assert (Interrupt.JOYPAD.getServiceAddress() == 0x60);
     }
 
     @Test
     public void testRequestInterrupts() {
         assert (mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS) == 0x00);
-        for (InterruptType interruptType : InterruptType.values()) {
-            interruptManager.requestInterrupt(interruptType);
-            assert (BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), interruptType.getBitNum()));
+        for (Interrupt interrupt : Interrupt.values()) {
+            interruptManager.requestInterrupt(interrupt);
+            assert (BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), interrupt.getBitNum()));
         }
 
-        assert (interruptManager.getPendingInterrupts().isEmpty());
+        assert (interruptManager.getPendingInterrupt() == null);
 
         interruptManager.setInterruptsEnabled(true);
 
-        assert (interruptManager.getPendingInterrupts().isEmpty());
+        assert (interruptManager.getPendingInterrupt() == null);
 
-        enableInterrupt(InterruptType.VBLANK);
+        enableInterrupt(Interrupt.VBLANK);
+        enableInterrupt(Interrupt.LCD);
+        enableInterrupt(Interrupt.TIMER);
+        enableInterrupt(Interrupt.JOYPAD);
 
-        List<InterruptType> interrupts = interruptManager.getPendingInterrupts();
-        assert (interrupts.size() == 1 && interrupts.get(0) == InterruptType.VBLANK);
+        assert (interruptManager.getPendingInterrupt() == Interrupt.VBLANK);
+        assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.VBLANK.getBitNum()));
 
-        enableInterrupt(InterruptType.LCD);
-        interrupts = interruptManager.getPendingInterrupts();
-        assert (interrupts.size() == 2 && interrupts.get(0) == InterruptType.VBLANK && interrupts.get(1) == InterruptType.LCD);
+        assert (interruptManager.getPendingInterrupt() == Interrupt.LCD);
+        assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.LCD.getBitNum()));
 
-        enableInterrupt(InterruptType.TIMER);
-        enableInterrupt(InterruptType.JOYPAD);
-        interrupts = interruptManager.getPendingInterrupts();
-        assert (interrupts.size() == 4);
-        assert (interrupts.get(0) == InterruptType.VBLANK);
-        assert (interrupts.get(1) == InterruptType.LCD);
-        assert (interrupts.get(2) == InterruptType.TIMER);
-        assert (interrupts.get(3) == InterruptType.JOYPAD);
+        assert (interruptManager.getPendingInterrupt() == Interrupt.TIMER);
+        assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.TIMER.getBitNum()));
+
+        assert (interruptManager.getPendingInterrupt() == Interrupt.JOYPAD);
 
         interruptManager.setInterruptsEnabled(false);
-        assert (interruptManager.getPendingInterrupts().isEmpty());
+        assert (interruptManager.getPendingInterrupt() == null);
     }
 
-    private void enableInterrupt(InterruptType interruptType) {
+    private void enableInterrupt(Interrupt interrupt) {
         int interruptEnableRegister = mmu.read(INTERRUPT_ENABLE_REGISTER_ADDRESS);
-        mmu.write(INTERRUPT_ENABLE_REGISTER_ADDRESS, BitUtils.setBit(interruptEnableRegister, interruptType.getBitNum()));
+        mmu.write(INTERRUPT_ENABLE_REGISTER_ADDRESS, BitUtils.setBit(interruptEnableRegister, interrupt.getBitNum()));
     }
 }

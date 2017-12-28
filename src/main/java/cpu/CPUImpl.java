@@ -9,8 +9,6 @@ import cpu.instructions.InstructionExecutor;
 public class CPUImpl implements CPU {
 
     private InstructionExecutor instructionExecutor;
-    private boolean isStopped;
-    private boolean isHalted;
 
     @Inject
     public CPUImpl(InstructionExecutor instructionExecutor) {
@@ -19,18 +17,8 @@ public class CPUImpl implements CPU {
 
     @Override
     public void run() {
-        while (!isStopped && !isHalted) {
+        while (true) { // Todo - if after completion this still does not have much logic move this loop into GameBoy.class
             instructionExecutor.executeInstruction();
         }
-    }
-
-    @Override
-    public void stop() {
-        this.isStopped = true;
-    }
-
-    @Override
-    public void halt() {
-        this.isHalted = true;
     }
 }

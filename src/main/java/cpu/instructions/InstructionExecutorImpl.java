@@ -9,6 +9,7 @@ import cpu.clock.Clock;
 import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
+import interrupts.Interrupt;
 import interrupts.InterruptManager;
 import mmu.MMU;
 
@@ -21,23 +22,30 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     private Registers registers;
     private Clock clock;
     private ALU alu;
-    private CPU cpu;
     private InterruptManager interruptManager;
+
+    private boolean isStopped;
+    private boolean isHalted;
 
     @Inject
     public InstructionExecutorImpl(MMU mmu, Registers registers,
-                                   Clock clock, ALU alu, CPU cpu, InterruptManager interruptManager) {
+                                   Clock clock, ALU alu, InterruptManager interruptManager) {
         this.mmu = mmu;
         this.registers = registers;
         this.clock = clock;
         this.alu = alu;
-        this.cpu = cpu;
         this.interruptManager = interruptManager;
     }
 
     @Override
     public void executeInstruction() {
-        int instruction = getImmediateByte();
+        int instruction;
+        if (isHalted || isStopped) {
+            instruction = 0x00; // execute NOPs in these states
+            clock.addCycles(4);
+        } else {
+            instruction = getImmediateByte();
+        }
 
         switch (instruction) {
             case 0x00: break;
@@ -56,7 +64,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x0D: decByteRegister(Register.D); break;
             case 0x0E: registers.write(Register.C, getImmediateByte()); break;
             case 0x0F: rotateByteRegisterRight(Register.A, false); break;
-            case 0x10: cpu.stop(); break;
+            case 0x10: isStopped = true; break;
             case 0x11: loadRegisterWithImmediateWord(Register.DE); break;
             case 0x12: mmu.write(registers.read(Register.DE), registers.read(Register.A)); break;
             case 0x13: incWordRegister(Register.DE); break;
@@ -158,7 +166,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x73: loadHLMemoryFromRegister(Register.E); break;
             case 0x74: loadHLMemoryFromRegister(Register.H); break;
             case 0x75: loadHLMemoryFromRegister(Register.L); break;
-            case 0x76: cpu.halt(); break;
+            case 0x76: isHalted = true; break;
             case 0x77: loadHLMemoryFromRegister(Register.A); break;
             case 0x78: loadRegisterFromRegister(Register.A, Register.B); break;
             case 0x79: loadRegisterFromRegister(Register.A, Register.C); break;
@@ -285,9 +293,8 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xFB: interruptManager.setInterruptsEnabled(true); break;
             case 0xFE: cpA(getImmediateByte()); break;
             case 0xFF: rst(0x38); break;
-
-            default: throw new UnknownInstructionException("Invalid instruction 0x" + Integer.toHexString(instruction));
          }
+        serviceInterrupts();
     }
 
     private void executeExtendedOpcode(int instruction) {
@@ -549,6 +556,18 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xFF: setBit(Register.A, 7); break;
 
             default: throw new UnknownInstructionException("Invalid extended instruction 0x" + Integer.toHexString(instruction));
+        }
+    }
+
+    /**
+     * Services pending interrupts
+     * */
+    private void serviceInterrupts() {
+        Interrupt pendingInterrupt = interruptManager.getPendingInterrupt();
+        if (pendingInterrupt != null) {
+            if (isHalted) isHalted = false;
+            interruptManager.setInterruptsEnabled(false);
+            rst(pendingInterrupt.getServiceAddress());
         }
     }
 
