@@ -142,12 +142,7 @@ public class GPUImpl implements GPU {
 
     @Override
     public void write(int address, int data) {
-        if (vram.accepts(address)) {
-            if (data != 0) {
-                ++data;
-            }
-            vram.write(address, data);
-        }
+        if (vram.accepts(address)) {vram.write(address, data);}
         else if (spriteMemory.accepts(address)) {spriteMemory.write(address, data);}
         else if (gpuControls.accepts(address)) {gpuControls.write(address, data);}
         else {throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");}
