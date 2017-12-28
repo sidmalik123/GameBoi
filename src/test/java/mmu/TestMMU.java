@@ -1,6 +1,7 @@
 package mmu;
 
 import core.TestWithTestModule;
+import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.RestrictedMemory;
 import org.junit.Test;
 
@@ -63,5 +64,37 @@ public class TestMMU extends TestWithTestModule {
             mmu.read(i);
             mmu.write(i, 1);
         }
+    }
+
+    @Test
+    public void testContinousMemorySpace() {
+        int startAddress = 0x2000;
+        int endAddress = 0x3FF0;
+        ContinuousMemorySpace continuousMemorySpace = new ContinuousMemorySpace(startAddress, endAddress);
+
+        for (int i = startAddress; i <= endAddress; ++i) {
+            continuousMemorySpace.write(i, 1);
+            assert (continuousMemorySpace.read(i) == 1);
+        }
+
+        try {
+            continuousMemorySpace.read(startAddress - 1);
+            assert (false);
+        } catch (IllegalArgumentException ignore) {}
+
+        try {
+            continuousMemorySpace.read(endAddress + 1);
+            assert (false);
+        } catch (IllegalArgumentException ignore) {}
+
+        try {
+            continuousMemorySpace.write(startAddress - 1, 0);
+            assert (false);
+        } catch (IllegalArgumentException ignore) {}
+
+        try {
+            continuousMemorySpace.write(endAddress + 1, 0);
+            assert (false);
+        } catch (IllegalArgumentException ignore) {}
     }
 }
