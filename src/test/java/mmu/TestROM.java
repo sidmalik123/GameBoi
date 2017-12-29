@@ -12,11 +12,11 @@ public class TestROM {
         this.rom = new ROMImpl();
     }
 
-    @Test
-    public void testNoWriteAllowedToROM() {
-        try {
-            rom.write(0x100, 2);
-            assert (false); // should throw above
-        } catch (ReadOnlyMemoryException ex) {}
-    }
+//    @Test
+//    public void testNoWriteAllowedToROM() {
+//        try {
+//            rom.write(0x100, 2);
+//            assert (false); // should throw above
+//        } catch (ReadOnlyMemoryException ex) {}
+//    }
 }

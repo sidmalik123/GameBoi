@@ -37,7 +37,7 @@ public class GPUImpl extends AbstractClockObserver implements GPU {
 
     @Override
     public void handleClockIncrement(int increment) {
-        if (!isLCDEnabled()) { // TODO - one more thing here
+        if (!isLCDEnabled()) {
             setCurrMode(GPUMode.VBLANK);
             setCurrLineNum(0);
             return;

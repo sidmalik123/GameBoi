@@ -2,7 +2,6 @@ package cpu.instructions;
 
 import com.google.inject.Inject;
 import core.BitUtils;
-import cpu.CPU;
 import cpu.UnknownInstructionException;
 import cpu.alu.ALU;
 import cpu.clock.Clock;

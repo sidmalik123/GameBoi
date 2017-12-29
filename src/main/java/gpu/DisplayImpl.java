@@ -22,7 +22,7 @@ public class DisplayImpl extends JPanel implements Display {
             mainWindow.setVisible(true);
             mainWindow.setSize(160, 144);
         } catch(Exception e) {
-            throw new RuntimeException(e);
+            throw new DisplayInstantiationException("Error while building display", e);
         }
     }
 
