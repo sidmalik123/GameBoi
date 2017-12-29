@@ -43,7 +43,6 @@ public class InterruptManagerImpl implements InterruptManager {
             for (Interrupt interrupt : Interrupt.values()) {
                 if (BitUtils.isBitSet(interruptRequestRegister, interrupt.getBitNum()) // if requested and enabled
                         && BitUtils.isBitSet(interruptEnableRegister, interrupt.getBitNum())) {
-                    resetRequest(interrupt); // reset request bit
                     return interrupt;
                 }
             }
@@ -51,7 +50,8 @@ public class InterruptManagerImpl implements InterruptManager {
         return null;
     }
 
-    private void resetRequest(Interrupt interrupt) {
+    @Override
+    public void resetRequest(Interrupt interrupt) {
         mmu.write(INTERRUPT_REQUEST_REGISTER, BitUtils.resetBit(mmu.read(INTERRUPT_REQUEST_REGISTER), interrupt.getBitNum()));
     }
 }

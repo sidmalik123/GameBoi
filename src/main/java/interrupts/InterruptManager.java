@@ -18,4 +18,9 @@ public interface InterruptManager {
      * Returns the highest priority pending interrupt
      * */
     Interrupt getPendingInterrupt();
+
+    /**
+     * Resets interrupt request
+     * */
+    void resetRequest(Interrupt interrupt);
 }

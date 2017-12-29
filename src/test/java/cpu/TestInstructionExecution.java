@@ -196,6 +196,8 @@ public class TestInstructionExecution {
         instructionExecutor.executeInstruction();
 
         assert (registers.read(Register.PC) == Interrupt.VBLANK.getServiceAddress());
+        interruptManager.setInterruptsEnabled(true);
+        assert (interruptManager.getPendingInterrupt() == null); // interrupt was reset
     }
 
     private void executeInstructionAndTestPCAndClock(int pcIncrement, int cycleIncrement) {

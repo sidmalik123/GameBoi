@@ -53,12 +53,16 @@ public class TestInterrupts extends TestWithTestModule {
         enableInterrupt(Interrupt.JOYPAD);
 
         assert (interruptManager.getPendingInterrupt() == Interrupt.VBLANK);
+        assert (BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.VBLANK.getBitNum()));
+        interruptManager.resetRequest(Interrupt.VBLANK);
         assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.VBLANK.getBitNum()));
 
         assert (interruptManager.getPendingInterrupt() == Interrupt.LCD);
+        interruptManager.resetRequest(Interrupt.LCD);
         assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.LCD.getBitNum()));
 
         assert (interruptManager.getPendingInterrupt() == Interrupt.TIMER);
+        interruptManager.resetRequest(Interrupt.TIMER);
         assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), Interrupt.TIMER.getBitNum()));
 
         assert (interruptManager.getPendingInterrupt() == Interrupt.JOYPAD);

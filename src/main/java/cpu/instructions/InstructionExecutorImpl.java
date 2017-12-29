@@ -567,6 +567,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         if (pendingInterrupt != null) {
             if (isHalted) isHalted = false;
             interruptManager.setInterruptsEnabled(false);
+            interruptManager.resetRequest(pendingInterrupt);
             rst(pendingInterrupt.getServiceAddress());
         }
     }
