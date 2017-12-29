@@ -1,14 +1,9 @@
 package interrupts;
 
-import mmu.memoryspaces.MemorySpace;
-
 /**
  * Interface to manage GameBoy interrupts
  * */
-public interface InterruptManager extends MemorySpace {
-    int INTERRUPT_REQUEST_REGISTER = 0xFF0F;
-    int INTERRUPT_ENABLE_REGISTER = 0xFFFF;
-
+public interface InterruptManager {
     /**
      * sets global setting to enable/disable interrupts
      * */

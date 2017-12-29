@@ -37,9 +37,9 @@ public class TestInstructionExecution {
     public TestInstructionExecution() {
         clock = new ClockImpl();
         registers = new RegistersImpl(clock);
-        mmu = new MockMMU(clock);
-        interruptManager = new InterruptManagerImpl();
-        instructionExecutor = new InstructionExecutorImpl(mmu, registers, clock,
+        mmu = new MockMMU();
+        interruptManager = new InterruptManagerImpl(mmu);
+        instructionExecutor = new InstructionExecutorImpl(new MemoryAccessorImpl(mmu, clock), registers, clock,
                 new ALUImpl(registers, clock), interruptManager);
     }
 
@@ -189,7 +189,7 @@ public class TestInstructionExecution {
     @Test
     public void testServiceInterrupts() {
         mmu.write(0x00, 0x00); // NOP
-        interruptManager.write(InterruptManager.INTERRUPT_ENABLE_REGISTER, 0xFF); // enable all interrupts
+        mmu.write(MMU.INTERRUPT_ENABLE_REGISTER, 0xFF); // enable all interrupts
         interruptManager.setInterruptsEnabled(true);
         interruptManager.requestInterrupt(Interrupt.VBLANK);
 

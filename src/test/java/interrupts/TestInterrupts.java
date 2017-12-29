@@ -9,8 +9,8 @@ public class TestInterrupts extends TestWithTestModule {
 
     private MMU mmu;
     private InterruptManager interruptManager;
-    private static final int INTERRUPT_REQUEST_REGISTER_ADDRESS = InterruptManager.INTERRUPT_REQUEST_REGISTER;
-    private static final int INTERRUPT_ENABLE_REGISTER_ADDRESS = InterruptManager.INTERRUPT_ENABLE_REGISTER;
+    private static final int INTERRUPT_REQUEST_REGISTER_ADDRESS = MMU.INTERRUPT_REQUEST_REGISTER;
+    private static final int INTERRUPT_ENABLE_REGISTER_ADDRESS = MMU.INTERRUPT_ENABLE_REGISTER;
 
     public TestInterrupts() {
         mmu = testInjector.getInstance(MMU.class);

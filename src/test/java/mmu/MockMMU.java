@@ -1,8 +1,6 @@
 package mmu;
 
-import cpu.clock.Clock;
 import mmu.cartridge.Cartridge;
-import mmu.memoryspaces.ROM;
 
 /**
  * Mock class all memory is one big array of 0xFFFF bytes
@@ -10,23 +8,19 @@ import mmu.memoryspaces.ROM;
 public class MockMMU implements MMU {
 
     private int[] memory;
-    private Clock clock;
 
-    public MockMMU(Clock clock) {
-        memory = new int[0xFFFF];
-        this.clock = clock;
+    public MockMMU() {
+        memory = new int[0xFFFF + 1];
     }
 
     @Override
     public int read(int address) {
-        clock.addCycles(4);
         return memory[address];
     }
 
     @Override
     public void write(int address, int data) {
         memory[address] = data;
-        clock.addCycles(4);
     }
 
     @Override
@@ -35,7 +29,7 @@ public class MockMMU implements MMU {
     }
 
     @Override
-    public void setROM(ROM rom) {
+    public void setCurrLineNum(int lineNum) {
 
     }
 }

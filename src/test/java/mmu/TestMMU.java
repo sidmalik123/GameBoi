@@ -1,9 +1,10 @@
 package mmu;
 
 import core.TestWithTestModule;
-import mmu.memoryspaces.ContinuousMemorySpace;
-import mmu.memoryspaces.RestrictedMemory;
+import gpu.GPU;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 
 public class TestMMU extends TestWithTestModule {
@@ -51,7 +52,7 @@ public class TestMMU extends TestWithTestModule {
 
     @Test
     public void testRestrictedMemory() {
-        for (int i = RestrictedMemory.START_ADDRESS; i <= RestrictedMemory.END_ADDRESS; ++i) {
+        for (int i = MMU.RESTRICTED_MEMORY_START_ADDRESS; i <= MMU.RESTRICTED_MEMORY_END_ADDRESS; ++i) {
             mmu.write(i, 1);
             assert (mmu.read(i) == 0x00); // all writes in this are must default to 0
         }
@@ -68,34 +69,30 @@ public class TestMMU extends TestWithTestModule {
     }
 
     @Test
-    public void testContinousMemorySpace() {
-        int startAddress = 0x2000;
-        int endAddress = 0x3FF0;
-        ContinuousMemorySpace continuousMemorySpace = new ContinuousMemorySpace(startAddress, endAddress);
-
-        for (int i = startAddress; i <= endAddress; ++i) {
-            continuousMemorySpace.write(i, 1);
-            assert (continuousMemorySpace.read(i) == 1);
+    public void testDMA() {
+        for (int i = 0; i < 0xA0; ++i) {
+            mmu.write(0xA000 + i, i);
         }
+        mmu.write(MMU.DMA_ADDRESS, 0xA0);
+        for (int i = 0; i < 0xA0; ++i) {
+            assertEquals(mmu.read(MMU.SPRITE_START_ADDRESS + i), i);
+        }
+    }
 
-        try {
-            continuousMemorySpace.read(startAddress - 1);
-            assert (false);
-        } catch (IllegalArgumentException ignore) {}
+    @Test
+    public void testShadowWritesToMainRam() {
+        mmu.write(0xE005, 0x57);
+        assert (mmu.read(0xE005) == 0x57);
+        assert (mmu.read(0xC005) == 0x57);
+    }
 
-        try {
-            continuousMemorySpace.read(endAddress + 1);
-            assert (false);
-        } catch (IllegalArgumentException ignore) {}
-
-        try {
-            continuousMemorySpace.write(startAddress - 1, 0);
-            assert (false);
-        } catch (IllegalArgumentException ignore) {}
-
-        try {
-            continuousMemorySpace.write(endAddress + 1, 0);
-            assert (false);
-        } catch (IllegalArgumentException ignore) {}
+    @Test
+    public void testWriteToROM() {
+        for (int i = 0; i < 0x8000; ++i) {
+            mmu.write(i, 0x20);
+        }
+        for (int i = 0; i < 0x8000; ++i) {
+            assertEquals(mmu.read(i), 0x00);
+        }
     }
 }

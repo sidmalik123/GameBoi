@@ -2,13 +2,8 @@ package mmu;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import cpu.clock.Clock;
-import cpu.clock.ClockObserver;
+import gpu.GPU;
 import mmu.cartridge.Cartridge;
-import mmu.memoryspaces.MemorySpace;
-import mmu.memoryspaces.ROM;
-
-import java.util.List;
 
 /**
  * Concrete implementation of a GameBoy MMU
@@ -16,70 +11,83 @@ import java.util.List;
 @Singleton
 public class MMUImpl implements MMU {
 
-    private List<MemorySpace> memorySpaces;
-    private ROM rom;
-    private Clock clock;
-
-    private static final int NUM_CYCLES_TO_READ_BYTE = 4;
-    private static final int NUM_CYCLES_TO_WRITE_BYTE = 4;
+    private int[] memory;
 
     @Inject
-    public MMUImpl(List<MemorySpace> memorySpaces, Clock clock) {
-        this.memorySpaces = memorySpaces;
-        this.clock = clock;
+    public MMUImpl() {
+        this.memory = new int[FINAL_MEMORY_ADDRESS + 1];
         // init memory values
-        write(0xFF10, 0x80);
-        write(0xFF11, 0xBF);
-        write(0xFF12, 0xF3);
-        write(0xFF14, 0xBF);
-        write(0xFF16, 0x3F);
-        write(0xFF19, 0xBF);
-        write(0xFF1A, 0x7F);
-        write(0xFF1B, 0xFF);
-        write(0xFF1C, 0x9F);
-        write(0xFF1E, 0xBF);
-        write(0xFF20, 0xFF);
-        write(0xFF23, 0xBF);
-        write(0xFF24, 0x77);
-        write(0xFF25, 0xF3);
-        write(0xFF26, 0xF1);
-        write(0xFF40, 0x91);
-        write(0xFF47, 0xFC);
-        write(0xFF48, 0xFF);
-        write(0xFF49, 0xFF);
+        memory[0xFF10] = 0x80;
+        memory[0xFF11] = 0xBF;
+        memory[0xFF12] = 0xF3;
+        memory[0xFF14] = 0xBF;
+        memory[0xFF16] = 0x3F;
+        memory[0xFF19] = 0xBF;
+        memory[0xFF1A] = 0x7F;
+        memory[0xFF1B] = 0xFF;
+        memory[0xFF1C] = 0x9F;
+        memory[0xFF1E] = 0xBF;
+        memory[0xFF20] = 0xFF;
+        memory[0xFF23] = 0xBF;
+        memory[0xFF24] = 0x77;
+        memory[0xFF25] = 0xF3;
+        memory[0xFF26] = 0xF1;
+        memory[0xFF40] = 0x91;
+        memory[0xFF47] = 0xFC;
+        memory[0xFF48] = 0xFF;
+        memory[0xFF49] = 0xFF;
     }
 
     @Override
     public int read(int address) {
-        MemorySpace memorySpace = getMemorySpace(address);
-        clock.addCycles(NUM_CYCLES_TO_READ_BYTE);
-        return memorySpace.read(address);
+        return memory[address];
     }
 
     @Override
     public void write(int address, int data) {
-        MemorySpace memorySpace = getMemorySpace(address);
-        memorySpace.write(address, data & 0xFF);
-        clock.addCycles(NUM_CYCLES_TO_WRITE_BYTE);
+        if (isIn(RESTRICTED_MEMORY_START_ADDRESS, RESTRICTED_MEMORY_END_ADDRESS, address)) return;
+
+        if (isReadOnly(address)) return;
+
+        if (isIn(WORKING_RAM_SHADOW_START_ADDRESS, WORKING_RAM_SHADOW_END_ADDRESS, address)) { // write to main ram too
+            memory[address - WORKING_RAM_SHADOW_START_ADDRESS + WORKING_RAM_START_ADDRESS] = data;
+        }
+
+        if (address == CURR_LINE_NUM_ADDRESS) data = 0;
+
+        if (address == DMA_ADDRESS) {
+            copyMemory(data * 0x100, SPRITE_START_ADDRESS,
+                    SPRITE_END_ADDRESS - SPRITE_START_ADDRESS + 1);
+            return;
+        }
+
+        memory[address] = data & 0xFF;
     }
 
     @Override
     public void load(Cartridge cartridge) {
-        rom.load(cartridge);
+        int[] data = cartridge.getData();
+        for (int i = 0; i <= ROM1_END_ADDRESS && i < data.length; ++i) {
+            memory[i] = data[i];
+        }
     }
 
     @Override
-    public void setROM(ROM rom) {
-        this.rom = rom;
+    public void setCurrLineNum(int lineNum) {
+        memory[CURR_LINE_NUM_ADDRESS] = lineNum;
     }
 
-    /**
-     * Returns the memory space that accepts address
-     **/
-    private MemorySpace getMemorySpace(int address) {
-        for (MemorySpace memorySpace : memorySpaces) {
-            if (memorySpace.accepts(address)) return memorySpace;
+    private void copyMemory(int sourceAddress, int destinationAddress, int numBytes) {
+        for (int i = 0; i < numBytes; ++i) {
+            memory[destinationAddress + i] = memory[sourceAddress + i];
         }
-        throw new RuntimeException("No memory space available for address " + Integer.toHexString(address));
+    }
+
+    private boolean isIn(int start, int end, int val) {
+        return val >= start && val <= end;
+    }
+
+    private boolean isReadOnly(int address) {
+        return address >= ROM0_START_ADDRESS && address <= ROM1_END_ADDRESS;
     }
 }

@@ -1,7 +1,12 @@
 package gpu;
 
+import cpu.clock.Clock;
 import cpu.clock.ClockImpl;
+import interrupts.Interrupt;
+import interrupts.InterruptManager;
 import interrupts.InterruptManagerImpl;
+import mmu.MMU;
+import mmu.MMUImpl;
 import org.junit.Before;
 import org.junit.Test;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -12,10 +17,15 @@ import static org.junit.Assert.fail;
 public class TestGPU {
 
     private GPU gpu;
+    private InterruptManager interruptManager;
+    private MMU mmu;
 
     @Before
     public void resetGPU() { // clean gpu for every test
-        gpu = new GPUImpl(new MockDisplay(), new InterruptManagerImpl(), new ClockImpl());
+        Clock clock = new ClockImpl();
+        mmu = new MMUImpl();
+        interruptManager = new InterruptManagerImpl(mmu);
+        gpu = new GPUImpl(new MockDisplay(), interruptManager, clock, mmu);
     }
 
     @Test
@@ -47,13 +57,14 @@ public class TestGPU {
 
     @Test
     public void testWriteToCurrLine() { // writes to curr line default to 0x00
-        gpu.write(GPU.CURR_LINE_NUM_ADDRESS, 0x3F);
+        mmu.write(MMU.CURR_LINE_NUM_ADDRESS, 0x3F);
         assertCurrLineNum(0x00);
     }
 
     @Test
     public void testLCDDisabled() {
-        gpu.write(GPU.CURR_LINE_NUM_ADDRESS, 20);
+        disableLCD();
+        mmu.write(MMU.CURR_LINE_NUM_ADDRESS, 20);
         gpu.handleClockIncrement(20);
         assertEquals(getCurrMode(), 1); // vblank
         assertCurrLineNum(0x00);
@@ -62,8 +73,10 @@ public class TestGPU {
     @Test
     public void testModeChange() {
         enableLCD();
+        interruptManager.setInterruptsEnabled(true);
+        mmu.write(MMU.INTERRUPT_ENABLE_REGISTER, 0xFF); // enable all register
         for (int line = 0; line < 144; ++line) {
-            int oldLineNum = gpu.read(GPU.CURR_LINE_NUM_ADDRESS);
+            int oldLineNum = mmu.read(MMU.CURR_LINE_NUM_ADDRESS);
             for (int i = 1; i < 80; ++i) {
                 gpu.handleClockIncrement(1);
                 assertEquals(getCurrMode(), 2);
@@ -86,6 +99,7 @@ public class TestGPU {
                 assertEquals(getCurrMode(), 2);
             } else {
                 assertEquals(getCurrMode(), 1); // vblank
+                assertEquals(interruptManager.getPendingInterrupt(), Interrupt.VBLANK); // vblank interrupt is requested
             }
         }
         for (int numLinesInVblank = 0; numLinesInVblank < 10; ++numLinesInVblank) {
@@ -105,15 +119,19 @@ public class TestGPU {
         }
     }
 
-    private int getCurrMode() {
-        return gpu.read(GPU.LCD_STATUS_REGISTER_ADDRESS) & 3;
+    private int getCurrMode() { // bit 1 and bit 0 represent the mode num
+        return mmu.read(MMU.LCD_STATUS_REGISTER_ADDRESS) & 3;
     }
 
     private void enableLCD() {
-        gpu.write(GPU.LCD_CONTROL_REGISTER_ADDRESS, 0b10000000);
+        mmu.write(MMU.LCD_CONTROL_REGISTER_ADDRESS, 0b10000000);
+    }
+
+    private void disableLCD() {
+        mmu.write(MMU.LCD_CONTROL_REGISTER_ADDRESS, 0x00);
     }
 
     private void assertCurrLineNum(int expected) {
-        assertEquals(gpu.read(GPU.CURR_LINE_NUM_ADDRESS), expected);
+        assertEquals(mmu.read(MMU.CURR_LINE_NUM_ADDRESS), expected);
     }
 }

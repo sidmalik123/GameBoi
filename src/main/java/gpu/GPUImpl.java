@@ -6,31 +6,29 @@ import cpu.clock.AbstractClockObserver;
 import cpu.clock.Clock;
 import interrupts.Interrupt;
 import interrupts.InterruptManager;
-import mmu.memoryspaces.ContinuousMemorySpace;
-import mmu.memoryspaces.MemorySpace;
+import mmu.MMU;
+
+import static mmu.MMU.CURR_LINE_NUM_ADDRESS;
+import static mmu.MMU.LCD_CONTROL_REGISTER_ADDRESS;
+import static mmu.MMU.LCD_STATUS_REGISTER_ADDRESS;
 
 /**
  * Concrete class implementing CPU
  * */
 public class GPUImpl extends AbstractClockObserver implements GPU {
-    private MemorySpace vram;
-    private MemorySpace spriteMemory;
-    private MemorySpace gpuControls;
 
     private int numCyclesInCurrMode;
 
     private Display display;
     private InterruptManager interruptManager;
+    private MMU mmu;
 
     @Inject
-    public GPUImpl(Display display, InterruptManager interruptManager, Clock clock) {
+    public GPUImpl(Display display, InterruptManager interruptManager, Clock clock, MMU mmu) {
         super(clock);
         this.display = display;
         this.interruptManager = interruptManager;
-        vram = new ContinuousMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS);
-        spriteMemory = new ContinuousMemorySpace(SPRITE_START_ADDRESS, SPRITE_END_ADDRESS);
-        gpuControls = new ContinuousMemorySpace(LCD_CONTROL_REGISTER_ADDRESS, WINDOW_SCROLL_Y_ADDRESS);
-
+        this.mmu = mmu;
         // initial settings
         setCurrMode(GPUMode.ACCESSING_OAM);
     }
@@ -56,7 +54,6 @@ public class GPUImpl extends AbstractClockObserver implements GPU {
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
 //                    renderCurrLine();
                     setCurrMode(GPUMode.HBLANK);
-                    if (isModeInterruptEnabled(GPUMode.HBLANK)) interruptManager.requestInterrupt(Interrupt.LCD);
                 }
                 break;
             case HBLANK:
@@ -65,11 +62,9 @@ public class GPUImpl extends AbstractClockObserver implements GPU {
 
                     if (getCurrLineNum() == 144) {
                         setCurrMode(GPUMode.VBLANK);
-                        if (isModeInterruptEnabled(GPUMode.VBLANK)) interruptManager.requestInterrupt(Interrupt.LCD);
                         interruptManager.requestInterrupt(Interrupt.VBLANK);
                     } else { // back to OAM for the next line
                         setCurrMode(GPUMode.ACCESSING_OAM);
-                        if (isModeInterruptEnabled(GPUMode.ACCESSING_OAM)) interruptManager.requestInterrupt(Interrupt.LCD);
                     }
                 }
                 break;
@@ -79,66 +74,42 @@ public class GPUImpl extends AbstractClockObserver implements GPU {
                     if (getCurrLineNum() == 154) { // end of VBlank, back to the top
                         setCurrLineNum(0);
                         setCurrMode(GPUMode.ACCESSING_OAM);
-                        if (isModeInterruptEnabled(GPUMode.ACCESSING_OAM)) interruptManager.requestInterrupt(Interrupt.LCD);
                     } else {
                         setCurrMode(GPUMode.VBLANK); // stay in VBLank
-                        if (isModeInterruptEnabled(GPUMode.VBLANK)) interruptManager.requestInterrupt(Interrupt.LCD);
                     }
                 }
         }
     }
 
-    @Override
-    public boolean accepts(int address) {
-        return vram.accepts(address) || spriteMemory.accepts(address) || gpuControls.accepts(address);
-    }
-
-    @Override
-    public int read(int address) {
-        return getMemorySpace(address).read(address);
-    }
-
-    @Override
-    public void write(int address, int data) {
-        if (address == CURR_LINE_NUM_ADDRESS) {
-            data = 0; // set data to 0 on any writes to currline
-        }
-        getMemorySpace(address).write(address, data);
-    }
-
-    private MemorySpace getMemorySpace(int address) {
-        if (vram.accepts(address)) return vram;
-        if (spriteMemory.accepts(address)) return spriteMemory;
-        if (gpuControls.accepts(address)) return gpuControls;
-        throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in any memory space");
-    }
-
     private void setCurrMode(GPUMode mode) {
-        int lcdStatus = read(LCD_STATUS_REGISTER_ADDRESS);
+        int lcdStatus = mmu.read(LCD_STATUS_REGISTER_ADDRESS);
         switch (mode.getModeNum()) {
-            case 0: // 00
+            case 0: // 00 - HBLANK
                 lcdStatus = BitUtils.resetBit(lcdStatus, 0);
                 lcdStatus = BitUtils.resetBit(lcdStatus, 1);
                 break;
-            case 1: // 01
+            case 1: // 01 - VBLANK
                 lcdStatus = BitUtils.setBit(lcdStatus, 0);
                 lcdStatus = BitUtils.resetBit(lcdStatus, 1);
                 break;
-            case 2: // 10
+            case 2: // 10 - OAM
                 lcdStatus = BitUtils.resetBit(lcdStatus, 0);
                 lcdStatus = BitUtils.setBit(lcdStatus, 1);
                 break;
-            case 3: // 11
+            case 3: // 11 - VRAM
                 lcdStatus = BitUtils.setBit(lcdStatus, 0);
                 lcdStatus = BitUtils.setBit(lcdStatus, 1);
                 break;
         }
-        gpuControls.write(LCD_STATUS_REGISTER_ADDRESS, lcdStatus);
+        mmu.write(LCD_STATUS_REGISTER_ADDRESS, lcdStatus);
         numCyclesInCurrMode = 0;
+        if (mode == GPUMode.ACCESSING_OAM || mode == GPUMode.VBLANK || mode == GPUMode.HBLANK) { // request lcd interrupt for these
+            if (isModeInterruptEnabled(mode)) interruptManager.requestInterrupt(Interrupt.LCD);
+        }
     }
 
     private GPUMode getCurrMode() {
-        int lcdStatus = read(LCD_STATUS_REGISTER_ADDRESS);
+        int lcdStatus = mmu.read(LCD_STATUS_REGISTER_ADDRESS);
         int modeNum = lcdStatus & 0b11;
         for (GPUMode mode : GPUMode.values()) {
             if (mode.getModeNum() == modeNum) return mode;
@@ -147,18 +118,18 @@ public class GPUImpl extends AbstractClockObserver implements GPU {
     }
 
     private boolean isModeInterruptEnabled(GPUMode mode) {
-        return BitUtils.isBitSet(read(LCD_STATUS_REGISTER_ADDRESS), mode.getInterruptBitNum());
+        return BitUtils.isBitSet(mmu.read(LCD_STATUS_REGISTER_ADDRESS), mode.getInterruptBitNum());
     }
 
     private int getCurrLineNum() {
-        return gpuControls.read(CURR_LINE_NUM_ADDRESS);
+        return mmu.read(CURR_LINE_NUM_ADDRESS);
     }
 
     private void setCurrLineNum(int lineNum) {
-        gpuControls.write(CURR_LINE_NUM_ADDRESS, lineNum);
+        mmu.setCurrLineNum(lineNum);
     }
 
     private boolean isLCDEnabled() {
-        return BitUtils.isBitSet(read(LCD_CONTROL_REGISTER_ADDRESS), 7);
+        return BitUtils.isBitSet(mmu.read(LCD_CONTROL_REGISTER_ADDRESS), 7);
     }
 }

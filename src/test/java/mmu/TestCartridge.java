@@ -3,7 +3,6 @@ package mmu;
 import core.TestWithTestModule;
 import mmu.cartridge.Cartridge;
 import mmu.cartridge.CartridgeImpl;
-import mmu.memoryspaces.ROMImpl;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -36,17 +35,6 @@ public class TestCartridge extends TestWithTestModule {
         int[] data = new int[byteArr.length];
         for (int i = 0; i < data.length; ++i) {
             data[i] = mmu.read(i);
-        }
-        compareDataWithByteArr(data);
-    }
-
-    @Test
-    public void testCartridgeLoadROM() throws IOException {
-        ROMImpl rom = new ROMImpl();
-        rom.load(new CartridgeImpl("sample-rom-file.gb"));
-        int[] data = new int[byteArr.length];
-        for (int i = 0; i < data.length; ++i) {
-            data[i] = rom.read(i);
         }
         compareDataWithByteArr(data);
     }
