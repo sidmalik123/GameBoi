@@ -71,6 +71,16 @@ public class TestInterrupts extends TestWithTestModule {
         assert (interruptManager.getPendingInterrupt() == null);
     }
 
+    @Test
+    public void testResetInterrupt() {
+        for (Interrupt interrupt : Interrupt.values()) {
+            interruptManager.requestInterrupt(interrupt);
+            assert (BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), interrupt.getBitNum()));
+            interruptManager.resetRequest(interrupt);
+            assert (!BitUtils.isBitSet(mmu.read(INTERRUPT_REQUEST_REGISTER_ADDRESS), interrupt.getBitNum()));
+        }
+    }
+
     private void enableInterrupt(Interrupt interrupt) {
         int interruptEnableRegister = mmu.read(INTERRUPT_ENABLE_REGISTER_ADDRESS);
         mmu.write(INTERRUPT_ENABLE_REGISTER_ADDRESS, BitUtils.setBit(interruptEnableRegister, interrupt.getBitNum()));
