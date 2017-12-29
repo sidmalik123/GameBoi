@@ -1,6 +1,7 @@
 package mmu.memoryspaces;
 
 import mmu.ReadOnlyMemoryException;
+import mmu.cartridge.Cartridge;
 
 public class ROMImpl implements ROM {
 
@@ -32,11 +33,18 @@ public class ROMImpl implements ROM {
 
     @Override
     public void write(int address, int data) {
-        throw new ReadOnlyMemoryException("Cannot write to read only memory: " + Integer.toHexString(address));
+//        throw new ReadOnlyMemoryException("Cannot write to read only memory: " + Integer.toHexString(address));
     }
 
     @Override
-    public void load(int[] program) {
-        // To-do
+    public void load(Cartridge cartridge) {
+        int[] data = cartridge.getData();
+        for (int i = 0; i <= ROM1_END_ADDRESS && i < data.length; ++i) {
+            if (i <= ROM0_END_ADDRESS) {
+                rom0.write(i, data[i]);
+            } else {
+                rom1.write(i, data[i]);
+            }
+        }
     }
 }

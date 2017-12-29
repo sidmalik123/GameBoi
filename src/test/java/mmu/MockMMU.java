@@ -1,6 +1,7 @@
 package mmu;
 
 import cpu.clock.Clock;
+import mmu.cartridge.Cartridge;
 import mmu.memoryspaces.ROM;
 
 /**
@@ -29,7 +30,7 @@ public class MockMMU implements MMU {
     }
 
     @Override
-    public void load(int[] program) {
+    public void load(Cartridge cartridge) {
 
     }
 

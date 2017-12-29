@@ -2,129 +2,90 @@ package gpu;
 
 import com.google.inject.Inject;
 import core.BitUtils;
+import cpu.clock.AbstractClockObserver;
+import cpu.clock.Clock;
+import interrupts.Interrupt;
+import interrupts.InterruptManager;
 import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.MemorySpace;
 
 /**
  * Concrete class implementing CPU
  * */
-public class GPUImpl implements GPU {
-
-    private static final int VRAM_START_ADDRESS = 0x8000;
-    private static final int VRAM_END_ADDRESS = 0x9FFF;
-
-    private static final int SPRITE_START_ADDRESS = 0xFE00;
-    private static final int SPRITE_END_ADDRESS = 0xFE9F;
-
-    private static final int LCD_CONTROL_REGISTER_ADDRESS = 0XFF40;
-    private static final int LCD_STATUS_REGISTER_ADDRESS = 0xFF41;
-    private static final int BACKGROUND_SCROLL_X_ADDRESS = 0xFF42;
-    private static final int BACKGROUND_SCROLL_Y_ADDRESS = 0xFF43;
-    private static final int CURR_LINE_NUM_ADDRESS = 0xFF44;
-    private static final int COINCIDENCE_LINE_ADDRESS = 0xFF45;
-    private static final int DMA_ADDRESS = 0xFF46;
-    private static final int BACKGROUND_PALETTE_ADDRESS = 0xFF47;
-    private static final int SPRITE_PALETTE1_ADDRESS = 0xFF48;
-    private static final int SPRITE_PALETTE2_ADDRESS = 0xFF49;
-    private static final int WINDOW_SCROLL_X_ADDRESS = 0xFF4A;
-    private static final int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
-
+public class GPUImpl extends AbstractClockObserver implements GPU {
     private MemorySpace vram;
     private MemorySpace spriteMemory;
     private MemorySpace gpuControls;
 
-    private GPUMode currMode;
     private int numCyclesInCurrMode;
 
     private Display display;
+    private InterruptManager interruptManager;
 
     @Inject
-    public GPUImpl(Display display) {
+    public GPUImpl(Display display, InterruptManager interruptManager, Clock clock) {
+        super(clock);
         this.display = display;
+        this.interruptManager = interruptManager;
         vram = new ContinuousMemorySpace(VRAM_START_ADDRESS, VRAM_END_ADDRESS);
         spriteMemory = new ContinuousMemorySpace(SPRITE_START_ADDRESS, SPRITE_END_ADDRESS);
         gpuControls = new ContinuousMemorySpace(LCD_CONTROL_REGISTER_ADDRESS, WINDOW_SCROLL_Y_ADDRESS);
 
         // initial settings
-        currMode = GPUMode.ACCESSING_OAM;
+        setCurrMode(GPUMode.ACCESSING_OAM);
     }
 
     @Override
     public void handleClockIncrement(int increment) {
+        if (!isLCDEnabled()) { // TODO - one more thing here
+            setCurrMode(GPUMode.VBLANK);
+            setCurrLineNum(0);
+            return;
+        }
+
+        GPUMode currMode = getCurrMode();
         numCyclesInCurrMode += increment;
 
         switch (currMode) {
             case ACCESSING_OAM:
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    currMode = GPUMode.ACCESSING_VRAM;
-                    numCyclesInCurrMode = 0;
+                    setCurrMode(GPUMode.ACCESSING_VRAM);
                 }
                 break;
             case ACCESSING_VRAM:
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    currMode = GPUMode.HBLANK;
-                    numCyclesInCurrMode = 0;
-
-                    renderCurrLine();
+//                    renderCurrLine();
+                    setCurrMode(GPUMode.HBLANK);
+                    if (isModeInterruptEnabled(GPUMode.HBLANK)) interruptManager.requestInterrupt(Interrupt.LCD);
                 }
                 break;
             case HBLANK:
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    numCyclesInCurrMode = 0;
-                    gpuControls.write(CURR_LINE_NUM_ADDRESS, getCurrLineNum() + 1); // move to the next line after HBlank
+                    setCurrLineNum(getCurrLineNum() + 1); // move to the next line after HBlank
 
                     if (getCurrLineNum() == 144) {
-                        currMode = GPUMode.VBLANK;
-
+                        setCurrMode(GPUMode.VBLANK);
+                        if (isModeInterruptEnabled(GPUMode.VBLANK)) interruptManager.requestInterrupt(Interrupt.LCD);
+                        interruptManager.requestInterrupt(Interrupt.VBLANK);
                     } else { // back to OAM for the next line
-                        currMode = GPUMode.ACCESSING_OAM;
+                        setCurrMode(GPUMode.ACCESSING_OAM);
+                        if (isModeInterruptEnabled(GPUMode.ACCESSING_OAM)) interruptManager.requestInterrupt(Interrupt.LCD);
                     }
                 }
                 break;
             case VBLANK:
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) {
-                    numCyclesInCurrMode = 0;
                     setCurrLineNum(getCurrLineNum() + 1);
-                    if (getCurrLineNum() == 154) { // end of vblank
+                    if (getCurrLineNum() == 154) { // end of VBlank, back to the top
                         setCurrLineNum(0);
-
-                        currMode = GPUMode.ACCESSING_OAM;
+                        setCurrMode(GPUMode.ACCESSING_OAM);
+                        if (isModeInterruptEnabled(GPUMode.ACCESSING_OAM)) interruptManager.requestInterrupt(Interrupt.LCD);
+                    } else {
+                        setCurrMode(GPUMode.VBLANK); // stay in VBLank
+                        if (isModeInterruptEnabled(GPUMode.VBLANK)) interruptManager.requestInterrupt(Interrupt.LCD);
                     }
                 }
         }
-    }
-
-    private void renderCurrLine() {
-        final int backgroundScrollY = gpuControls.read(BACKGROUND_SCROLL_Y_ADDRESS);
-        final int backgroundScrollX = gpuControls.read(BACKGROUND_SCROLL_X_ADDRESS);
-        final int currLineNum = getCurrLineNum();
-
-        final int tileLine = (backgroundScrollY + currLineNum)/8; // out of the 32 tile lines which one is this
-        int currTileNum = (tileLine * 32) + backgroundScrollX/8; // topLeft tile is 0, next one to the right is 1, and so on
-        final int lineInTile = (backgroundScrollY + currLineNum) % 8; // the line in tiles we are rendering
-        int startPixelNum = backgroundScrollX % 8;
-
-        int[] tile = getTile(getTileId(currTileNum));
-        for (int i = 0; i < 160; ++i) {
-            int lineHigherByte = tile[(2 * lineInTile) + 1];
-            int lineLowerByte = tile[2 * lineInTile];
-            if (lineHigherByte != 0 || lineLowerByte != 0) System.out.println("non-zero tile data");
-            for (int j = startPixelNum; j < 8; ++j) {
-                int colorNum = getPixelColorNum(BitUtils.isBitSet(lineHigherByte, j), BitUtils.isBitSet(lineLowerByte, j));
-                Color color = null;
-                switch (colorNum) {
-                    case 0: color = Color.WHITE; break;
-                    case 1: color = Color.LIGHT_GRAY; break;
-                    case 2: color = Color.DARK_GRAY; break;
-                    case 3: color = Color.BLACK; break;
-                }
-                display.setPixel(startPixelNum + i, getCurrLineNum(), color);
-            }
-            startPixelNum = 0;
-            tile = getTile(getTileId(++currTileNum)); // get next tile
-        }
-
-        display.refresh();
     }
 
     @Override
@@ -134,18 +95,59 @@ public class GPUImpl implements GPU {
 
     @Override
     public int read(int address) {
-        if (vram.accepts(address)) return vram.read(address);
-        if (spriteMemory.accepts(address)) return spriteMemory.read(address);
-        if (gpuControls.accepts(address)) return gpuControls.read(address);
-        throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");
+        return getMemorySpace(address).read(address);
     }
 
     @Override
     public void write(int address, int data) {
-        if (vram.accepts(address)) {vram.write(address, data);}
-        else if (spriteMemory.accepts(address)) {spriteMemory.write(address, data);}
-        else if (gpuControls.accepts(address)) {gpuControls.write(address, data);}
-        else {throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in this memory space");}
+        if (address == CURR_LINE_NUM_ADDRESS) {
+            data = 0; // set data to 0 on any writes to currline
+        }
+        getMemorySpace(address).write(address, data);
+    }
+
+    private MemorySpace getMemorySpace(int address) {
+        if (vram.accepts(address)) return vram;
+        if (spriteMemory.accepts(address)) return spriteMemory;
+        if (gpuControls.accepts(address)) return gpuControls;
+        throw new IllegalArgumentException("Address " + Integer.toHexString(address) + " is not in any memory space");
+    }
+
+    private void setCurrMode(GPUMode mode) {
+        int lcdStatus = read(LCD_STATUS_REGISTER_ADDRESS);
+        switch (mode.getModeNum()) {
+            case 0: // 00
+                lcdStatus = BitUtils.resetBit(lcdStatus, 0);
+                lcdStatus = BitUtils.resetBit(lcdStatus, 1);
+                break;
+            case 1: // 01
+                lcdStatus = BitUtils.setBit(lcdStatus, 0);
+                lcdStatus = BitUtils.resetBit(lcdStatus, 1);
+                break;
+            case 2: // 10
+                lcdStatus = BitUtils.resetBit(lcdStatus, 0);
+                lcdStatus = BitUtils.setBit(lcdStatus, 1);
+                break;
+            case 3: // 11
+                lcdStatus = BitUtils.setBit(lcdStatus, 0);
+                lcdStatus = BitUtils.setBit(lcdStatus, 1);
+                break;
+        }
+        gpuControls.write(LCD_STATUS_REGISTER_ADDRESS, lcdStatus);
+        numCyclesInCurrMode = 0;
+    }
+
+    private GPUMode getCurrMode() {
+        int lcdStatus = read(LCD_STATUS_REGISTER_ADDRESS);
+        int modeNum = lcdStatus & 0b11;
+        for (GPUMode mode : GPUMode.values()) {
+            if (mode.getModeNum() == modeNum) return mode;
+        }
+        throw new RuntimeException("No mode with num: " + modeNum + " present");
+    }
+
+    private boolean isModeInterruptEnabled(GPUMode mode) {
+        return BitUtils.isBitSet(read(LCD_STATUS_REGISTER_ADDRESS), mode.getInterruptBitNum());
     }
 
     private int getCurrLineNum() {
@@ -156,43 +158,7 @@ public class GPUImpl implements GPU {
         gpuControls.write(CURR_LINE_NUM_ADDRESS, lineNum);
     }
 
-    private int getTileId(int tileNum) {
-        int tileOffset = getTileIdOffset();
-        return vram.read(tileOffset + tileNum);
-    }
-
-    private int getTileIdOffset() {
-        int controls = gpuControls.read(LCD_CONTROL_REGISTER_ADDRESS);
-        if (BitUtils.isBitSet(controls, 3)) return 0x9C00;
-        return 0x9800;
-    }
-
-    private int[] getTile(int tileId) {
-        int[] data = new int[16];
-        int tileDataOffset = getTileDataOffset();
-        int address;
-        if (tileDataOffset == 0x8800) { // signed
-            address = tileDataOffset + 128 + (byte) tileId;
-        } else { // unsigned
-            address = tileDataOffset + (16 * tileId);
-        }
-        for (int i = 0; i < 16; ++i) {
-            data[i] = vram.read(address + i);
-        }
-
-        return data;
-    }
-
-    private int getTileDataOffset() {
-        int controls = gpuControls.read(LCD_CONTROL_REGISTER_ADDRESS);
-        if (BitUtils.isBitSet(controls, 4)) return 0x8000;
-        return 0x8800;
-    }
-
-    private int getPixelColorNum(boolean higherBit, boolean lowerBit) {
-        if (higherBit && lowerBit) return 3;
-        if (higherBit && !lowerBit) return 2;
-        if (!higherBit & lowerBit) return 1;
-        return 0;
+    private boolean isLCDEnabled() {
+        return BitUtils.isBitSet(read(LCD_CONTROL_REGISTER_ADDRESS), 7);
     }
 }

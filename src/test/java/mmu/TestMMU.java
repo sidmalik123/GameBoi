@@ -1,9 +1,12 @@
 package mmu;
 
 import core.TestWithTestModule;
+import mmu.cartridge.CartridgeImpl;
 import mmu.memoryspaces.ContinuousMemorySpace;
 import mmu.memoryspaces.RestrictedMemory;
 import org.junit.Test;
+
+import java.io.IOException;
 
 public class TestMMU extends TestWithTestModule {
 

@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import cpu.clock.Clock;
 import cpu.clock.ClockObserver;
+import mmu.cartridge.Cartridge;
 import mmu.memoryspaces.MemorySpace;
 import mmu.memoryspaces.ROM;
 
@@ -63,10 +64,8 @@ public class MMUImpl implements MMU {
     }
 
     @Override
-    public void load(int[] program) {
-        for (int i = 0; i < program.length; ++i) {
-            write(i, program[i]);
-        }
+    public void load(Cartridge cartridge) {
+        rom.load(cartridge);
     }
 
     @Override

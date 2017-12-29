@@ -8,6 +8,24 @@ public class DisplayImpl extends JPanel implements Display {
 
     private final BufferedImage img = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
 
+    public DisplayImpl() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            JFrame mainWindow = new JFrame("GameBoi");
+            mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            mainWindow.setLocationRelativeTo(null);
+
+            this.setSize(160, 144);
+
+            mainWindow.setContentPane(this);
+            mainWindow.setResizable(false);
+            mainWindow.setVisible(true);
+            mainWindow.setSize(160, 144);
+        } catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void setPixel(int x, int y, Color color) {
         img.setRGB(x, y, color.getRGB());

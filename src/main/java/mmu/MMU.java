@@ -1,5 +1,6 @@
 package mmu;
 
+import mmu.cartridge.Cartridge;
 import mmu.memoryspaces.ROM;
 
 /**
@@ -20,7 +21,7 @@ public interface MMU {
     /**
      * loads program into memory
      * */
-    void load(int[] program);
+    void load(Cartridge cartridge);
 
     /**
      * Sets rom to be used as Read only memory (to load programs)
