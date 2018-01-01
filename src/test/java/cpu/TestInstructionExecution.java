@@ -190,13 +190,13 @@ public class TestInstructionExecution {
     @Test
     public void testPush() {
         mmu.write(0x00, 0xF5);
-        registers.write(Register.AF, 0x2233);
+        registers.write(Register.AF, 0x2230);
         registers.write(Register.SP, 0x1007);
 
         instructionExecutor.executeInstruction();
 
         assert (mmu.read(0x1006) == 0x22);
-        assert (mmu.read(0x1005) == 0x33);
+        assert (mmu.read(0x1005) == 0x30);
         assert (registers.read(Register.SP) == 0x1005);
     }
 

@@ -1,7 +1,5 @@
 package gpu;
 
-import cpu.clock.Clock;
-import cpu.clock.ClockImpl;
 import interrupts.Interrupt;
 import interrupts.InterruptManager;
 import interrupts.InterruptManagerImpl;
