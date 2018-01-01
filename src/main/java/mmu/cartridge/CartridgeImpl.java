@@ -19,11 +19,7 @@ public class CartridgeImpl implements Cartridge {
             byte[] byteArr = IOUtils.toByteArray(inputStream);
             data = new int[byteArr.length];
             for (int i = 0; i < byteArr.length; ++i) {
-                if (i < BIOS.length) {
-                    data[i] = BIOS[i];
-                } else {
-                    data[i] = byteArr[i] & 0xFF;
-                }
+                data[i] = byteArr[i] & 0xFF;
             }
         }
     }

@@ -19,6 +19,13 @@ public class RegistersImpl implements Registers {
     @Inject
     public RegistersImpl(Clock clock) {
         this.clock = clock;
+        // initial register values
+        write(Register.PC, 0x100);
+        write(Register.AF, 0x01B0);
+        write(Register.BC, 0x0013);
+        write(Register.DE, 0x00D8);
+        write(Register.HL, 0x014D);
+        write(Register.SP, 0xFFFE);
     }
 
     @Override
