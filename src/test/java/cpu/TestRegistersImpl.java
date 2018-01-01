@@ -21,6 +21,14 @@ public class TestRegistersImpl {
         int val = 0;
         for (Register register : Register.values()) {
             registers.write(register, val);
+            if (register == Register.AF) {
+                assertEquals(registers.read(register), val & 0xFFF0);
+                continue;
+            }
+            if (register == Register.F) {
+                assertEquals(registers.read(register), val & 0xF0);
+                continue;
+            }
             assert (registers.read(register) == val);
             ++val;
         }
@@ -28,7 +36,7 @@ public class TestRegistersImpl {
         // test single registers join to become double registers
         registers.write(Register.A, 0x20);
         registers.write(Register.F, 0x03);
-        assert (registers.read(Register.AF) == 0x2003);
+        assert (registers.read(Register.AF) == 0x2000);
 
         // test write to double register writes to single registers too
         registers.write(Register.AF, 0xFF30);
@@ -47,10 +55,13 @@ public class TestRegistersImpl {
     public void testOnlyWordIsWrittenToDoubleRegisters() {
         int val = 0x3030F;
         registers.write(Register.AF, val);
-        assert (registers.read(Register.AF) == (val & 0xFFFF));
+        assert (registers.read(Register.AF) == (val & 0xFFF0));
 
         registers.write(Register.SP, 0xFF200);
         assert (registers.read(Register.SP) == 0xF200);
+
+        registers.write(Register.BC, val);
+        assertEquals(registers.read(Register.BC), val & 0xFFFF);
     }
 
     @Test
