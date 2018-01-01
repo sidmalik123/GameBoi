@@ -1,8 +1,15 @@
 package mmu;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import core.MainModule;
 import core.TestWithTestModule;
+import cpu.CPU;
 import gpu.GPU;
+import mmu.cartridge.CartridgeImpl;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -94,5 +101,15 @@ public class TestMMU extends TestWithTestModule {
         for (int i = 0; i < 0x8000; ++i) {
             assertEquals(mmu.read(i), 0x00);
         }
+    }
+
+    @Test
+    public void testRendering() throws IOException {
+        Injector mainInjector = Guice.createInjector(new MainModule());
+        MMU mmu = mainInjector.getInstance(MMU.class);
+        mmu.load(new CartridgeImpl("roms/cpu_instrs/individual/06-ld r,r.gb"));
+        CPU cpu = mainInjector.getInstance(CPU.class);
+//        GPU gpu = mainInjector.getInstance(GPU.class);
+        cpu.run();
     }
 }

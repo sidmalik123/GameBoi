@@ -10,4 +10,6 @@ import cpu.clock.ClockObserver;
  * is modelled to be contained in GPU
  * */
 public interface GPU extends ClockObserver {
+    int WIDTH = 160; // 160 px
+    int HEIGHT = 144; // 144 px
 }

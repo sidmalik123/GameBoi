@@ -8,6 +8,10 @@ import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class TestRegistersImpl {
 
     private Registers registers = new RegistersImpl(new ClockImpl());
@@ -95,5 +99,22 @@ public class TestRegistersImpl {
         assert (registers.read(Register.DE) == 0x00D8);
         assert (registers.read(Register.HL) == 0x014D);
         assert (registers.read(Register.SP) == 0xFFFE);
+
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertTrue(registers.getFlag(Flag.HALF_CARRY));
+        assertTrue(registers.getFlag(Flag.CARRY));
+    }
+
+    @Test
+    public void testWriteToF() {
+        registers.write(Register.F, 0xFF);
+        assertEquals(registers.read(Register.F), 0xF0);
+
+        registers.write(Register.AF, 0x3FBC);
+        assertEquals(registers.read(Register.F), 0xB0);
+
+        registers.write(Register.F, 0xC0);
+        assertTrue(registers.getFlag(Flag.ZERO));
     }
 }

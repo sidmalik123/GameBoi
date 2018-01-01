@@ -22,10 +22,9 @@ public class TestGPU {
 
     @Before
     public void resetGPU() { // clean gpu for every test
-        Clock clock = new ClockImpl();
         mmu = new MMUImpl();
         interruptManager = new InterruptManagerImpl(mmu);
-        gpu = new GPUImpl(new MockDisplay(), interruptManager, clock, mmu);
+        gpu = new GPUImpl(new MockDisplay(), interruptManager, mmu);
     }
 
     @Test
@@ -33,7 +32,7 @@ public class TestGPU {
         assertEquals(GPUMode.ACCESSING_OAM.getNumCyclesToSpend(), 80);
         assertEquals(GPUMode.ACCESSING_VRAM.getNumCyclesToSpend(), 172);
         assertEquals(GPUMode.HBLANK.getNumCyclesToSpend(), 204);
-        assertEquals(GPUMode.VBLANK.getNumCyclesToSpend(), 456);
+        assertEquals(GPUMode.VBLANK.getNumCyclesToSpend(), 4560);
 
         assertEquals(GPUMode.ACCESSING_OAM.getModeNum(), 2);
         assertEquals(GPUMode.ACCESSING_VRAM.getModeNum(), 3);
@@ -106,17 +105,23 @@ public class TestGPU {
             for (int i = 1; i < 456; ++i) {
                 gpu.handleClockIncrement(1);
                 assertEquals(getCurrMode(), 1); // stay in vblank
-                assertCurrLineNum(144 + numLinesInVblank);
+                assertCurrLineNum(144);
             }
             gpu.handleClockIncrement(1);
             if (numLinesInVblank < 9) {
                 assertEquals(getCurrMode(), 1);
-                assertCurrLineNum(144 + numLinesInVblank + 1);
+                assertCurrLineNum(144);
             } else {
                 assertEquals(getCurrMode(), 2);
                 assertCurrLineNum(0);
             }
         }
+    }
+
+    @Test
+    public void testDimensions() {
+        assertEquals(GPU.HEIGHT, 144);
+        assertEquals(GPU.WIDTH, 160);
     }
 
     private int getCurrMode() { // bit 1 and bit 0 represent the mode num
