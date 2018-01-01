@@ -64,5 +64,9 @@ public interface MMU {
      * */
     void load(Cartridge cartridge);
 
+    /**
+     * Any writes to CURR_LINE_NUM_ADDRESS reset the curr line to 0,
+     * this is a way for the emulator to set the curr line
+     * */
     void setCurrLineNum(int lineNum);
 }

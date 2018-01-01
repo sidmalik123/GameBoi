@@ -1,8 +1,15 @@
 package mmu;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import core.MainModule;
 import core.TestWithTestModule;
+import cpu.CPU;
 import gpu.GPU;
+import mmu.cartridge.CartridgeImpl;
 import org.junit.Test;
+
+import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 

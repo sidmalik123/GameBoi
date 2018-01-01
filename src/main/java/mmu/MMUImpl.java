@@ -2,7 +2,6 @@ package mmu;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import gpu.GPU;
 import mmu.cartridge.Cartridge;
 
 /**
@@ -45,6 +44,11 @@ public class MMUImpl implements MMU {
 
     @Override
     public void write(int address, int data) {
+        if (address == 0xFF02 && data == 0x81) {
+            char c = (char) read(0xFF01);
+            System.out.print(c);
+        }
+
         if (isIn(RESTRICTED_MEMORY_START_ADDRESS, RESTRICTED_MEMORY_END_ADDRESS, address)) return;
 
         if (isReadOnly(address)) return;

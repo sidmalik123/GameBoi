@@ -78,14 +78,14 @@ public class RegistersImpl implements Registers {
             case E:
                 e = data & 0xFF; break;
             case F:
-                f = data & 0xFF; break;
+                f = data & 0xF0; break;
             case H:
                 h = data & 0xFF; break;
             case L:
                 l = data & 0xFF; break;
             case AF:
                 a = BitUtils.getHighByte(data);
-                f = BitUtils.getLowByte(data);
+                f = BitUtils.getLowByte(data) & 0xF0;
                 break;
             case BC:
                 b = BitUtils.getHighByte(data);
@@ -119,7 +119,7 @@ public class RegistersImpl implements Registers {
 
     @Override
     public void incrementPC() {
-        ++pc;
+        pc = (++pc) & 0xFFFF;
     }
 
     @Override
@@ -127,5 +127,11 @@ public class RegistersImpl implements Registers {
         pc += (byte) signedByte;
         pc &= 0xFFFF;
         clock.addCycles(4);
+    }
+
+    public String toString() {
+        return "AF: " + Integer.toHexString(read(Register.AF)) + ", BC: " + Integer.toHexString(read(Register.BC))
+                + ", DE: " + Integer.toHexString(read(Register.DE)) + ", HL: " + Integer.toHexString(read(Register.HL)) +
+                ", SP: " + Integer.toHexString(read(Register.SP)) + ", PC: " + Integer.toHexString(read(Register.PC));
     }
 }

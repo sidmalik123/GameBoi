@@ -52,6 +52,7 @@ public class TestBitUtils {
         int lowerByte = 0b00100100;
 
         assert (BitUtils.joinBytes(higherByte, lowerByte) == 0b1001110100100100);
+        assert (BitUtils.joinBytes(0xF3, 0x20) == 0xF320);
     }
 
     @Test
@@ -59,12 +60,15 @@ public class TestBitUtils {
         int byte1 = 0b00001010;
         int byte2 = 0b00001100;
 
-        assert (BitUtils.isHalfCarryByteAddition(byte1, byte2));
+        assert (BitUtils.isHalfCarryByteAddition(byte1, byte2, 0));
 
         int byte3 = 0b10010011;
         int byte4 = 0b10101010;
 
-        assert (!BitUtils.isHalfCarryByteAddition(byte3, byte4));
+        assert (!BitUtils.isHalfCarryByteAddition(byte3, byte4, 0));
+
+        assert (BitUtils.isHalfCarryByteAddition(0xFF, 0xFF, 0));
+        assert (BitUtils.isHalfCarryByteAddition(0x3F, 1, 0));
     }
 
     @Test
@@ -72,12 +76,12 @@ public class TestBitUtils {
         int byte1 = 0b10010011;
         int byte2 = 0b10101010;
 
-        assert (BitUtils.isCarryByteAddition(byte1, byte2));
+        assert (BitUtils.isCarryByteAddition(byte1, byte2, 0));
 
         int byte3 = 0b00001010;
         int byte4 = 0b00001100;
 
-        assert (!BitUtils.isCarryByteAddition(byte3, byte4));
+        assert (!BitUtils.isCarryByteAddition(byte3, byte4, 0));
     }
 
     @Test
@@ -98,6 +102,7 @@ public class TestBitUtils {
         int byte3 = 0b00101111;
 
         assert (BitUtils.isHalfCarryByteSubtraction(byte1, byte3));
+        assert (BitUtils.isHalfCarryByteSubtraction(0x30, 1));
     }
 
     @Test

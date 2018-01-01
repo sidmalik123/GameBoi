@@ -18,6 +18,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests instruction executions
  *
@@ -89,6 +92,17 @@ public class TestInstructionExecution {
         instructionExecutor.executeInstruction();
 
         assert (registers.read(Register.PC) == 0x1520);
+    }
+
+    @Test
+    public void testLoadImmediateWordIntoRegister() {
+        mmu.write(0, 0x01);
+        mmu.write(1, 0x33);
+        mmu.write(2, 0xFF);
+
+        instructionExecutor.executeInstruction();
+
+        assert (registers.read(Register.BC) == 0xFF33);
     }
 
     @Test
@@ -176,13 +190,13 @@ public class TestInstructionExecution {
     @Test
     public void testPush() {
         mmu.write(0x00, 0xF5);
-        registers.write(Register.AF, 0x2233);
+        registers.write(Register.AF, 0x2230);
         registers.write(Register.SP, 0x1007);
 
         instructionExecutor.executeInstruction();
 
         assert (mmu.read(0x1006) == 0x22);
-        assert (mmu.read(0x1005) == 0x33);
+        assert (mmu.read(0x1005) == 0x30);
         assert (registers.read(Register.SP) == 0x1005);
     }
 
@@ -198,6 +212,59 @@ public class TestInstructionExecution {
         assert (registers.read(Register.PC) == Interrupt.VBLANK.getServiceAddress());
         interruptManager.setInterruptsEnabled(true);
         assert (interruptManager.getPendingInterrupt() == null); // interrupt was reset
+    }
+
+    @Test
+    public void testLoadWordIntoMemory() {
+        registers.write(Register.SP, 0xF347);
+        mmu.write(0, 0x08);
+        mmu.write(1, 0xAB);
+        mmu.write(2, 0xAF);
+
+        instructionExecutor.executeInstruction();
+
+        assert (mmu.read(0xAFAB) == 0x47);
+        assert (mmu.read(0xAFAB + 1) == 0xF3);
+        assert (registers.read(Register.PC) == 3);
+    }
+
+    @Test
+    public void testJR() {
+        registers.write(Register.PC, 0x480);
+        mmu.write(0x480, 0x18);
+        mmu.write(0x481, 0xFA);
+
+        instructionExecutor.executeInstruction();
+
+        assertEquals(registers.read(Register.PC), 0x47C);
+
+        registers.write(Register.PC, 0x480);
+        mmu.write(0x480, 0x18);
+        mmu.write(0x481, 0x03);
+
+        instructionExecutor.executeInstruction();
+
+        assertEquals(registers.read(Register.PC), 0x485);
+
+        registers.write(Register.PC, 0);
+        registers.setFlag(Flag.ZERO, true);
+        mmu.write(0, 0x20);
+        mmu.write(1, 0xfB);
+        mmu.write(2, 0x14);
+
+        instructionExecutor.executeInstruction();
+        assertEquals(registers.read(Register.PC), 2);
+
+    }
+
+    @Test
+    public void testCompare() {
+        registers.write(Register.A, 0x3B);
+        mmu.write(0, 0xFE);
+        mmu.write(1, 0x3B);
+
+        instructionExecutor.executeInstruction();
+        assertTrue(registers.getFlag(Flag.ZERO));
     }
 
     private void executeInstructionAndTestPCAndClock(int pcIncrement, int cycleIncrement) {

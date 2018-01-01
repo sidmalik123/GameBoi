@@ -8,6 +8,10 @@ import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 public class TestRegistersImpl {
 
     private Registers registers = new RegistersImpl(new ClockImpl());
@@ -17,6 +21,14 @@ public class TestRegistersImpl {
         int val = 0;
         for (Register register : Register.values()) {
             registers.write(register, val);
+            if (register == Register.AF) {
+                assertEquals(registers.read(register), val & 0xFFF0);
+                continue;
+            }
+            if (register == Register.F) {
+                assertEquals(registers.read(register), val & 0xF0);
+                continue;
+            }
             assert (registers.read(register) == val);
             ++val;
         }
@@ -24,7 +36,7 @@ public class TestRegistersImpl {
         // test single registers join to become double registers
         registers.write(Register.A, 0x20);
         registers.write(Register.F, 0x03);
-        assert (registers.read(Register.AF) == 0x2003);
+        assert (registers.read(Register.AF) == 0x2000);
 
         // test write to double register writes to single registers too
         registers.write(Register.AF, 0xFF30);
@@ -43,10 +55,13 @@ public class TestRegistersImpl {
     public void testOnlyWordIsWrittenToDoubleRegisters() {
         int val = 0x3030F;
         registers.write(Register.AF, val);
-        assert (registers.read(Register.AF) == (val & 0xFFFF));
+        assert (registers.read(Register.AF) == (val & 0xFFF0));
 
         registers.write(Register.SP, 0xFF200);
         assert (registers.read(Register.SP) == 0xF200);
+
+        registers.write(Register.BC, val);
+        assertEquals(registers.read(Register.BC), val & 0xFFFF);
     }
 
     @Test
@@ -95,5 +110,22 @@ public class TestRegistersImpl {
         assert (registers.read(Register.DE) == 0x00D8);
         assert (registers.read(Register.HL) == 0x014D);
         assert (registers.read(Register.SP) == 0xFFFE);
+
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertTrue(registers.getFlag(Flag.HALF_CARRY));
+        assertTrue(registers.getFlag(Flag.CARRY));
+    }
+
+    @Test
+    public void testWriteToF() {
+        registers.write(Register.F, 0xFF);
+        assertEquals(registers.read(Register.F), 0xF0);
+
+        registers.write(Register.AF, 0x3FBC);
+        assertEquals(registers.read(Register.F), 0xB0);
+
+        registers.write(Register.F, 0xC0);
+        assertTrue(registers.getFlag(Flag.ZERO));
     }
 }

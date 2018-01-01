@@ -3,17 +3,17 @@ package core;
 public class BitUtils {
 
     /**
-     * Checks if carry occurs from bit 3 to bit 4 in addition of byte1 and byte2
+     * Checks if carry occurs from bit 3 to bit 4 in addition of byte1 and byte2 and byte3
      * */
-    public static boolean isHalfCarryByteAddition(int byte1, int byte2) {
-        return (byte1 & 0x0F) + (byte2 & 0x0F) > 0x0F;
+    public static boolean isHalfCarryByteAddition(int byte1, int byte2, int byte3) {
+        return (byte1 & 0x0F) + (byte2 & 0x0F) + (byte3 & 0x0F) > 0x0F;
     }
 
     /**
      * Checks if carry occurs from bit 7 to bit 8
      * */
-    public static boolean isCarryByteAddition(int val1, int val2) {
-        return val1 + val2 > 0xFF;
+    public static boolean isCarryByteAddition(int val1, int val2, int val3) {
+        return val1 + val2 + val3 > 0xFF;
     }
 
     /**

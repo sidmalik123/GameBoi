@@ -34,10 +34,10 @@ public class ALUImpl implements ALU {
      * Z 0 H -
      * */
     public int incByte(int bytee) {
-        int result = ++bytee & 0xFF;
+        int result = (bytee + 1) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, false);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(bytee, 1));
+        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(bytee, 1, 0));
 
         return result;
     }
@@ -47,7 +47,7 @@ public class ALUImpl implements ALU {
      * Z 1 H -
      * */
     public int decByte(int bytee) {
-        int result = --bytee & 0xFF;
+        int result = (bytee-1) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, true);
         registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteSubtraction(bytee, 1));
@@ -56,19 +56,21 @@ public class ALUImpl implements ALU {
     }
 
     /**
-     * - - - C
+     * Z - - C
      * */
     public int rotateByteLeft(int bytee, boolean throughCarry) {
         int result = (bytee << 1) & 0xFF;
 
         if (throughCarry) { // old carry value to bit 0
-            result = registers.getFlag(Flag.CARRY) ? BitUtils.setBit(result, 0) : BitUtils.resetBit(result, 0);
+            if (registers.getFlag(Flag.CARRY)) result = BitUtils.setBit(result, 0);
         } else { // old bit 7 to bit 0
-            result = BitUtils.isBitSet(bytee, 7) ? BitUtils.setBit(result, 0) : BitUtils.resetBit(bytee, 0);
+            if (BitUtils.isBitSet(bytee, 7)) result = BitUtils.setBit(result, 0);
         }
 
         registers.setFlag(Flag.CARRY, BitUtils.isBitSet(bytee, 7)); // old bit 7 to carry flag
         registers.setFlag(Flag.ZERO, result == 0);
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, false);
         return result;
     }
 
@@ -94,19 +96,21 @@ public class ALUImpl implements ALU {
         int result = (bytee >> 1) & 0xFF;
 
         if (throughCarry) { // old carry value to bit 7
-            result = registers.getFlag(Flag.CARRY) ? BitUtils.setBit(result, 7) : BitUtils.resetBit(result, 7);
+            if (registers.getFlag(Flag.CARRY)) result = BitUtils.setBit(result,7);
         } else { // old bit 0 to bit 7
-            result = BitUtils.isBitSet(bytee, 0) ? BitUtils.setBit(result, 7) : BitUtils.resetBit(bytee, 7);
+            if (BitUtils.isBitSet(bytee, 0)) result = BitUtils.setBit(result, 7);
         }
 
         registers.setFlag(Flag.CARRY, BitUtils.isBitSet(bytee, 0)); // old bit 0 to carry flag
         registers.setFlag(Flag.ZERO, result == 0);
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, false);
         return result;
     }
 
     @Override
     public int complementByte(int bytee) {
-        int result = (bytee ^= 0xFF);
+        int result = (~bytee & 0xFF);
         registers.setFlag(Flag.SUBTRACTION, true);
         registers.setFlag(Flag.HALF_CARRY, true);
 
@@ -115,14 +119,14 @@ public class ALUImpl implements ALU {
 
     @Override
     public int addBytes(int byte1, int byte2, boolean addCarry) {
-        int toAdd = byte2;
-        if (addCarry && registers.getFlag(Flag.CARRY)) ++toAdd;
+        int byte3 = 0;
+        if (addCarry && registers.getFlag(Flag.CARRY)) byte3 = 1;
 
-        int result = (byte1 + toAdd) & 0XFF;
+        int result = (byte1 + byte2 + byte3) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, false);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(byte1, toAdd));
-        registers.setFlag(Flag.CARRY, BitUtils.isCarryByteAddition(byte1, toAdd));
+        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(byte1, byte2, byte3));
+        registers.setFlag(Flag.CARRY, BitUtils.isCarryByteAddition(byte1, byte2, byte3));
 
         return result;
     }
@@ -176,7 +180,7 @@ public class ALUImpl implements ALU {
 
     @Override
     public int shiftByteLeft(int bytee) {
-        int result = bytee << 1;
+        int result = (bytee << 1) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, false);
         registers.setFlag(Flag.HALF_CARRY, false);
@@ -187,7 +191,7 @@ public class ALUImpl implements ALU {
 
     @Override
     public int shiftByteRight(int bytee, boolean resetBit7) {
-        int result = bytee >> 1;
+        int result = (bytee >> 1) & 0xFF;
         if (!resetBit7 && BitUtils.isBitSet(bytee, 7)) {
             result = BitUtils.setBit(result, 7);
         }
@@ -201,8 +205,8 @@ public class ALUImpl implements ALU {
 
     @Override
     public int swapNibbles(int bytee) {
-        int upperNibble = bytee >> 4;
-        int lowerNibble = (bytee << 4) & 0xFF;
+        int upperNibble = (bytee >> 4) & 0xF;
+        int lowerNibble = (bytee << 4) & 0xF0;
         int result = lowerNibble | upperNibble;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, false);
@@ -231,29 +235,17 @@ public class ALUImpl implements ALU {
 
     @Override
     public int decimalAdjust(int bytee) {
-        int result = bytee;
-        if (registers.getFlag(Flag.SUBTRACTION)) {
-            if (registers.getFlag(Flag.HALF_CARRY)) {
-                result = (result - 6) & 0xff;
-            }
-            if (registers.getFlag(Flag.CARRY)) {
-                result = (result - 0x60) & 0xff;
-            }
-        } else {
-            if (registers.getFlag(Flag.HALF_CARRY) || (result & 0xf) > 9) {
-                result += 0x06;
-            }
-            if (registers.getFlag(Flag.CARRY) || result > 0x9f) {
-                result += 0x60;
-            }
+        if (!registers.getFlag(Flag.SUBTRACTION)) {  // after an addition, adjust if (half-)carry occurred or if result is out of bounds
+            if (registers.getFlag(Flag.CARRY) || bytee > 0x99) { bytee += 0x60; bytee &= 0xff; registers.setFlag(Flag.CARRY, true); }
+            if (registers.getFlag(Flag.HALF_CARRY) || (bytee & 0x0f) > 0x09) { bytee += 0x6; bytee &= 0xff; }
+        } else {  // after a subtraction, only adjust if (half-)carry occurred
+            if (registers.getFlag(Flag.CARRY)) { bytee -= 0x60; bytee &= 0xff; }
+            if (registers.getFlag(Flag.HALF_CARRY)) { bytee -= 0x6; bytee &= 0xff; }
         }
+        // these flags are always updated
+        registers.setFlag(Flag.ZERO, bytee == 0);
         registers.setFlag(Flag.HALF_CARRY, false);
-        if (result > 0xff) {
-            registers.setFlag(Flag.CARRY, true);
-        }
-        result &= 0xff;
-        registers.setFlag(Flag.ZERO, result == 0);
-        return result;
+        return bytee;
     }
 
     @Override

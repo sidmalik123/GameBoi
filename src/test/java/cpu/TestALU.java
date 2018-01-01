@@ -7,7 +7,12 @@ import cpu.clock.ClockImpl;
 import cpu.registers.Flag;
 import cpu.registers.Registers;
 import cpu.registers.RegistersImpl;
+import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests ALU methods
@@ -16,9 +21,11 @@ public class TestALU {
 
     private ALU alu;
     private Registers registers;
+    private Clock clock;
 
-    public TestALU() {
-        Clock clock = new ClockImpl();
+    @Before
+    public void reset() {
+        clock = new ClockImpl();
         registers = new RegistersImpl(clock);
         alu = new ALUImpl(registers, clock);
     }
@@ -28,10 +35,54 @@ public class TestALU {
         int bytee = 0b10001000;
         assert (alu.rotateByteLeft(bytee, false) == 0b00010001);
         assert (registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
 
         bytee = 0b01110110;
         assert (alu.rotateByteLeft(bytee, true) == 0b11101101);
         assert (!registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+
+        // through-carry, carry not set before
+        registers.setFlag(Flag.CARRY, false);
+        assertEquals(alu.rotateByteLeft(0b10101010, true), 0b01010100);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+
+        // through-carry, carry set before
+        registers.setFlag(Flag.CARRY, true);
+        assertEquals(alu.rotateByteLeft(0b10101010, true), 0b01010101);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+
+        // not through carry, bit 7 set
+        assertEquals(alu.rotateByteLeft(0b10101010, false), 0b01010101);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+
+        // not through carry, bit 7 not set
+        assertEquals(alu.rotateByteLeft(0b00101010, false), 0b01010100);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+
+        // zero case
+        registers.setFlag(Flag.CARRY, false);
+        assertEquals(alu.rotateByteLeft(0b10000000, true), 0);
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.CARRY));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
     }
 
     @Test
@@ -60,6 +111,22 @@ public class TestALU {
         registers.setFlag(Flag.CARRY, false);
         assert (alu.rotateByteRight(bytee, true) == 0b01110000);
         assert (registers.getFlag(Flag.CARRY));
+
+        // rotate right through carry
+        registers.setFlag(Flag.CARRY, false);
+        assertEquals(alu.rotateByteRight(0b00000001, true), 0);
+        assertTrue(registers.getFlag(Flag.CARRY));
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+
+        // rotate right through carry
+        registers.setFlag(Flag.CARRY, true);
+        assertEquals(alu.rotateByteRight(0b00000001, true), 0b10000000);
+        assertTrue(registers.getFlag(Flag.CARRY));
+        assertTrue(!registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
     }
 
     @Test
@@ -122,6 +189,9 @@ public class TestALU {
         registers.setFlag(Flag.ZERO, false);
         alu.testBit(0b10101010, 2);
         assert (registers.getFlag(Flag.ZERO));
+
+        alu.testBit(0x00, 0);
+        assertTrue(registers.getFlag(Flag.ZERO));
     }
 
     @Test
@@ -137,5 +207,84 @@ public class TestALU {
     @Test
     public void testAddSignedByteToWord() {
         assert (alu.addSignedByteToWord(0x3502, 0xFF) == 0x3501);
+    }
+
+    @Test
+    public void testShiftLeft() {
+        int bytee = 0b10110001;
+        assertEquals(alu.shiftByteLeft(bytee), 0b01100010);
+        assertTrue(registers.getFlag(Flag.CARRY));
+
+        assertEquals(alu.shiftByteLeft(0b10000000), 0);
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.CARRY));
+
+        assertEquals(alu.shiftByteLeft(0b01010101), 0b10101010);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.CARRY));
+    }
+
+    @Test
+    public void testIncWord() {
+        int oldCycles = clock.getTotalCycles();
+        assert (alu.incWord(0xFF32) == 0xFF33);
+        assert (clock.getTotalCycles() == oldCycles + 4);
+
+        assert (alu.incWord(0xFFFF) == 0x0000);
+    }
+
+    @Test
+    public void testIncByte() {
+        boolean oldCarryFlagVal = registers.getFlag(Flag.CARRY);
+        assertEquals(alu.incByte(0x30), 0x31);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+        assertEquals(registers.getFlag(Flag.CARRY), oldCarryFlagVal);
+
+        assertEquals(alu.incByte(0x3F), 0x40);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertTrue(registers.getFlag(Flag.HALF_CARRY));
+        assertEquals(registers.getFlag(Flag.CARRY), oldCarryFlagVal);
+
+        assertEquals(alu.incByte(0xFF), 0x00);
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertTrue(registers.getFlag(Flag.HALF_CARRY));
+        assertEquals(registers.getFlag(Flag.CARRY), oldCarryFlagVal);
+    }
+
+    @Test
+    public void testDecByte() {
+        boolean oldCarryFlagVal = registers.getFlag(Flag.CARRY);
+        assertEquals(alu.decByte(0x43), 0x42);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+        assertEquals(registers.getFlag(Flag.CARRY), oldCarryFlagVal);
+
+        assertEquals(alu.decByte(0x40), 0x3F);
+        assertFalse(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.SUBTRACTION));
+        assertTrue(registers.getFlag(Flag.HALF_CARRY));
+        assertEquals(registers.getFlag(Flag.CARRY), oldCarryFlagVal);
+
+        assertEquals(alu.decByte(0x01), 0x00);
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertTrue(registers.getFlag(Flag.SUBTRACTION));
+        assertFalse(registers.getFlag(Flag.HALF_CARRY));
+        assertEquals(registers.getFlag(Flag.CARRY), oldCarryFlagVal);
+    }
+
+    @Test
+    public void testWordDec() {
+        int oldClockCycles = clock.getTotalCycles();
+        assertEquals(alu.decWord(0xFF32), 0xFF31);
+        assertEquals(clock.getTotalCycles(), oldClockCycles + 4);
+
+        assertEquals(alu.decWord(0x0000), 0xFFFF);
+        assertEquals(alu.decWord(0x3F30), 0x3F2F);
+
     }
 }

@@ -11,7 +11,6 @@ import cpu.registers.Register;
 import cpu.registers.Registers;
 import interrupts.Interrupt;
 import interrupts.InterruptManager;
-import mmu.MMU;
 
 /**
  * Concrete class for InstructionExecutor
@@ -61,7 +60,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x0A: registers.write(Register.A, memoryAccessor.read(registers.read(Register.BC))); break;
             case 0x0B: decWordRegister(Register.BC); break;
             case 0x0C: incByteRegister(Register.C); break;
-            case 0x0D: decByteRegister(Register.D); break;
+            case 0x0D: decByteRegister(Register.C); break;
             case 0x0E: registers.write(Register.C, getImmediateByte()); break;
             case 0x0F: rotateByteRegisterRight(Register.A, false); break;
             case 0x10: isStopped = true; break;
@@ -81,7 +80,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x1E: loadRegisterWithImmediateByte(Register.E); break;
             case 0x1F: rotateByteRegisterRight(Register.A, true); break;
             case 0x20: jr(!registers.getFlag(Flag.ZERO)); break; // NZ
-            case 0x21: loadRegisterWithImmediateWord(Register.DE); break;
+            case 0x21: loadRegisterWithImmediateWord(Register.HL); break;
             case 0x22: memoryAccessor.write(registers.read(Register.HL), registers.read(Register.A)); incWordRegister(Register.HL); break;
             case 0x23: incWordRegister(Register.HL); break;
             case 0x24: incByteRegister(Register.H); break;
@@ -94,9 +93,9 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x2B: decWordRegister(Register.HL); break;
             case 0x2C: incByteRegister(Register.L); break;
             case 0x2D: decByteRegister(Register.L); break;
-            case 0x2E: loadRegisterWithImmediateByte(Register.E); break;
+            case 0x2E: loadRegisterWithImmediateByte(Register.L); break;
             case 0x2F: registers.write(Register.A, alu.complementByte(registers.read(Register.A))); break;
-            case 0x30: jr(!registers.getFlag(Flag.CARRY)); break;
+            case 0x30: jr(!registers.getFlag(Flag.CARRY)); break; // NC
             case 0x31: loadRegisterWithImmediateWord(Register.SP); break;
             case 0x32: memoryAccessor.write(registers.read(Register.HL), registers.read(Register.A)); decWordRegister(Register.HL); break;
             case 0x33: incWordRegister(Register.SP); break;
@@ -298,6 +297,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
     }
 
     private void executeExtendedOpcode(int instruction) {
+
         switch (instruction) {
             case 0x00: rotateByteRegisterLeft(Register.B, false); break;
             case 0x01: rotateByteRegisterLeft(Register.C, false); break;
@@ -330,6 +330,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x1C: rotateByteRegisterRight(Register.H, true); break;
             case 0x1D: rotateByteRegisterRight(Register.L, true); break;
             case 0x1E: memoryAccessor.write(registers.read(Register.HL), alu.rotateByteRight(memoryAccessor.read(registers.read(Register.HL)), true)); break;
+            case 0x1F: rotateByteRegisterRight(Register.A, true); break;
             case 0x20: shiftByteRegisterLeft(Register.B); break;
             case 0x21: shiftByteRegisterLeft(Register.C); break;
             case 0x22: shiftByteRegisterLeft(Register.D); break;
@@ -748,8 +749,8 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         int routineAddress = getImmediateWord();
         if (doCall) {
             pushWordToStack(registers.read(Register.PC));
+            registers.write(Register.PC, routineAddress);
         }
-        registers.write(Register.PC, routineAddress);
     }
 
     private void rst(int restartAddress) {
