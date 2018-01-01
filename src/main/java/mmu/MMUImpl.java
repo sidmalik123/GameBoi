@@ -2,8 +2,6 @@ package mmu;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import cpu.CPUImpl;
-import cpu.instructions.InstructionExecutorImpl;
 import mmu.cartridge.Cartridge;
 
 /**

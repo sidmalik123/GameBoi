@@ -12,10 +12,6 @@ import cpu.registers.Registers;
 import interrupts.Interrupt;
 import interrupts.InterruptManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Logger;
-
 /**
  * Concrete class for InstructionExecutor
  * */
