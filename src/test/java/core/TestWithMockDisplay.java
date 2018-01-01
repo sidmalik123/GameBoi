@@ -4,11 +4,11 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
 
-public class TestWithTestModule {
+public class TestWithMockDisplay {
 
     protected Injector testInjector;
 
-    public TestWithTestModule() {
+    public TestWithMockDisplay() {
         testInjector = Guice.createInjector(Modules.override(new MainModule()).with(new TestModule()));
     }
 }

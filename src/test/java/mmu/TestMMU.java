@@ -1,12 +1,12 @@
 package mmu;
 
-import core.TestWithTestModule;
+import core.TestWithMockDisplay;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 
-public class TestMMU extends TestWithTestModule {
+public class TestMMU extends TestWithMockDisplay {
 
     private MMU mmu;
 

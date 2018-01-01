@@ -1,11 +1,11 @@
 package interrupts;
 
 import core.BitUtils;
-import core.TestWithTestModule;
+import core.TestWithMockDisplay;
 import mmu.MMU;
 import org.junit.Test;
 
-public class TestInterrupts extends TestWithTestModule {
+public class TestInterrupts extends TestWithMockDisplay {
 
     private MMU mmu;
     private InterruptManager interruptManager;

@@ -1,6 +1,6 @@
 package mmu;
 
-import core.TestWithTestModule;
+import core.TestWithMockDisplay;
 import mmu.cartridge.Cartridge;
 import mmu.cartridge.CartridgeImpl;
 import org.junit.Test;
@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class TestCartridge extends TestWithTestModule {
+public class TestCartridge extends TestWithMockDisplay {
 
     private static final String SAMPLE_FILE_NAME = "sample-rom-file.gb";
     private static final byte[] byteArr = {0x04, 0x05, -1, 0x11, 0x3E, 0x29, 0x59};
