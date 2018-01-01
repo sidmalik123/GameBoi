@@ -79,7 +79,7 @@ public class ALUImpl implements ALU {
         int result = (word1 + word2) & 0xFFFF;
         registers.setFlag(Flag.SUBTRACTION, false);
         registers.setFlag(Flag.HALF_CARRY, (word1 & 0xFFF) + (word2 & 0xFFF) > 0xFFF);
-        registers.setFlag(Flag.CARRY, word1 + word2 > 0xFFF);
+        registers.setFlag(Flag.CARRY, word1 + word2 > 0xFFFF);
 
         clock.addCycles(4);
         return result;

@@ -14,10 +14,10 @@ public class GameBoy {
     public static void main(String[] args) throws IOException {
         Injector mainInjector = Guice.createInjector(new MainModule());
         MMU mmu = mainInjector.getInstance(MMU.class);
-        mmu.load(new CartridgeImpl("roms/cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"));
+        mmu.load(new CartridgeImpl("roms/Tetris.gb"));
         CPU cpu = mainInjector.getInstance(CPU.class);
-//        Clock clock = mainInjector.getInstance(Clock.class);
-//        clock.attach(mainInjector.getInstance(GPU.class));
+        Clock clock = mainInjector.getInstance(Clock.class);
+        clock.attach(mainInjector.getInstance(GPU.class));
         cpu.run();
     }
 }

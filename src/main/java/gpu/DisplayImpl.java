@@ -6,21 +6,23 @@ import java.awt.image.BufferedImage;
 
 public class DisplayImpl extends JPanel implements Display {
 
-    private final BufferedImage img = new BufferedImage(160, 144, BufferedImage.TYPE_INT_RGB);
+    private final BufferedImage img;
+    private static final int SCALE = 3;
 
     public DisplayImpl() {
+        img = new BufferedImage(GPU.WIDTH * SCALE, GPU.HEIGHT * SCALE, BufferedImage.TYPE_INT_RGB);
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             JFrame mainWindow = new JFrame("GameBoi");
             mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             mainWindow.setLocationRelativeTo(null);
 
-            this.setSize(160, 144);
+            this.setSize(img.getWidth(), img.getHeight()); // fill image
 
             mainWindow.setContentPane(this);
             mainWindow.setResizable(false);
             mainWindow.setVisible(true);
-            mainWindow.setSize(160, 144);
+            mainWindow.setSize(img.getWidth(), img.getHeight());
         } catch(Exception e) {
             throw new DisplayInstantiationException("Error while building display", e);
         }
@@ -28,7 +30,11 @@ public class DisplayImpl extends JPanel implements Display {
 
     @Override
     public void setPixel(int x, int y, Color color) {
-        img.setRGB(x, y, color.getRGB());
+        for (int i = 0; i < SCALE; ++i) {
+            for (int j = 0; j < SCALE; ++j) {
+                img.setRGB(x * SCALE + j, y * SCALE + i, color.getRGB());
+            }
+        }
     }
 
     @Override

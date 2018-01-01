@@ -44,7 +44,11 @@ public class TestCartridge extends TestWithTestModule {
         // tests that only 0x8000 bytes are loaded into ROM
         mmu.load(new CartridgeImpl("file-bigger-than-rom.gb"));
         for (int i = 0; i < 0x8000; ++i) {
-            assertEquals(mmu.read(i), 0x01);
+            if (i < Cartridge.BIOS.length) {
+                assertEquals(mmu.read(i), Cartridge.BIOS[i]);
+            } else {
+                assertEquals(mmu.read(i), 0x01);
+            }
         }
         for (int i = 0x8000; i < 0x9000; ++i) {
             assertEquals(mmu.read(i), 0x00);
@@ -54,7 +58,9 @@ public class TestCartridge extends TestWithTestModule {
 
     private void compareDataWithByteArr(int[] data) {
         for (int i = 0; i < byteArr.length; ++i) {
-            if (i == 2) {
+            if (i < Cartridge.BIOS.length) {
+                assertEquals(data[i], Cartridge.BIOS[i]);
+            } else if (i == 2 + Cartridge.BIOS.length) {
                 assert (data[i] == 0xFF);
             } else {
                 assert (data[i] == byteArr[i]);
