@@ -40,7 +40,7 @@ public class TestBlarggsInstructions extends BlarggsTest {
     }
 
     /**
-     * Runs the test for 30s, returns the test result after that
+     * Runs the test for 45s, returns the test result after that
      * */
     private String runTest(String testName) throws IOException {
         Injector blarggsInjector = getNewInjector();
@@ -52,7 +52,7 @@ public class TestBlarggsInstructions extends BlarggsTest {
 
         long startTime = System.currentTimeMillis();
         String outputTillNow = "";
-        while (!outputTillNow.contains("Passed") && System.currentTimeMillis() - startTime < 30000) {
+        while (!outputTillNow.contains("Passed") && System.currentTimeMillis() - startTime < 45000) {
             instructionExecutor.executeInstruction();
             outputTillNow = ((BlarggsTestMMU) mmu).getTestOutput();
         }
