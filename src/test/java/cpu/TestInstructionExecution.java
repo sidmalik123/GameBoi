@@ -268,6 +268,32 @@ public class TestInstructionExecution {
         assertTrue(registers.getFlag(Flag.ZERO));
     }
 
+    @Test
+    public void testHalt() {
+        mmu.write(0, 0x76); // halt instruction
+
+        instructionExecutor.executeInstruction();
+        assertEquals(registers.read(Register.PC), 1);
+
+        int oldCycles = clock.getTotalCycles();
+        instructionExecutor.executeInstruction();
+        assertEquals(registers.read(Register.PC), 1); // pc stays the same
+        assertEquals(clock.getTotalCycles(), oldCycles + 4); // Nop executed
+    }
+
+    @Test
+    public void testStop() {
+        mmu.write(0, 0x10); // stop instruction
+
+        instructionExecutor.executeInstruction();
+        assertEquals(registers.read(Register.PC), 1);
+
+        int oldCycles = clock.getTotalCycles();
+        instructionExecutor.executeInstruction();
+        assertEquals(registers.read(Register.PC), 1); // pc stays the same
+        assertEquals(clock.getTotalCycles(), oldCycles + 4); // Nop executed
+    }
+
     private void executeInstructionAndTestPCAndClock(int pcIncrement, int cycleIncrement) {
         int oldPC = registers.read(Register.PC);
         int oldCycles = clock.getTotalCycles();

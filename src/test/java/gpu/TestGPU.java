@@ -56,6 +56,9 @@ public class TestGPU {
     public void testWriteToCurrLine() { // writes to curr line default to 0x00
         mmu.write(MMU.CURR_LINE_NUM_ADDRESS, 0x3F);
         assertCurrLineNum(0x00);
+
+        mmu.setCurrLineNum(100);
+        assertEquals(mmu.read(MMU.CURR_LINE_NUM_ADDRESS), 100);
     }
 
     @Test
