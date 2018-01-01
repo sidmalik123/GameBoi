@@ -37,7 +37,7 @@ public class ALUImpl implements ALU {
         int result = (bytee + 1) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, false);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(bytee, 1, 0));
+        registers.setFlag(Flag.HALF_CARRY, (bytee & 0xF) == 0xF);
 
         return result;
     }
@@ -50,7 +50,7 @@ public class ALUImpl implements ALU {
         int result = (bytee-1) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, true);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteSubtraction(bytee, 1));
+        registers.setFlag(Flag.HALF_CARRY, (bytee & 0xF) == 0);
 
         return result;
     }
@@ -78,8 +78,8 @@ public class ALUImpl implements ALU {
     public int addWords(int word1, int word2) {
         int result = (word1 + word2) & 0xFFFF;
         registers.setFlag(Flag.SUBTRACTION, false);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryWordAddition(word1, word2));
-        registers.setFlag(Flag.CARRY, BitUtils.isCarryWordAddition(word1, word2));
+        registers.setFlag(Flag.HALF_CARRY, (word1 & 0xFFF) + (word2 & 0xFFF) > 0xFFF);
+        registers.setFlag(Flag.CARRY, word1 + word2 > 0xFFF);
 
         clock.addCycles(4);
         return result;
@@ -119,30 +119,35 @@ public class ALUImpl implements ALU {
 
     @Override
     public int addBytes(int byte1, int byte2, boolean addCarry) {
-        int byte3 = 0;
-        if (addCarry && registers.getFlag(Flag.CARRY)) byte3 = 1;
+        int carry = 0;
+        if (addCarry && registers.getFlag(Flag.CARRY)) carry = 1;
 
-        int result = (byte1 + byte2 + byte3) & 0xFF;
+        int result = (byte1 + byte2 + carry) & 0xFF;
         registers.setFlag(Flag.ZERO, result == 0);
         registers.setFlag(Flag.SUBTRACTION, false);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteAddition(byte1, byte2, byte3));
-        registers.setFlag(Flag.CARRY, BitUtils.isCarryByteAddition(byte1, byte2, byte3));
+        registers.setFlag(Flag.HALF_CARRY, (byte1 & 0x0F) + (byte2 & 0x0F) + (carry & 0x0F) > 0x0F);
+        registers.setFlag(Flag.CARRY, byte1 + byte2 + carry > 0xFF);
 
         return result;
     }
 
     @Override
     public int subBytes(int byte1, int byte2, boolean subCarry) {
-        int toSub = byte2;
-        if (subCarry && registers.getFlag(Flag.CARRY)) ++toSub;
+        int carry = 0;
+        if (subCarry && registers.getFlag(Flag.CARRY)) carry = 1;
 
-        int result = (byte1 - toSub) & 0XFF;
-        registers.setFlag(Flag.ZERO, result == 0);
+        int result = (byte1 - byte2 - carry);
+        registers.setFlag(Flag.ZERO, (result & 0xFF) == 0);
         registers.setFlag(Flag.SUBTRACTION, true);
-        registers.setFlag(Flag.HALF_CARRY, BitUtils.isHalfCarryByteSubtraction(byte1, toSub));
-        registers.setFlag(Flag.CARRY, BitUtils.isCarryByteSubtraction(byte1, toSub));
+        if (carry == 1) {
+            registers.setFlag(Flag.HALF_CARRY, ((byte1 ^ byte2 ^ (result & 0xff)) & (1 << 4)) != 0);
+            registers.setFlag(Flag.CARRY, result < 0);
+        } else {
+            registers.setFlag(Flag.HALF_CARRY, (0x0f & byte2) > (0x0f & byte1));
+            registers.setFlag(Flag.CARRY, byte2 > byte1);
+        }
 
-        return result;
+        return result & 0xFF;
     }
 
     @Override

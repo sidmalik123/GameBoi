@@ -2,8 +2,6 @@ package gpu;
 
 import com.google.inject.Inject;
 import core.BitUtils;
-import cpu.clock.AbstractClockObserver;
-import cpu.clock.Clock;
 import interrupts.Interrupt;
 import interrupts.InterruptManager;
 import mmu.MMU;

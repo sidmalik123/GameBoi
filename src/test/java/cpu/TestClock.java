@@ -1,8 +1,9 @@
 package cpu;
 
-import cpu.clock.AbstractClockObserver;
 import cpu.clock.Clock;
 import cpu.clock.ClockImpl;
+import cpu.clock.ClockObserver;
+import mmu.TestCartridge;
 import org.junit.Test;
 
 public class TestClock {
@@ -10,11 +11,7 @@ public class TestClock {
     private Clock clock = new ClockImpl();
     private int numObserversNotified;
 
-    private class MockClockObserver extends AbstractClockObserver {
-
-        public MockClockObserver(Clock clock) {
-            super(clock);
-        }
+    private class MockClockObserver implements ClockObserver {
 
         @Override
         public void handleClockIncrement(int increment) {
@@ -29,9 +26,13 @@ public class TestClock {
 
     @Test
     public void testClock() {
-        MockClockObserver mock1 = new MockClockObserver(clock);
-        MockClockObserver mock2 = new MockClockObserver(clock);
-        MockClockObserver mock3 = new MockClockObserver(clock);
+        MockClockObserver mock1 = new MockClockObserver();
+        MockClockObserver mock2 = new MockClockObserver();
+        MockClockObserver mock3 = new MockClockObserver();
+
+        clock.attach(mock1);
+        clock.attach(mock2);
+        clock.attach(mock3);
 
         clock.addCycles(10);
 

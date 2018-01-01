@@ -54,7 +54,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x04: incByteRegister(Register.B); break;
             case 0x05: decByteRegister(Register.B); break;
             case 0x06: registers.write(Register.B, getImmediateByte()); break;
-            case 0x07: rotateByteRegisterLeft(Register.A, false); break;
+            case 0x07: rotateByteRegisterLeft(Register.A, false); registers.setFlag(Flag.ZERO, false); break;
             case 0x08: loadWordIntoMemory(getImmediateWord(), registers.read(Register.SP)); break;
             case 0x09: addWords(Register.HL, Register.BC); break;
             case 0x0A: registers.write(Register.A, memoryAccessor.read(registers.read(Register.BC))); break;
@@ -62,7 +62,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x0C: incByteRegister(Register.C); break;
             case 0x0D: decByteRegister(Register.C); break;
             case 0x0E: registers.write(Register.C, getImmediateByte()); break;
-            case 0x0F: rotateByteRegisterRight(Register.A, false); break;
+            case 0x0F: rotateByteRegisterRight(Register.A, false); registers.setFlag(Flag.ZERO, false); break;
             case 0x10: isStopped = true; break;
             case 0x11: loadRegisterWithImmediateWord(Register.DE); break;
             case 0x12: memoryAccessor.write(registers.read(Register.DE), registers.read(Register.A)); break;
@@ -70,7 +70,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x14: incByteRegister(Register.D); break;
             case 0x15: decByteRegister(Register.D); break;
             case 0x16: loadRegisterWithImmediateByte(Register.D); break;
-            case 0x17: rotateByteRegisterLeft(Register.A, true); break;
+            case 0x17: rotateByteRegisterLeft(Register.A, true); registers.setFlag(Flag.ZERO, false); break;
             case 0x18: jr(true); break;
             case 0x19: addWords(Register.HL, Register.DE); break;
             case 0x1A: registers.write(Register.A, memoryAccessor.read(registers.read(Register.DE))); break;
@@ -78,7 +78,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x1C: incByteRegister(Register.E); break;
             case 0x1D: decByteRegister(Register.E); break;
             case 0x1E: loadRegisterWithImmediateByte(Register.E); break;
-            case 0x1F: rotateByteRegisterRight(Register.A, true); break;
+            case 0x1F: rotateByteRegisterRight(Register.A, true); registers.setFlag(Flag.ZERO, false); break;
             case 0x20: jr(!registers.getFlag(Flag.ZERO)); break; // NZ
             case 0x21: loadRegisterWithImmediateWord(Register.HL); break;
             case 0x22: memoryAccessor.write(registers.read(Register.HL), registers.read(Register.A)); incWordRegister(Register.HL); break;
@@ -181,7 +181,7 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0x83: addA(registers.read(Register.E), false); break;
             case 0x84: addA(registers.read(Register.H), false); break;
             case 0x85: addA(registers.read(Register.L), false); break;
-            case 0x86: addA(memoryAccessor.read(registers.read(Register.HL)), false);
+            case 0x86: addA(memoryAccessor.read(registers.read(Register.HL)), false); break;
             case 0x87: addA(registers.read(Register.A), false); break;
             case 0x88: addA(registers.read(Register.B), true); break;
             case 0x89: addA(registers.read(Register.C), true); break;
@@ -241,15 +241,15 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xBF: cpA(registers.read(Register.A)); break;
             case 0xC0: if (!registers.getFlag(Flag.ZERO)) ret(); break;
             case 0xC1: registers.write(Register.BC, popWordFromStack()); break;
-            case 0xC2: if (!registers.getFlag(Flag.ZERO)) jp(); break;
-            case 0xC3: jp(); break;
+            case 0xC2: jp(!registers.getFlag(Flag.ZERO)); break; // NZ
+            case 0xC3: jp(true); break;
             case 0xC4: call(!registers.getFlag(Flag.ZERO)); break;
             case 0xC5: pushWordToStack(registers.read(Register.BC)); break;
             case 0xC6: addA(getImmediateByte(), false); break;
             case 0xC7: rst(0x00); break;
             case 0xC8: if (registers.getFlag(Flag.ZERO)) ret(); break;
             case 0xC9: ret(); break;
-            case 0xCA: if (registers.getFlag(Flag.ZERO)) jp(); break;
+            case 0xCA: jp(registers.getFlag(Flag.ZERO)); break;
             case 0xCB: executeExtendedOpcode(getImmediateByte()); break;
             case 0xCC: call(registers.getFlag(Flag.ZERO)); break;
             case 0xCD: call(true); break;
@@ -257,14 +257,14 @@ public class InstructionExecutorImpl implements InstructionExecutor {
             case 0xCF: rst(0x08); break;
             case 0xD0: if (!registers.getFlag(Flag.CARRY)) ret(); break;
             case 0xD1: registers.write(Register.DE, popWordFromStack()); break;
-            case 0xD2: if (!registers.getFlag(Flag.CARRY)) jp(); break;
+            case 0xD2: jp(!registers.getFlag(Flag.CARRY)); break;
             case 0xD4: call(!registers.getFlag(Flag.CARRY)); break;
             case 0xD5: pushWordToStack(registers.read(Register.DE)); break;
             case 0xD6: subA(getImmediateByte(), false); break;
             case 0xD7: rst(0x10); break;
             case 0xD8: if (registers.getFlag(Flag.CARRY)) ret(); break;
             case 0xD9: registers.write(Register.PC, popWordFromStack()); interruptManager.setInterruptsEnabled(true); break;
-            case 0xDA: if (registers.getFlag(Flag.CARRY)) jp(); break;
+            case 0xDA: jp(registers.getFlag(Flag.CARRY)); break;
             case 0xDC: call(registers.getFlag(Flag.CARRY)); break;
             case 0xDE: subA(getImmediateByte(), true); break;
             case 0xDF: rst(0x18); break;
@@ -741,8 +741,9 @@ public class InstructionExecutorImpl implements InstructionExecutor {
         registers.write(Register.SP, sp);
     }
 
-    private void jp() {
-        registers.write(Register.PC, getImmediateWord());
+    private void jp(boolean doJump) {
+        int jumpAddress = getImmediateWord();
+        if (doJump) registers.write(Register.PC, jumpAddress);
     }
 
     private void call(boolean doCall) {
