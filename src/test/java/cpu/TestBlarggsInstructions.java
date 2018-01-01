@@ -15,13 +15,13 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class InstructionTests extends BlarggsTest {
+public class TestBlarggsInstructions extends BlarggsTest {
 
     private MMU mmu;
     private List<String> testNames;
     private List<String> knownFailures;
 
-    public InstructionTests() {
+    public TestBlarggsInstructions() {
         testNames = new ArrayList<>(11);
         testNames.add("01-special.gb");
         testNames.add("02-interrupts.gb");
