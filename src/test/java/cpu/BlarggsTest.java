@@ -1,4 +1,4 @@
-package blarrgs_tests;
+package cpu;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;

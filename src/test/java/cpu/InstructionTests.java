@@ -1,4 +1,4 @@
-package blarrgs_tests;
+package cpu;
 
 import com.google.inject.Injector;
 import cpu.clock.Clock;
@@ -45,7 +45,7 @@ public class InstructionTests extends BlarggsTest {
     private String runTest(String testName) throws IOException {
         Injector blarggsInjector = getNewInjector();
         mmu = blarggsInjector.getInstance(MMU.class);
-        mmu.load(new CartridgeImpl("roms/cpu_instrs/individual/" + testName));
+        mmu.load(new CartridgeImpl("src/test/java/cpu/cpu_instrs/individual/" + testName));
         InstructionExecutor instructionExecutor = blarggsInjector.getInstance(InstructionExecutor.class);
         Clock clock = blarggsInjector.getInstance(Clock.class);
         clock.attach(blarggsInjector.getInstance(GPU.class));
@@ -64,12 +64,16 @@ public class InstructionTests extends BlarggsTest {
         for (String testName: testNames) {
             if (knownFailures.contains(testName)) continue; // skip this for now
 
-            String testOutput = runTest(testName);
-            if (testOutput.contains("Passed")) {
-                System.out.println("Test " + testName + " passed, test output " + testOutput);
-                assertTrue(true);
-            } else {
-                System.out.println("Test: " + testName + " failed with output " + testOutput);
+            try {
+                String testOutput = runTest(testName);
+                if (testOutput.contains("Passed")) {
+                    System.out.println("Test " + testName + " passed, test output " + testOutput);
+                    assertTrue(true);
+                } else {
+                    System.out.println("Test: " + testName + " failed with output " + testOutput);
+                    fail();
+                }
+            } catch (IOException ex) {
                 fail();
             }
         }
