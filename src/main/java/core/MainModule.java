@@ -21,6 +21,8 @@ import interrupts.InterruptManager;
 import interrupts.InterruptManagerImpl;
 import mmu.MMU;
 import mmu.MMUImpl;
+import timers.Timer;
+import timers.TimerImpl;
 
 /**
  * This is the module that has all the real implementations
@@ -46,5 +48,8 @@ public class MainModule extends AbstractModule {
 
         /* MMU */
         bind(MMU.class).to(MMUImpl.class);
+
+        /* Timers */
+        bind(Timer.class).to(TimerImpl.class);
     }
 }

@@ -7,6 +7,7 @@ import mmu.cartridge.Cartridge;
  * */
 public interface MMU {
 
+    /* Different memory regions */
     int EXTERNAL_RAM_START_ADDRESS = 0xA000;
     int EXTERNAL_RAM_END_ADDRESS = 0xBFFF;
 
@@ -34,6 +35,7 @@ public interface MMU {
     int SPRITE_START_ADDRESS = 0xFE00;
     int SPRITE_END_ADDRESS = 0xFE9F;
 
+    /* GPU */
     int LCD_CONTROL_REGISTER_ADDRESS = 0XFF40;
     int LCD_STATUS_REGISTER_ADDRESS = 0xFF41;
     int BACKGROUND_SCROLL_Y_ADDRESS = 0xFF42;
@@ -46,6 +48,11 @@ public interface MMU {
     int SPRITE_PALETTE2_ADDRESS = 0xFF49;
     int WINDOW_SCROLL_X_ADDRESS = 0xFF4A;
     int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
+
+    /* Timer */
+    int TIMER_VALUE_ADDRESS = 0xFF05;
+    int TIMER_RESET_VALUE_ADDRESS = 0xFF06;
+    int TIMER_CONTROLS_ADDRESS = 0xFF07;
 
     int FINAL_MEMORY_ADDRESS = 0xFFFF;
 

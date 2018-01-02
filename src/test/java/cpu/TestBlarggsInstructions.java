@@ -78,4 +78,20 @@ public class TestBlarggsInstructions extends BlarggsTest {
             }
         }
     }
+
+    @Test
+    public void testInterrupts() {
+        try {
+            String testOutput = runTest(testNames.get(1));
+            if (testOutput.contains("Passed")) {
+                System.out.println("Test " + " passed, test output " + testOutput);
+                assertTrue(true);
+            } else {
+                System.out.println("Test: " + " failed with output " + testOutput);
+                fail();
+            }
+        } catch (IOException ex) {
+            fail();
+        }
+    }
 }
