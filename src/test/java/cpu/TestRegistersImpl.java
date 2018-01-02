@@ -113,4 +113,19 @@ public class TestRegistersImpl {
         registers.write(Register.F, 0xC0);
         assertTrue(registers.getFlag(Flag.ZERO));
     }
+
+    @Test
+    public void testInitialRegisterValues() {
+        assert (registers.read(Register.PC) == 0x100);
+        assert (registers.read(Register.AF) == 0x01B0);
+        assert (registers.read(Register.BC) == 0x0013);
+        assert (registers.read(Register.DE) == 0x00D8);
+        assert (registers.read(Register.HL) == 0x014D);
+        assert (registers.read(Register.SP) == 0xFFFE);
+
+        assertTrue(registers.getFlag(Flag.ZERO));
+        assertFalse(registers.getFlag(Flag.SUBTRACTION));
+        assertTrue(registers.getFlag(Flag.HALF_CARRY));
+        assertTrue(registers.getFlag(Flag.CARRY));
+    }
 }
