@@ -20,6 +20,7 @@ public class GPUImpl implements GPU {
     private MMU mmu;
 
     private static final int LAST_VISIBLE_LINE = GPU.HEIGHT - 1;
+    private static final int LAST_INVISIBLE_LINE = LAST_VISIBLE_LINE + 10;
     private static final int LCD_ENABLED_BIT = 7;
     private static final int BACKGROUND_ENABLED_BIT = 0;
     private static final int BACKGROUND_TILE_ID_BIT = 3;
@@ -71,14 +72,19 @@ public class GPUImpl implements GPU {
                 break;
             case VBLANK:
                 if (numCyclesInCurrMode >= currMode.getNumCyclesToSpend()) { // end of vblank, go to top
-                    setCurrLineNum(0);
-                    setCurrMode(GPUMode.ACCESSING_OAM, true);
+                    setCurrLineNum(getCurrLineNum() + 1);
+                    if (getCurrLineNum() > LAST_INVISIBLE_LINE) {
+                        setCurrLineNum(0);
+                        setCurrMode(GPUMode.ACCESSING_OAM, true);
+                    } else {
+                        numCyclesInCurrMode = 0;
+                    }
                 }
         }
     }
 
     private void renderCurrLine() {
-        if (true || isBackgroundEnabled()) {
+        if (isBackgroundEnabled()) {
             final int scrollY = getScrollY();
             final int scrollX = getScrollX();
 

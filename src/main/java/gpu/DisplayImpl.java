@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 public class DisplayImpl extends JPanel implements Display {
 
     private final BufferedImage img;
-    private static final int SCALE = 3;
+    private static final int SCALE = 2;
 
     public DisplayImpl() {
         img = new BufferedImage(GPU.WIDTH * SCALE, GPU.HEIGHT * SCALE, BufferedImage.TYPE_INT_RGB);

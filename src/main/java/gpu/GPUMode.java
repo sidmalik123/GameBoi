@@ -56,7 +56,7 @@ enum GPUMode {
     }, VBLANK {
         @Override
         public int getNumCyclesToSpend() {
-            return 4560;
+            return 456;
         }
 
         @Override

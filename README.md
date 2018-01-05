@@ -48,6 +48,7 @@ The Blargg's test ROMs are used for testing the compatibility. These are run on 
 
 ### Screenshots (more to follow)
 ![GameBoy Boot](screenshots/screenshot_gameboy_boot.png)
+![Mario](screenshots/mario-screenshot.png)
 
 ### Resources
 
