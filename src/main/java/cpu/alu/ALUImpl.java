@@ -264,4 +264,18 @@ public class ALUImpl implements ALU {
         clock.addCycles(4);
         return result & 0xffff;
     }
+
+    @Override
+    public void SCF() {
+        registers.setFlag(Flag.CARRY, true);
+        registers.setFlag(Flag.HALF_CARRY, false);
+        registers.setFlag(Flag.SUBTRACTION, false);
+    }
+
+    @Override
+    public void CCF() {
+        registers.setFlag(Flag.CARRY, !registers.getFlag(Flag.CARRY)); // complement
+        registers.setFlag(Flag.SUBTRACTION, false);
+        registers.setFlag(Flag.HALF_CARRY, false);
+    }
 }

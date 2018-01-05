@@ -109,4 +109,8 @@ public interface ALU {
      * Add signedByte to word
      * */
     int addSignedByteToWord(int word, int signedByte);
+
+    void SCF();
+
+    void CCF();
 }
