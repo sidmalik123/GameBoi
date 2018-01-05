@@ -13,7 +13,7 @@ Build the emulator with `mvn clean package`. This will create a jar file in the 
 
 **CPU**: All CPU instructions implemented
 
-**Memory**: Support for 32KB ROMs, without mappers, only
+**Memory**: Support for 32KB ROMs, without mappers
 
 **GPU**: Background rendering with palette swapping
 
@@ -57,4 +57,4 @@ The Blargg's test ROMs are used for testing the compatibility. These are run on 
 * [Pan Docs](http://bgb.bircd.org/pandocs.htm)
 * [The Ultimate GameBoy Talk](https://www.youtube.com/watch?v=HyzD8pNlpwI)
 * [Imran Nazar](http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-The-CPU)
-* [codesilinger](http://www.codeslinger.co.uk/pages/projects/gameboy.html)
+* [codeslinger](http://www.codeslinger.co.uk/pages/projects/gameboy.html)
