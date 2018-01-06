@@ -40,11 +40,10 @@ The Blargg's test ROMs are used for testing the compatibility. These are run on 
 
 ### Next Steps
 
-1. Adding timers support
+1. Joypad support
 2. Adding sprite rendering
-3. Joypad support
-4. Implementing memory banking
-5. Sound support
+3. Implementing memory banking
+4. Sound support
 
 ### Screenshots (more to follow)
 ![GameBoy Boot](screenshots/screenshot_gameboy_boot.png)
