@@ -12,7 +12,7 @@ public class CartridgeImpl implements Cartridge {
 
     private int[] data;
 
-    public CartridgeImpl(String fileLocation) throws IOException {
+    public CartridgeImpl(String fileLocation) {
         // init data
         File file = new File(fileLocation);
         try (InputStream inputStream = FileUtils.openInputStream(file)) {
@@ -21,6 +21,8 @@ public class CartridgeImpl implements Cartridge {
             for (int i = 0; i < byteArr.length; ++i) {
                 data[i] = byteArr[i] & 0xFF;
             }
+        } catch (IOException e) {
+            throw new CartridgeReadException("Error reading cartridge from location: " + fileLocation, e);
         }
     }
 

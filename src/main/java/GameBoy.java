@@ -1,4 +1,5 @@
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
 import core.MainModule;
 import cpu.CPU;
@@ -12,14 +13,25 @@ import java.io.IOException;
 
 public class GameBoy {
 
+    private MMU mmu;
+    private CPU cpu;
+
+    @Inject
+    public GameBoy(CPU cpu, MMU mmu, Clock clock, GPU gpu, Timer timer) {
+        this.cpu = cpu;
+        this.mmu = mmu;
+        clock.attach(gpu);
+        clock.attach(timer);
+    }
+
+    private void run(String gameLocation) {
+        mmu.load(new CartridgeImpl(gameLocation));
+        cpu.run();
+    }
+
     public static void main(String[] args) throws IOException {
         Injector mainInjector = Guice.createInjector(new MainModule());
-        MMU mmu = mainInjector.getInstance(MMU.class);
-        mmu.load(new CartridgeImpl("roms/Dr. Mario.gb"));
-        CPU cpu = mainInjector.getInstance(CPU.class);
-        Clock clock = mainInjector.getInstance(Clock.class);
-        clock.attach(mainInjector.getInstance(GPU.class));
-        clock.attach(mainInjector.getInstance(Timer.class));
-        cpu.run();
+        GameBoy gameBoy = mainInjector.getInstance(GameBoy.class);
+        gameBoy.run("roms/Dr. Mario.gb");
     }
 }
