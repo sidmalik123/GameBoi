@@ -19,13 +19,11 @@ public class TimerImpl implements Timer {
     private static final int NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ0 = 1024; // Freq = 4096
     private static final int NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ1 = 16; // Freq = 262144
     private static final int NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ2 = 64; // Freq = 65536
-    private static final int NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ3 = 256; // Freq = 16384
+    private static final int NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ3 = 256; // Freq = 16382
     private static final int MAX_TIMER_VALUE = 255;
 
     private int numCyclesSinceLastIncrement;
     private int numCyclesToIncrementAfter;
-
-    private int currFreqNum; // value from 0 to 3
 
     @Inject
     public TimerImpl(MMU mmu, InterruptManager interruptManager) {
@@ -37,16 +35,16 @@ public class TimerImpl implements Timer {
     @Override
     public void handleClockIncrement(int increment) {
         if (isClockEnabled()) {
-            setNumCyclesToIncrementAfter(); // check if value has been changed
             numCyclesSinceLastIncrement += increment;
             if (numCyclesSinceLastIncrement >= numCyclesToIncrementAfter) {
                 numCyclesSinceLastIncrement = 0;
+                setNumCyclesToIncrementAfter(); // check after every increment
 
                 if (getCurrentTimerValue() == MAX_TIMER_VALUE) {
                     mmu.write(MMU.TIMER_VALUE_ADDRESS, mmu.read(MMU.TIMER_RESET_VALUE_ADDRESS)); // reset timer
                     interruptManager.requestInterrupt(Interrupt.TIMER);
                 } else {
-                    mmu.write(MMU.TIMER_VALUE_ADDRESS, getCurrentTimerValue() + 1); // increment timer
+                    mmu.write(MMU.TIMER_VALUE_ADDRESS, mmu.read(MMU.TIMER_VALUE_ADDRESS) + 1); // increment timer
                 }
             }
         }
@@ -57,9 +55,7 @@ public class TimerImpl implements Timer {
     }
 
     private void setNumCyclesToIncrementAfter() {
-        int lastestFrequencyNum = mmu.read(MMU.TIMER_CONTROLS_ADDRESS) & 0b11;
-        if (lastestFrequencyNum == currFreqNum) return; // if same then don't do anything
-        switch (lastestFrequencyNum) {
+        switch (mmu.read(MMU.TIMER_CONTROLS_ADDRESS) & 0b11) {
             case 0: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ0; break;
             case 1: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ1; break;
             case 2: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ2; break;
