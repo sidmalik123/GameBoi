@@ -93,11 +93,11 @@ public class GPUImpl implements GPU {
             for (int pixel = 0; pixel < GPU.WIDTH; ++pixel) {
                 int xPos = scrollX + pixel;
                 int tileNum = ((yPos/8) * 32) + (xPos/8);
-                int[] tileData = getTileData(tileNum);
                 int lineInTile = yPos % 8;
                 int pixelNum = xPos % 8;
-                int highBit = (tileData[2*lineInTile + 1] >> (7 - pixelNum)) & 0b1;
-                int lowBit = (tileData[2*lineInTile] >> (7 - pixelNum)) & 0b1;
+                int[] tileData = getTileData(tileNum, lineInTile);
+                int highBit = (tileData[1] >> (7 - pixelNum)) & 0b1;
+                int lowBit = (tileData[0] >> (7 - pixelNum)) & 0b1;
                 int colorNum = ((highBit << 1) | lowBit) & 0b11;
                 display.setPixel(pixel, getCurrLineNum(), getPaletteColor(colorNum));
             }
@@ -180,8 +180,8 @@ public class GPUImpl implements GPU {
     }
 
     private int getTileId(int tileNum) {
-//        if (tileNum < 0 || tileNum > 1023)
-//            throw new IllegalArgumentException("Invalid Tile Num: " + tileNum);
+        if (tileNum < 0 || tileNum > 1023)
+            throw new IllegalArgumentException("Invalid Tile Num: " + tileNum);
         int tileIdStartAddress;
         final int lcdControl = mmu.read(LCD_CONTROL_REGISTER_ADDRESS);
         if (BitUtils.isBitSet(lcdControl, BACKGROUND_TILE_ID_BIT)) {
@@ -192,8 +192,8 @@ public class GPUImpl implements GPU {
         return mmu.read(tileIdStartAddress + tileNum);
     }
 
-    private int[] getTileData(int tileNum) {
-        int[] tileData = new int[16];
+    private int[] getTileData(int tileNum, int lineNum) {
+        int[] tileData = new int[2];
         int tileDataStartAddress = getTileDataStartAddress();
         int tileId = getTileId(tileNum);
         int tileStartAddress;
@@ -203,9 +203,8 @@ public class GPUImpl implements GPU {
             int adjustedTileId = (byte) tileId + 128;
             tileStartAddress = tileDataStartAddress + (adjustedTileId * 16);
         }
-        for (int i = 0; i < 16; ++i) {
-            tileData[i] = mmu.read(tileStartAddress + i);
-        }
+        tileData[0] = mmu.read(tileStartAddress + 2*lineNum);
+        tileData[1] = mmu.read(tileStartAddress + (2*lineNum + 1));
         return tileData;
     }
 
