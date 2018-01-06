@@ -20,7 +20,7 @@
 .word reset
 .word gbs_play
 .word std_stack
-.byte 0,0      ; timer
+.byte 0,0      ; timers
 .ds $60,0
 load_addr:
 

@@ -32,4 +32,9 @@ public class MockMMU implements MMU {
     public void setCurrLineNum(int lineNum) {
 
     }
+
+    @Override
+    public void setDividerRegisterValue(int val) {
+
+    }
 }

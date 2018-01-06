@@ -180,8 +180,8 @@ public class GPUImpl implements GPU {
     }
 
     private int getTileId(int tileNum) {
-        if (tileNum < 0 || tileNum > 1023)
-            throw new IllegalArgumentException("Invalid Tile Num: " + tileNum);
+//        if (tileNum < 0 || tileNum > 1023)
+//            throw new IllegalArgumentException("Invalid Tile Num: " + tileNum);
         int tileIdStartAddress;
         final int lcdControl = mmu.read(LCD_CONTROL_REGISTER_ADDRESS);
         if (BitUtils.isBitSet(lcdControl, BACKGROUND_TILE_ID_BIT)) {

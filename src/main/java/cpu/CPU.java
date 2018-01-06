@@ -1,12 +1,12 @@
 package cpu;
 
 /**
- * Interface to represent a GameBoy CPU
+ * Executes an instruction
  * */
 public interface CPU {
 
     /**
-     *  Runs the CPU so that it starts executing instructions
+     * Executes the next instruction
      * */
-    void run();
+    void executeInstruction();
 }

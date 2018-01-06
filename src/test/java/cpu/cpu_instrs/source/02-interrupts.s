@@ -59,7 +59,7 @@ interrupt_addr:
      wreg TAC,$05
      wreg TIMA,0
      wreg IF,0
-     halt      ; timer interrupt will exit halt
+     halt      ; timers interrupt will exit halt
      nop       ; avoids DMG bug
      lda  IF
      and  $04

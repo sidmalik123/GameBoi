@@ -46,7 +46,8 @@ public interface MMU {
     int WINDOW_SCROLL_X_ADDRESS = 0xFF4A;
     int WINDOW_SCROLL_Y_ADDRESS = 0xFF4B;
 
-    /* Timer */
+    /* Timers */
+    int DIVIDER_REGISTER_ADDRESS = 0xFF04;
     int TIMER_VALUE_ADDRESS = 0xFF05;
     int TIMER_RESET_VALUE_ADDRESS = 0xFF06;
     int TIMER_CONTROLS_ADDRESS = 0xFF07;
@@ -77,4 +78,10 @@ public interface MMU {
      * this is a way for the emulator to set the curr line
      * */
     void setCurrLineNum(int lineNum);
+
+    /**
+     * Any writes to DIVIDER_REGISTER_ADDRESS reset its value to 0,
+     * this is a way for the emulator to set the curr line
+     * */
+    void setDividerRegisterValue(int val);
 }

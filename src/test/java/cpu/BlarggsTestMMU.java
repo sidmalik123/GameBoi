@@ -44,6 +44,11 @@ public class BlarggsTestMMU implements MMU {
         mmu.setCurrLineNum(lineNum);
     }
 
+    @Override
+    public void setDividerRegisterValue(int val) {
+        mmu.setDividerRegisterValue(val);
+    }
+
     public String getTestOutput() {
         return stringBuilder.toString();
     }

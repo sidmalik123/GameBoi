@@ -44,6 +44,10 @@ public class MMUImpl implements MMU {
 
     @Override
     public void write(int address, int data) {
+        if (address == 0xFF02 && data == 0x81) { // printing logic
+            char c = (char) read(0xFF01);
+            System.out.print(c);
+        }
         if (isIn(RESTRICTED_MEMORY_START_ADDRESS, RESTRICTED_MEMORY_END_ADDRESS, address)) return;
 
         if (isReadOnly(address)) return;
@@ -74,6 +78,11 @@ public class MMUImpl implements MMU {
     @Override
     public void setCurrLineNum(int lineNum) {
         memory[CURR_LINE_NUM_ADDRESS] = lineNum;
+    }
+
+    @Override
+    public void setDividerRegisterValue(int val) {
+        memory[DIVIDER_REGISTER_ADDRESS] = val;
     }
 
     private void copyMemory(int sourceAddress, int destinationAddress, int numBytes) {

@@ -7,7 +7,7 @@ import cpu.clock.Clock;
 import gpu.GPU;
 import mmu.MMU;
 import mmu.cartridge.CartridgeImpl;
-import timers.Timer;
+import timers.Timers;
 
 import java.io.IOException;
 
@@ -17,21 +17,23 @@ public class GameBoy {
     private CPU cpu;
 
     @Inject
-    public GameBoy(CPU cpu, MMU mmu, Clock clock, GPU gpu, Timer timer) {
+    public GameBoy(CPU cpu, MMU mmu, Clock clock, GPU gpu, Timers timers) {
         this.cpu = cpu;
         this.mmu = mmu;
         clock.attach(gpu);
-        clock.attach(timer);
+        clock.attach(timers);
     }
 
     private void run(String gameLocation) {
         mmu.load(new CartridgeImpl(gameLocation));
-        cpu.run();
+        while (true) {
+            cpu.executeInstruction();
+        }
     }
 
     public static void main(String[] args) throws IOException {
         Injector mainInjector = Guice.createInjector(new MainModule());
         GameBoy gameBoy = mainInjector.getInstance(GameBoy.class);
-        gameBoy.run("roms/Dr. Mario.gb");
+        gameBoy.run("roms/instr_timing.gb");
     }
 }

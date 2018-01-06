@@ -40,7 +40,7 @@ The Blargg's test ROMs are used for testing the compatibility. These are run on 
 
 ### Next Steps
 
-1. Adding timer support
+1. Adding timers support
 2. Adding sprite rendering
 3. Joypad support
 4. Implementing memory banking

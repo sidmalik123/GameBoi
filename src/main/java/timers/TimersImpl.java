@@ -7,9 +7,9 @@ import interrupts.InterruptManager;
 import mmu.MMU;
 
 /**
- * Concrete class for Timer
+ * Concrete class for Timers
  * */
-public class TimerImpl implements Timer {
+public class TimersImpl implements Timers {
 
     private MMU mmu;
     private InterruptManager interruptManager;
@@ -22,11 +22,15 @@ public class TimerImpl implements Timer {
     private static final int NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ3 = 256; // Freq = 16382
     private static final int MAX_TIMER_VALUE = 255;
 
-    private int numCyclesSinceLastIncrement;
-    private int numCyclesToIncrementAfter;
+    private static final int NUM_CYCLES_TO_INCREMENT_DIVIDER_AFTER = 256; // has only 1 freq.
+
+    private int numCyclesSinceLastTimerIncrement;
+    private int numCyclesToIncrementTimerAfter;
+
+    private int numCyclesSinceLastDividerIncrement;
 
     @Inject
-    public TimerImpl(MMU mmu, InterruptManager interruptManager) {
+    public TimersImpl(MMU mmu, InterruptManager interruptManager) {
         this.mmu = mmu;
         this.interruptManager = interruptManager;
         setNumCyclesToIncrementAfter();
@@ -34,10 +38,12 @@ public class TimerImpl implements Timer {
 
     @Override
     public void handleClockIncrement(int increment) {
+        updateDividerRegister(increment);
+
         if (isClockEnabled()) {
-            numCyclesSinceLastIncrement += increment;
-            if (numCyclesSinceLastIncrement >= numCyclesToIncrementAfter) {
-                numCyclesSinceLastIncrement = 0;
+            numCyclesSinceLastTimerIncrement += increment;
+            if (numCyclesSinceLastTimerIncrement >= numCyclesToIncrementTimerAfter) {
+                numCyclesSinceLastTimerIncrement = 0;
                 setNumCyclesToIncrementAfter(); // check after every increment
 
                 if (getCurrentTimerValue() == MAX_TIMER_VALUE) {
@@ -50,16 +56,29 @@ public class TimerImpl implements Timer {
         }
     }
 
+    private void updateDividerRegister(int increment) {
+        numCyclesSinceLastDividerIncrement += increment;
+        int currDividerVal = mmu.read(MMU.DIVIDER_REGISTER_ADDRESS);
+        if (numCyclesSinceLastDividerIncrement >= NUM_CYCLES_TO_INCREMENT_DIVIDER_AFTER) {
+            numCyclesSinceLastDividerIncrement = 0;
+            if (currDividerVal == 255) {
+                mmu.setDividerRegisterValue(0); // reset
+            } else {
+                mmu.setDividerRegisterValue(++currDividerVal); // increment
+            }
+        }
+    }
+
     private boolean isClockEnabled() {
         return BitUtils.isBitSet(mmu.read(MMU.TIMER_CONTROLS_ADDRESS), CLOCK_ENABLED_BIT);
     }
 
     private void setNumCyclesToIncrementAfter() {
         switch (mmu.read(MMU.TIMER_CONTROLS_ADDRESS) & 0b11) {
-            case 0: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ0; break;
-            case 1: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ1; break;
-            case 2: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ2; break;
-            case 3: numCyclesToIncrementAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ3; break;
+            case 0: numCyclesToIncrementTimerAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ0; break;
+            case 1: numCyclesToIncrementTimerAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ1; break;
+            case 2: numCyclesToIncrementTimerAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ2; break;
+            case 3: numCyclesToIncrementTimerAfter = NUM_CYLES_TO_INCREMENT_AFTER_FOR_FREQ3; break;
         }
     }
 

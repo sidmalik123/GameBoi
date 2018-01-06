@@ -3,8 +3,6 @@ package cpu;
 import cpu.alu.ALUImpl;
 import cpu.clock.Clock;
 import cpu.clock.ClockImpl;
-import cpu.instructions.InstructionExecutor;
-import cpu.instructions.InstructionExecutorImpl;
 import cpu.registers.Flag;
 import cpu.registers.Register;
 import cpu.registers.Registers;
@@ -14,7 +12,6 @@ import interrupts.InterruptManager;
 import interrupts.InterruptManagerImpl;
 import mmu.MMU;
 import mmu.MockMMU;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,7 +27,7 @@ import static org.junit.Assert.assertTrue;
  * */
 public class TestInstructionExecution {
 
-    private InstructionExecutor instructionExecutor;
+    private CPU CPU;
     private Registers registers;
     private Clock clock;
     private MMU mmu;
@@ -42,7 +39,7 @@ public class TestInstructionExecution {
         registers = new RegistersImpl(clock);
         mmu = new MockMMU();
         interruptManager = new InterruptManagerImpl(mmu);
-        instructionExecutor = new InstructionExecutorImpl(new MemoryAccessorImpl(mmu, clock), registers, clock,
+        CPU = new CPUImpl(new MemoryAccessorImpl(mmu, clock), registers, clock,
                 new ALUImpl(registers, clock), interruptManager);
     }
 
@@ -77,7 +74,7 @@ public class TestInstructionExecution {
 
         registers.write(Register.SP, 0x1000);
         mmu.write(0x00, 0xC1);
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.BC) == 0x3355);
         assert (registers.read(Register.SP) == 0x1002);
@@ -89,7 +86,7 @@ public class TestInstructionExecution {
         mmu.write(1, 0x20);
         mmu.write(2, 0x15);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.PC) == 0x1520);
     }
@@ -100,7 +97,7 @@ public class TestInstructionExecution {
         mmu.write(1, 0x33);
         mmu.write(2, 0xFF);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.BC) == 0xFF33);
     }
@@ -116,7 +113,7 @@ public class TestInstructionExecution {
         mmu.write(0x1A48, 0x35);
         mmu.write(0x1A49, 0x21);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (mmu.read(0x3001) == 0x1A);
         assert (mmu.read(0x3000) == 0x4A);
@@ -129,7 +126,7 @@ public class TestInstructionExecution {
         registers.write(Register.SP, 0x3002);
         mmu.write(0, 0xC7);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.PC) == 0x00);
         assert (mmu.read(0x3001) == 0x00);
@@ -145,7 +142,7 @@ public class TestInstructionExecution {
         mmu.write(0x2000, 0xB5);
         mmu.write(0x2001, 0x18);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.SP) == 0x2002);
         assert (registers.read(Register.PC) == 0x18B5);
@@ -157,7 +154,7 @@ public class TestInstructionExecution {
         mmu.write(0x01, 0x20);
         registers.write(Register.B, 0b10110001);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.getFlag(Flag.CARRY));
         assert (registers.read(Register.B) == 0b01100010);
@@ -169,7 +166,7 @@ public class TestInstructionExecution {
         mmu.write(0x01, 0x28);
         registers.write(Register.B, 0b10111000);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (!registers.getFlag(Flag.CARRY));
         assert (registers.read(Register.B) == 0b11011100);
@@ -181,7 +178,7 @@ public class TestInstructionExecution {
         mmu.write(0x01, 0x38);
         registers.write(Register.B, 0b10001111);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.getFlag(Flag.CARRY));
         assert (registers.read(Register.B) == 0b01000111);
@@ -193,7 +190,7 @@ public class TestInstructionExecution {
         registers.write(Register.AF, 0x2230);
         registers.write(Register.SP, 0x1007);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (mmu.read(0x1006) == 0x22);
         assert (mmu.read(0x1005) == 0x30);
@@ -208,7 +205,7 @@ public class TestInstructionExecution {
         interruptManager.setInterruptsEnabled(true);
         interruptManager.requestInterrupt(Interrupt.VBLANK);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.PC) == Interrupt.VBLANK.getServiceAddress());
         interruptManager.setInterruptsEnabled(true);
@@ -222,7 +219,7 @@ public class TestInstructionExecution {
         mmu.write(1, 0xAB);
         mmu.write(2, 0xAF);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (mmu.read(0xAFAB) == 0x47);
         assert (mmu.read(0xAFAB + 1) == 0xF3);
@@ -235,7 +232,7 @@ public class TestInstructionExecution {
         mmu.write(0x480, 0x18);
         mmu.write(0x481, 0xFA);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assertEquals(registers.read(Register.PC), 0x47C);
 
@@ -243,7 +240,7 @@ public class TestInstructionExecution {
         mmu.write(0x480, 0x18);
         mmu.write(0x481, 0x03);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assertEquals(registers.read(Register.PC), 0x485);
 
@@ -253,7 +250,7 @@ public class TestInstructionExecution {
         mmu.write(1, 0xfB);
         mmu.write(2, 0x14);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
         assertEquals(registers.read(Register.PC), 2);
 
     }
@@ -264,7 +261,7 @@ public class TestInstructionExecution {
         mmu.write(0, 0xFE);
         mmu.write(1, 0x3B);
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
         assertTrue(registers.getFlag(Flag.ZERO));
     }
 
@@ -272,11 +269,11 @@ public class TestInstructionExecution {
     public void testHalt() {
         mmu.write(0, 0x76); // halt instruction
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
         assertEquals(registers.read(Register.PC), 1);
 
         int oldCycles = clock.getTotalCycles();
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
         assertEquals(registers.read(Register.PC), 1); // pc stays the same
         assertEquals(clock.getTotalCycles(), oldCycles + 4); // Nop executed
     }
@@ -285,11 +282,11 @@ public class TestInstructionExecution {
     public void testStop() {
         mmu.write(0, 0x10); // stop instruction
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
         assertEquals(registers.read(Register.PC), 1);
 
         int oldCycles = clock.getTotalCycles();
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
         assertEquals(registers.read(Register.PC), 1); // pc stays the same
         assertEquals(clock.getTotalCycles(), oldCycles + 4); // Nop executed
     }
@@ -298,7 +295,7 @@ public class TestInstructionExecution {
         int oldPC = registers.read(Register.PC);
         int oldCycles = clock.getTotalCycles();
 
-        instructionExecutor.executeInstruction();
+        CPU.executeInstruction();
 
         assert (registers.read(Register.PC) - oldPC == pcIncrement);
         assert (clock.getTotalCycles() - oldCycles == cycleIncrement);

@@ -2,7 +2,6 @@ package cpu;
 
 import com.google.inject.Injector;
 import cpu.clock.Clock;
-import cpu.instructions.InstructionExecutor;
 import gpu.GPU;
 import mmu.MMU;
 import mmu.cartridge.CartridgeImpl;
@@ -11,7 +10,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -47,14 +45,14 @@ public class TestBlarggsInstructions extends BlarggsTest {
         Injector blarggsInjector = getNewInjector();
         mmu = blarggsInjector.getInstance(MMU.class);
         mmu.load(new CartridgeImpl("src/test/java/cpu/cpu_instrs/individual/" + testName));
-        InstructionExecutor instructionExecutor = blarggsInjector.getInstance(InstructionExecutor.class);
+        CPU CPU = blarggsInjector.getInstance(CPU.class);
         Clock clock = blarggsInjector.getInstance(Clock.class);
         clock.attach(blarggsInjector.getInstance(GPU.class));
 
         long startTime = System.currentTimeMillis();
         String outputTillNow = "";
         while (!outputTillNow.contains("Passed") && System.currentTimeMillis() - startTime < 45000) {
-            instructionExecutor.executeInstruction();
+            CPU.executeInstruction();
             outputTillNow = ((BlarggsTestMMU) mmu).getTestOutput();
         }
         return ((BlarggsTestMMU) mmu).getTestOutput();
@@ -68,10 +66,10 @@ public class TestBlarggsInstructions extends BlarggsTest {
             try {
                 String testOutput = runTest(testName);
                 if (testOutput.contains("Passed")) {
-                    System.out.println("Test " + testName + " passed, test output " + testOutput);
+                    System.out.println("Test " + testName + " passed, test output:\n" + testOutput);
                     assertTrue(true);
                 } else {
-                    System.out.println("Test: " + testName + " failed with output " + testOutput);
+                    System.out.println("Test: " + testName + " failed with output:\n" + testOutput);
                     fail();
                 }
             } catch (IOException ex) {
