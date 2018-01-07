@@ -34,6 +34,6 @@ public class GameBoy {
     public static void main(String[] args) throws IOException {
         Injector mainInjector = Guice.createInjector(new MainModule());
         GameBoy gameBoy = mainInjector.getInstance(GameBoy.class);
-        gameBoy.run("roms/instr_timing.gb");
+        gameBoy.run(args[0]);
     }
 }
