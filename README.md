@@ -19,6 +19,17 @@ Build the emulator with `mvn clean package`. This will create a jar file in the 
 
 Integrated Travis-CI for reporting build status, code coverage and [documenting the code]( https://codedocs.xyz/sidmalik123/GameBoi/annotated.html).
 
+### Screenshots
+![Mario](screenshots/mario-screenshot.png)
+![Bomb jack](screenshots/bomb-jack.gif)
+![Flappy special](screenshots/flappy-special.gif)
+![Asteroids](screenshots/asteroids-load.gif)
+![Battle city](screenshots/battle-city.png)
+![Tennis](screenshots/Tennis.png)
+![World bowling](screenshots/world-bowling.png)
+![Bubble Ghost](screenshots/bubble-ghost.png)
+![GameBoy Boot](screenshots/screenshot_gameboy_boot.png)
+
 ### Blarrg's tests
 
 The Blargg's test ROMs are used for testing the compatibility. These are run on every build. Current status
@@ -44,17 +55,6 @@ The Blargg's test ROMs are used for testing the compatibility. These are run on 
 2. Adding sprite rendering
 3. Implementing memory banking
 4. Sound support
-
-### Screenshots
-![Mario](screenshots/mario-screenshot.png)
-![Bomb jack](screenshots/bomb-jack.gif)
-![Flappy special](screenshots/flappy-special.gif)
-![Asteroids](screenshots/asteroids-load.gif)
-![Battle city](screenshots/battle-city.png)
-![Tennis](screenshots/Tennis.png)
-![World bowling](screenshots/world-bowling.png)
-![Bubble Ghost](screenshots/bubble-ghost.png)
-![GameBoy Boot](screenshots/screenshot_gameboy_boot.png)
 
 ### Resources
 
