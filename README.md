@@ -32,7 +32,7 @@ Integrated Travis-CI for reporting build status, code coverage and [documenting 
 
 ### Blarrg's tests
 
-The Blargg's test ROMs are used for testing the compatibility. These are run on every build. Current status
+Blargg's test ROMs are used for testing compatibility. These are run on every build. Current status
 
 | #   | CPU Test            | Status |
 | --- | ---                 | ---    |
