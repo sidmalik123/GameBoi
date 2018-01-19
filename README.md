@@ -64,3 +64,6 @@ Blargg's test ROMs are used for testing compatibility. These are run on every bu
 * [The Ultimate GameBoy Talk](https://www.youtube.com/watch?v=HyzD8pNlpwI)
 * [Imran Nazar](http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-The-CPU)
 * [codeslinger](http://www.codeslinger.co.uk/pages/projects/gameboy.html)
+
+### License
+GameBoi is released under the [MIT License](https://opensource.org/licenses/MIT).
