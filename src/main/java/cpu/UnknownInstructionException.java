@@ -3,7 +3,7 @@ package cpu;
 import core.BaseException;
 
 /**
- * Throw this when instruction is being processed is not known
+ * Throw this when the instruction being processed is not known
  * */
 public class UnknownInstructionException extends BaseException {
 
